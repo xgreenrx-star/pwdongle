@@ -1,0 +1,26 @@
+{
+  "build": {
+    "core": "esp32",
+    "cpu": "esp32s3",
+    "f_cpu": "240000000L",
+    "mcu": "esp32s3",
+    "variant": "esp32s3-devkitm-1",
+    "flash_size": "16MB"
+  },
+  "debug": {
+    "onboard_tools": [
+      "esp-builtin"
+    ],
+    "default_tool": "esp-builtin"
+  },
+  "frameworks": [
+    "arduino"
+  ],
+  "name": "ESP32-S3-LCD-1.47 (custom)",
+  "upload": {
+    "protocol": "esp-builtin",
+    "maximum_size": 16777216
+  },
+  "url": "https://example.com/esp32-s3-lcd-1.47",
+  "vendor": "generic"
+}
