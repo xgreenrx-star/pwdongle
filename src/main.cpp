@@ -44,16 +44,37 @@ void setup() {
   // Load persisted login code from NVS (if present)
   loadCorrectCode();
 
-  // Check for BLE mode boot flag
+  // Configure the boot button early for countdown check
+  pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
+
+  // 3-second countdown: default to BLE unless button pressed
+  bool userWantsPinEntry = false;
+  for (int countdown = 3; countdown > 0; countdown--) {
+    showCountdown(countdown);
+    unsigned long startWait = millis();
+    while (millis() - startWait < 1000) {
+      if (digitalRead(BOOT_BUTTON_PIN) == LOW) {
+        userWantsPinEntry = true;
+        break;
+      }
+      delay(10);
+    }
+    if (userWantsPinEntry) break;
+  }
+
+  // Check for explicit BLE mode boot flag (from entering 0000 code)
   prefs.begin("BLE", true);
   bool bootToBLE = prefs.getBool("bootToBLE", false);
   prefs.end();
   
-  if (bootToBLE) {
-    // Clear flag and enter BLE mode
-    prefs.begin("BLE", false);
-    prefs.putBool("bootToBLE", false);
-    prefs.end();
+  // Enter BLE mode if: countdown expired without button OR explicit flag set
+  if (bootToBLE || !userWantsPinEntry) {
+    // Clear explicit flag if it was set
+    if (bootToBLE) {
+      prefs.begin("BLE", false);
+      prefs.putBool("bootToBLE", false);
+      prefs.end();
+    }
     
     // Initialize USB HID first (needed for TYPE/KEY relay to PC)
     startUSBMode(MODE_HID);
@@ -112,8 +133,6 @@ void setup() {
     }
   }
 
-  // Configure the boot button
-  pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
   // Only show PIN entry UI when NOT in BLE mode
   if (currentUSBMode == MODE_HID && currentBLEMode == 0) {
   // Initial UI

@@ -17,6 +17,24 @@ void showInstructions() {
   delay(1000);
 }
 
+void showCountdown(int seconds) {
+  tft.fillScreen(TFT_BLACK);
+  tft.setRotation(0);
+  tft.setTextSize(2);
+  tft.setTextColor(TFT_CYAN, TFT_BLACK);
+  tft.setCursor(10, 40);
+  tft.println("Starting BLE mode");
+  tft.println("");
+  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+  tft.println("Press BOOT button");
+  tft.println("for PIN entry");
+  tft.println("");
+  tft.setTextSize(4);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.setCursor(70, 160);
+  tft.printf("%d", seconds);
+}
+
 void showDigitScreen() {
   tft.setRotation(0); // Portrait mode
   tft.fillScreen(TFT_BLACK);
