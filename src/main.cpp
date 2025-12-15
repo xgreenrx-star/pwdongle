@@ -114,7 +114,8 @@ void setup() {
 
   // Configure the boot button
   pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
-  if (currentUSBMode == MODE_HID) {
+  // Only show PIN entry UI when NOT in BLE mode
+  if (currentUSBMode == MODE_HID && currentBLEMode == 0) {
   // Initial UI
     showInstructions();
     showDigitScreen();
