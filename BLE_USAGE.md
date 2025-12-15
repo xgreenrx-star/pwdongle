@@ -4,7 +4,7 @@
 PWDongle now supports BLE connectivity for smartphone control using the Nordic UART Service (NUS) protocol.
 
 ## Activation
-1. On the device, enter the BLE mode code: **9999**
+1. On the device, enter the BLE mode code: **0000**
 2. Device will reboot and display "BLE Ready" with instructions
 3. Device advertises as: **PWDongle**
 
@@ -78,7 +78,7 @@ All commands are the same as CDC mode:
 ## Troubleshooting
 
 **Can't find "PWDongle" in scan**
-- Ensure BLE mode code (9999) was entered
+- Ensure BLE mode code (0000) was entered
 - Check device shows "BLE Ready" on screen
 - Some phones scan slowly - wait 10-15 seconds
 

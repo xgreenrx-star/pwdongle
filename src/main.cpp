@@ -83,7 +83,8 @@ void setup() {
     tft.println("Advertising now...");
     
     // Exit BLE boot screen and continue to main loop
-    codeAccepted = true;  // Skip PIN entry, but don't load passwords
+    // Don't set codeAccepted=true; instead, set a flag so loop knows we're in BLE-only mode
+    // In the loop, BLE mode won't process HID button input
   }
   
   // Ensure CDC boot flag exists and handle CDC-mode boot
@@ -124,6 +125,16 @@ void setup() {
 void loop() {
   extern int currentUSBMode;
   
+  // BLE mode takes priority - no HID input processing
+  if (currentBLEMode == 1) {
+    while (isBLEDataAvailable()) {
+      String line = readBLEData();
+      processBLELine(line);
+    }
+    delay(10);
+    return;  // Don't process HID input in BLE mode
+  }
+  
   if (currentUSBMode == MODE_HID) {
     if (!codeAccepted) {
       readButton();
@@ -139,14 +150,6 @@ void loop() {
       String line = readSerialData();
       
       processSerialLine(line);
-    }
-  }
-  
-  // Process BLE commands if in BLE mode
-  if (currentBLEMode == 1) {
-    while (isBLEDataAvailable()) {
-      String line = readBLEData();
-      processBLELine(line);
     }
   }
 }
