@@ -1,12 +1,19 @@
 # BLE (Bluetooth Low Energy) Connection Guide
 
 ## Overview
-PWDongle now supports BLE connectivity for smartphone control using the Nordic UART Service (NUS) protocol.
+PWDongle supports BLE connectivity for smartphone control using the Nordic UART Service (NUS) protocol. **BLE mode is now the default boot behavior** for maximum convenience.
 
 ## Activation
-1. On the device, enter the BLE mode code: **0000**
-2. Device will reboot and display "BLE Ready" with instructions
-3. Device advertises as: **PWDongle**
+
+### Automatic (Default)
+1. Power on the device
+2. Wait for the 3-second countdown to complete (displays "Starting BLE mode" with countdown)
+3. Device automatically enters BLE mode and displays "BLE ACTIVE"
+4. Device advertises as: **PWDongle**
+
+### Manual Override
+- **To access PIN entry instead**: Press the BOOT button during the countdown
+- **To force BLE on next boot**: Enter code **0000** (though it's already the default)
 
 ## Smartphone Setup
 
@@ -69,18 +76,29 @@ All commands are the same as CDC mode:
 - Messages chunked to ~20 bytes (BLE MTU limit)
 - Automatic chunking handled by firmware
 
-## Switching Back to Normal Mode
+## Switching to Other Modes
+
+### To PIN Entry Mode (Password Menu)
 1. Power cycle the device (disconnect USB)
-2. Device will boot to normal PIN entry mode
+2. **Press BOOT button during the 3-second countdown**
 3. Enter normal code (1122) to access password menu
-4. Or enter CDC mode code (7273) for USB serial mode
+
+### To CDC Mode (USB Serial)
+1. Access PIN entry mode (press BOOT during countdown)
+2. Enter CDC mode code (7273)
+3. Device reboots to USB serial configuration mode
+
+### Back to BLE Mode
+- Power cycle the device and let countdown complete (default behavior)
+- Or enter code (0000) to force BLE mode
 
 ## Troubleshooting
 
 **Can't find "PWDongle" in scan**
-- Ensure BLE mode code (0000) was entered
-- Check device shows "BLE Ready" on screen
+- Ensure countdown completed without button press (BLE is default)
+- Check device shows "BLE ACTIVE" on screen
 - Some phones scan slowly - wait 10-15 seconds
+- If you pressed BOOT during countdown, you're in PIN mode instead
 
 **Connection drops frequently**
 - Move phone closer to device
