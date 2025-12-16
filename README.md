@@ -4,6 +4,7 @@ Secure ESP32-S3 hardware password manager with TFT display, PIN authentication, 
 
 ## Features
 
+- **Default BLE Boot** - 3-second countdown auto-boots to BLE mode for smartphone connectivity
 - **4-Digit PIN Authentication** - Hardware button entry with masked digits for security
 - **Password Storage** - Store up to 10 device/password pairs in non-volatile memory
 - **USB HID Keyboard Mode** - Types passwords directly to connected PC
@@ -54,21 +55,32 @@ platformio device monitor --baud 115200
 
 ## Usage
 
+### Boot Behavior
+
+On power-up, the device displays a **3-second countdown** and automatically boots to BLE mode for smartphone connectivity:
+
+- **Default**: Let countdown complete → BLE mode starts
+- **Override**: Press BOOT button during countdown → PIN entry screen appears
+
+#### Why BLE is Default?
+BLE mode provides smartphone control with keystroke relay, making it the most versatile mode for everyday use. PIN entry mode is still instantly accessible via button press.
+
 ### Access Codes
 
 | Code | Function |
 |------|----------|
 | `1122` | Normal access (default login) |
 | `7273` | Reboot to CDC mode |
-| `0000` | Reboot to BLE mode |
+| `0000` | Force BLE mode on next boot (also auto-boots by default) |
 
 ### Normal Mode (Password Menu)
 1. Power on device
-2. Enter login code `1122` using boot button
+2. **Press BOOT button during countdown** to access PIN entry
+3. Enter login code `1122` using boot button
    - Short press: increment digit (0-9)
    - Long press (>600ms): confirm digit
-3. Select password from menu
-4. Hold button to type password via USB HID
+4. Select password from menu
+5. Hold button to type password via USB HID
 
 ### CDC Mode (USB Serial Configuration)
 1. Enter code `7273` at boot
@@ -91,8 +103,8 @@ Example:
 ```
 
 ### BLE Mode (Smartphone Control)
-1. Enter code `0000` at boot
-2. Device advertises as "PWDongle"
+1. **Default**: Let 3-second countdown complete (or enter code `0000` for explicit boot)
+2. Device shows "BLE ACTIVE" and advertises as "PWDongle"
 3. Connect from smartphone using BLE UART terminal app:
    - Android: "Serial Bluetooth Terminal" or "nRF Connect"
    - iOS: "LightBlue" or "nRF Connect"
