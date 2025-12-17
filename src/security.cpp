@@ -32,7 +32,12 @@ void checkCode() {
 
     // Type the file via HID
     String base = String(buf);
-    typeTextFileFromSD(base);
+    bool okType = typeTextFileFromSD(base);
+    if (!okType) {
+      // Show error feedback and pause briefly
+      showStartupMessage("Typing failed");
+      delay(800);
+    }
 
     // Reset state back to PIN entry
     awaitingFileNumber = false;

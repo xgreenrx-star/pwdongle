@@ -3,6 +3,7 @@
 #include <USBHIDKeyboard.h>
 #include <SD.h>
 #include <SD_MMC.h>
+#include <SPI.h>
 #include <stdio.h>
 #include "usb.h"
 #include "security.h"
@@ -368,24 +369,37 @@ void sendSerialCSV(const String& name, const String& password) {
 #define SD_CS_PIN 5
 #endif
 
+static bool sdUseMMC = false;
+static bool sdReady = false;
+static SPIClass sdSPI(HSPI);
+
 static bool ensureSDReady() {
   // Try SD_MMC first (for boards with built-in SD/MMC); if that fails, try SPI SD.
-  static bool initialized = false;
-  static bool tried = false;
-  if (initialized) return true;
-  if (!tried) {
-    tried = true;
-    if (SD_MMC.begin("/sdcard", true)) { // 1-bit mode for stability
-      initialized = true;
-      return true;
-    }
-    // Fallback to SPI SD
-    if (SD.begin(SD_CS_PIN)) {
-      initialized = true;
+  if (sdReady) return true;
+
+  // Prefer SD_MMC (1-bit mode for stability on S3 boards)
+  if (SD_MMC.begin("/sdcard", true)) {
+    sdUseMMC = true;
+    sdReady = true;
+    return true;
+  }
+  // Fallback to SPI SD on HSPI with candidate pins
+  struct SpiPins { int cs, miso, mosi, sclk; };
+  const SpiPins candidates[] = {
+    {39, 38, 45, 40}, // Common on ESP32-S3 LCD boards: CS=39, MISO=38, MOSI=45, SCLK=40
+    {5,  38, 45, 40}, // If CS wired to 5
+  };
+
+  for (auto cfg : candidates) {
+    sdSPI.end();
+    sdSPI.begin(cfg.sclk, cfg.miso, cfg.mosi, cfg.cs);
+    if (SD.begin(cfg.cs, sdSPI, 25000000)) {
+      sdUseMMC = false;
+      sdReady = true;
       return true;
     }
   }
-  return initialized;
+  return false;
 }
 
 bool typeTextFileFromSD(const String& baseName) {
@@ -400,8 +414,8 @@ bool typeTextFileFromSD(const String& baseName) {
 
   String filename = "/" + baseName + ".txt";
   File f;
-  // Prefer SD_MMC if available; otherwise use SPI SD
-  if (SD_MMC.begin("/sdcard", true)) {
+  // Open via whichever backend was initialized
+  if (sdUseMMC) {
     f = SD_MMC.open(filename.c_str(), FILE_READ);
   } else {
     f = SD.open(filename.c_str(), FILE_READ);
