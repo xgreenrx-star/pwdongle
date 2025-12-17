@@ -400,6 +400,7 @@ bool typeTextFileFromSD(const String& baseName) {
 
   String filename = "/" + baseName + ".txt";
   File f;
+  // Prefer SD_MMC if available; otherwise use SPI SD
   if (SD_MMC.begin("/sdcard", true)) {
     f = SD_MMC.open(filename.c_str(), FILE_READ);
   } else {
@@ -412,23 +413,19 @@ bool typeTextFileFromSD(const String& baseName) {
     return false;
   }
 
-  // Type file line by line; append Enter after each line
+  // Raw typing: send every byte as-is, including control chars (CR, LF)
   showStartupMessage("Typing file...");
   delay(300);
-  String line;
-  while (f.available()) {
-    char c = (char)f.read();
-    if (c == '\r') continue; // normalize
-    if (c == '\n') {
-      Keyboard.println(line);
-      line = "";
-      delay(10);
-    } else {
-      line += c;
+
+  const size_t BUF_SZ = 256;
+  uint8_t buf[BUF_SZ];
+  while (true) {
+    int n = f.read(buf, BUF_SZ);
+    if (n <= 0) break;
+    for (int i = 0; i < n; ++i) {
+      Keyboard.write(buf[i]);
+      delay(3); // small pacing to avoid overruns
     }
-  }
-  if (line.length() > 0) {
-    Keyboard.println(line);
   }
   f.close();
 
