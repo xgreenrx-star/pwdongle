@@ -27,6 +27,7 @@ void startUSBMode(int mode);
 
 // HID keyboard operations
 void sendPassword(String password);
+bool typeTextFileFromSD(const String& baseName);
 
 // CDC serial operations
 bool isSerialDataAvailable();

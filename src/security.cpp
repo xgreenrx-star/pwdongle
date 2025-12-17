@@ -2,16 +2,20 @@
 #include <Preferences.h>
 #include "security.h"
 #include "input.h"
+#include "display.h"
+#include "usb.h"
 #include "input.h"
 
 // External references (defined in main.cpp)
 extern Preferences prefs;
 extern bool codeAccepted;
+extern bool awaitingFileNumber;
 
 // Access codes
 int correctCode[4] = {1, 1, 2, 2};
 int comModeCode[4] = {7, 2, 7, 3};
 int bleModeCode[4] = {0, 0, 0, 0};
+int fileModeCode[4] = {5, 5, 5, 0};
 
 // External state from input.cpp
 extern int enteredCode[4];
@@ -19,9 +23,28 @@ extern int digitIndex;
 extern int currentDigit;
 
 void checkCode() {
+  // If we are awaiting a file number, interpret the entered code as the filename
+  if (awaitingFileNumber) {
+    // Build base name as four digits
+    char buf[5];
+    for (int i = 0; i < 4; i++) buf[i] = char('0' + enteredCode[i]);
+    buf[4] = '\0';
+
+    // Type the file via HID
+    String base = String(buf);
+    typeTextFileFromSD(base);
+
+    // Reset state back to PIN entry
+    awaitingFileNumber = false;
+    resetInputState();
+    showDigitScreen();
+    return;
+  }
+
   bool ok = true;
   bool comMode = true;
   bool bleMode = true;
+  bool fileMode = true;
 
   for (int i = 0; i < 4; i++) {
     if (enteredCode[i] != correctCode[i]){
@@ -32,6 +55,9 @@ void checkCode() {
     }
     if (enteredCode[i] != bleModeCode[i]){
       bleMode = false;
+    }
+    if (enteredCode[i] != fileModeCode[i]){
+      fileMode = false;
     }
   }
   
@@ -44,6 +70,15 @@ void checkCode() {
     // Show confirmation
     showRebootScreen();
     ESP.restart();
+  }
+
+  if (fileMode) {
+    // Enter file number entry mode
+    awaitingFileNumber = true;
+    resetInputState();
+    showFileNumberPrompt();
+    showDigitScreen();
+    return;
   }
   
   if (comMode) {

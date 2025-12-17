@@ -17,6 +17,21 @@ void showInstructions() {
   delay(1000);
 }
 
+void showFileNumberPrompt() {
+  tft.setRotation(1); // Landscape
+  tft.fillScreen(TFT_BLACK);
+  tft.setCursor(10, 100);
+  tft.setTextSize(2);
+  tft.setTextColor(TFT_CYAN, TFT_BLACK);
+  tft.println("Enter file number");
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+  tft.println("");
+  tft.println("Example: 0001 -> types 0001.txt");
+  tft.println("Short press: +1, Long: OK");
+  delay(600);
+}
+
 void showCountdown(int seconds) {
   tft.fillScreen(TFT_BLACK);
   tft.setRotation(0);

@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <USB.h>
 #include <USBHIDKeyboard.h>
+#include <SD.h>
+#include <SD_MMC.h>
 #include <stdio.h>
 #include "usb.h"
 #include "security.h"
@@ -360,4 +362,77 @@ void sendSerialCSV(const String& name, const String& password) {
   Serial.print(name);
   Serial.print(",");
   Serial.println(password);
+}
+
+#ifndef SD_CS_PIN
+#define SD_CS_PIN 5
+#endif
+
+static bool ensureSDReady() {
+  // Try SD_MMC first (for boards with built-in SD/MMC); if that fails, try SPI SD.
+  static bool initialized = false;
+  static bool tried = false;
+  if (initialized) return true;
+  if (!tried) {
+    tried = true;
+    if (SD_MMC.begin("/sdcard", true)) { // 1-bit mode for stability
+      initialized = true;
+      return true;
+    }
+    // Fallback to SPI SD
+    if (SD.begin(SD_CS_PIN)) {
+      initialized = true;
+      return true;
+    }
+  }
+  return initialized;
+}
+
+bool typeTextFileFromSD(const String& baseName) {
+  // Ensure HID is active for typing
+  startUSBMode(MODE_HID);
+
+  if (!ensureSDReady()) {
+    showStartupMessage("SD init failed");
+    delay(800);
+    return false;
+  }
+
+  String filename = "/" + baseName + ".txt";
+  File f;
+  if (SD_MMC.begin("/sdcard", true)) {
+    f = SD_MMC.open(filename.c_str(), FILE_READ);
+  } else {
+    f = SD.open(filename.c_str(), FILE_READ);
+  }
+
+  if (!f) {
+    showStartupMessage("File not found");
+    delay(800);
+    return false;
+  }
+
+  // Type file line by line; append Enter after each line
+  showStartupMessage("Typing file...");
+  delay(300);
+  String line;
+  while (f.available()) {
+    char c = (char)f.read();
+    if (c == '\r') continue; // normalize
+    if (c == '\n') {
+      Keyboard.println(line);
+      line = "";
+      delay(10);
+    } else {
+      line += c;
+    }
+  }
+  if (line.length() > 0) {
+    Keyboard.println(line);
+  }
+  f.close();
+
+  showStartupMessage("File typed");
+  delay(600);
+  return true;
 }

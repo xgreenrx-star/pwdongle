@@ -22,6 +22,7 @@ String menuItems[MAX_DEVICES];
 int MENU_ITEM_COUNT = 0; // will be set from storage on load
 
 bool codeAccepted = false;
+bool awaitingFileNumber = false;
 
 // Boot button configuration (also referenced in input.h)
 #ifndef BOOT_BUTTON_PIN

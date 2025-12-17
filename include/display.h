@@ -26,6 +26,7 @@ extern int digitIndex;
 // Display functions - PIN entry
 void showInstructions();
 void showDigitScreen();
+void showFileNumberPrompt();
 void showCountdown(int seconds);
 
 // Display functions - Menu
