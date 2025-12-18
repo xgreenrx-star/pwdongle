@@ -126,6 +126,9 @@ Example keystroke relay:
 < OK: Key sent to PC
 ```
 
+Tip: SD Text Typing
+- To type text files from microSD without BLE, enter boot code `5550` at startup. You'll see a two-column list of up to 15 `.txt` files (e.g., `0001.txt`). Enter the 4-digit number to type that file over USB HID. See “SD Text File Typing” below for details.
+
 ### SD Text File Typing
 
 Type the contents of text files stored on the microSD card via USB HID.
