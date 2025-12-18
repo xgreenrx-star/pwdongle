@@ -58,6 +58,12 @@ void resetSerialState() {
 
 // BLE command processor (mirrors serial commands + keystroke relay)
 void processBLELine(const String& rawLine) {
+  // Check if line ends with \r (CRLF from terminal)
+  bool hadCR = false;
+  if (rawLine.length() > 0 && rawLine.charAt(rawLine.length() - 1) == '\r') {
+    hadCR = true;
+  }
+  
   String line = rawLine;
   line.trim();
   
@@ -110,7 +116,12 @@ void processBLELine(const String& rawLine) {
     if (dualModeActive) {
       Serial.print("Processing as macro text: ");
       Serial.println(line);
-      processMacroText(line);
+      // If original line ended with \r (CRLF from terminal), append Enter keypress
+      if (hadCR) {
+        processMacroText(line + "{{KEY:enter}}");
+      } else {
+        processMacroText(line);
+      }
       sendBLEResponse("OK: Processed");
     }
     return;
