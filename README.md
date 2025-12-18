@@ -163,6 +163,26 @@ Hello {{DELAY:500}}world!{{KEY:enter}}
 {{SPEED:10}}Slower typing...{{KEY:ctrl+s}}{{DELAY:300}}{{KEY:enter}}
 ```
 
+#### Macro Quick Reference
+
+| Token | Syntax | Description | Example |
+|---|---|---|---|
+| Delay | `{{DELAY:ms}}` | Pause for `ms` milliseconds (0–5000 clamp) | `{{DELAY:500}}` |
+| Speed | `{{SPEED:ms}}` | Per-character delay while typing (0–200 clamp) | `{{SPEED:10}}` |
+| Text | `{{TEXT:...}}` | Type literal text, useful for braces | `{{TEXT:Hello {world}}}` |
+| Key | `{{KEY:name}}` | Special keys | `{{KEY:enter}}`, `{{KEY:tab}}` |
+| Key Combo | `{{KEY:mods+key}}` | Multiple modifiers + key | `{{KEY:ctrl+shift+esc}}`, `{{KEY:win+r}}` |
+| Mouse Move | `{{MOUSE:MOVE dx dy}}` | Relative cursor movement | `{{MOUSE:MOVE 100 -50}}` |
+| Mouse Click | `{{MOUSE:CLICK left|right|middle}}` | Mouse button click | `{{MOUSE:CLICK right}}` |
+| Mouse Scroll | `{{MOUSE:SCROLL n}}` | Scroll `n` steps (+up / -down) | `{{MOUSE:SCROLL -3}}` |
+| Gamepad Button | `{{GAMEPAD:PRESS/RELEASE btn}}` | A,B,X,Y, LB/RB, LT/RT, SELECT/BACK, START, HOME/MODE, LS/RS | `{{GAMEPAD:PRESS a}}` |
+| Gamepad DPad | `{{GAMEPAD:DPAD dir}}` | `up,down,left,right,center` (+ diagonals) | `{{GAMEPAD:DPAD upright}}` |
+| Gamepad Sticks | `{{GAMEPAD:LS x y}}`, `{{GAMEPAD:RS z rz}}` | Analog values in [-127,127] | `{{GAMEPAD:LS 50 -20}}` |
+| Gamepad Triggers | `{{GAMEPAD:LT v}}`, `{{GAMEPAD:RT v}}` | Analog values in [-127,127] | `{{GAMEPAD:RT 80}}` |
+| Audio Volume | `{{AUDIO:VOLUP[:n]}}`, `{{AUDIO:VOLDOWN[:n]}}` | Adjust volume by `n` steps | `{{AUDIO:VOLUP:3}}` |
+| Audio Control | `{{AUDIO:MUTE}}`, `{{AUDIO:PLAY}}`, `{{AUDIO:STOP}}`, `{{AUDIO:NEXT}}`, `{{AUDIO:PREV}}` | Media control | `{{AUDIO:MUTE}}` |
+| Escaping | `\{{`, `\}}` | Type literal braces | `\{{TEXT\}}` |
+
 #### Supported Keys
 
 **Basic Navigation:**
