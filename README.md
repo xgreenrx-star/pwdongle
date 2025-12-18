@@ -75,6 +75,8 @@ BLE mode provides smartphone control with keystroke relay, making it the most ve
 | `0000` | Force BLE mode on next boot (also auto-boots by default) |
 | `5550` | SD Text File Typing mode (file-number screen; see "SD Text File Typing") |
 
+Tip: Entering code `5550` shows a two-column list of up to 15 `.txt` files (numerically sorted) for quick selection.
+
 ### Normal Mode (Password Menu)
 1. Power on device
 2. **Press BOOT button during countdown** to access PIN entry
