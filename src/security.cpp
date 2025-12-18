@@ -37,11 +37,14 @@ void checkCode() {
       // Show error feedback and pause briefly
       showStartupMessage("Typing failed");
       delay(800);
+    } else {
+      showStartupMessage("File typed");
+      delay(600);
     }
 
-    // Reset state back to PIN entry
-    awaitingFileNumber = false;
+    // Stay in file-number mode to allow another file entry
     resetInputState();
+    showFileNumberPrompt();
     showDigitScreen();
     return;
   }
