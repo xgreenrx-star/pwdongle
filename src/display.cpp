@@ -2,6 +2,9 @@
 #include <TFT_eSPI.h>
 #include "display.h"
 
+// From main.cpp
+extern bool awaitingFileNumber;
+
 // Declarations are provided by include/display.h
 
 void showInstructions() {
@@ -53,6 +56,16 @@ void showCountdown(int seconds) {
 void showDigitScreen() {
   tft.setRotation(0); // Portrait mode
   tft.fillScreen(TFT_BLACK);
+
+  // If we're in file-number mode, show inline instructions on the same screen
+  if (awaitingFileNumber) {
+    tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+    tft.setCursor(10, 6);
+    tft.setTextSize(1);
+    tft.setTextFont(2);
+    tft.println("File mode: enter number");
+    tft.println("Example: 0001 -> 0001.txt");
+  }
   
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setCursor(10, 20);
