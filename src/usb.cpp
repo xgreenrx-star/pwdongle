@@ -374,15 +374,24 @@ static bool sdReady = false;
 static SPIClass sdSPI(HSPI);
 
 static bool ensureSDReady() {
-  // Try SD_MMC first (for boards with built-in SD/MMC); if that fails, try SPI SD.
+  // Try SD_MMC with known board pins first; if that fails, try SPI SD.
   if (sdReady) return true;
 
-  // Prefer SD_MMC (1-bit mode for stability on S3 boards)
-  if (SD_MMC.begin("/sdcard", true)) {
+  // Configure SD_MMC pins for ESP32-S3-LCD-1.47 (4-bit bus)
+  const int sdClk = 14;
+  const int sdCmd = 15;
+  const int sdD0  = 16;
+  const int sdD1  = 18;
+  const int sdD2  = 17;
+  const int sdD3  = 21;
+  SD_MMC.setPins(sdClk, sdCmd, sdD0, sdD1, sdD2, sdD3);
+  // Try 4-bit mode (mode1bit = false)
+  if (SD_MMC.begin("/sdcard", false)) {
     sdUseMMC = true;
     sdReady = true;
     return true;
   }
+
   // Fallback to SPI SD on HSPI with candidate pins
   struct SpiPins { int cs, miso, mosi, sclk; };
   const SpiPins candidates[] = {
