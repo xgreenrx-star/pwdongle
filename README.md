@@ -13,6 +13,7 @@ Secure ESP32-S3 hardware password manager with TFT display, PIN authentication, 
 - **Dual-Mode Keystroke Relay** - Send keystrokes from phone → ESP32 → PC via USB HID
 - **3.3" TFT Display** - Visual UI for PIN entry and menu navigation
 - **Persistent Configuration** - Login codes and passwords survive reboots
+ - **SD Text Typing** - Type text files from microSD by code + file number
 
 ## Hardware
 
@@ -125,6 +126,17 @@ Example keystroke relay:
 < OK: Key sent to PC
 ```
 
+### SD Text File Typing
+
+Type the contents of text files stored on the microSD card via USB HID.
+
+- File format: place files in SD root named `NNNN.txt` (4 digits), e.g., `0001.txt`
+- Activation code: enter boot code `5550` to enter file-number mode
+- Screen UI: shows a two-column list of up to 15 available `.txt` files (basenames only), sorted numerically
+- Selecting file: enter the 4-digit number (e.g., `0001`) and hold to confirm; device types the file contents verbatim
+- Line endings: raw typing preserves CR (`\r`) and LF (`\n`) characters
+- Repeat: remains in file-number mode for subsequent files; repeat as needed
+
 ### Supported Keys
 - Navigation: `up`, `down`, `left`, `right`, `home`, `end`, `pageup`, `pagedown`
 - Editing: `backspace`, `delete`, `tab`, `escape`, `enter`
@@ -195,6 +207,11 @@ PWDongle/
 - Verify device shows "BLE ACTIVE" screen after entering `0000`
 - Ensure PC recognizes device as USB keyboard
 - Check serial monitor for debug output
+
+**SD files not appearing in list:**
+- Ensure the SD card is inserted and formatted (FAT32 recommended)
+- Use 4-digit filenames with `.txt` extension in the SD root (e.g., `0001.txt`)
+- Up to 15 files are listed; additional files won’t appear but can still be typed by number if present
 
 **Passwords not persisting:**
 - Use `ABOUT` command to verify persistence status
