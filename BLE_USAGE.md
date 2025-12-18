@@ -37,7 +37,7 @@ PWDongle supports BLE connectivity for smartphone control using the Nordic UART 
 
 ## Commands
 
-All commands are the same as CDC mode:
+### System Commands
 
 - **HELP** - Show available commands
 - **ABOUT** - Display firmware info
@@ -45,20 +45,34 @@ All commands are the same as CDC mode:
 - **RETRIEVEPW** - Get stored passwords (requires auth)
 - **CHANGELOGIN** - Change 4-digit login code
 
-Tip: SD Text Typing
-- You can type text files from microSD without BLE. At boot, enter code `5550` to open the file-number screen. It shows a two-column list of up to 15 `.txt` files (e.g., `0001.txt`). Enter the 4-digit number to type that file over USB HID.
+### Macro Input (NEW!)
 
-#### Macros in SD Text Files
+BLE now supports **full macro syntax** - identical to SD text files. Any text you send is typed via USB HID with embedded token support:
 
-Files support embedded macros for powerful automation:
-- `{{DELAY:ms}}`, `{{SPEED:ms}}` – timing control
-- `{{KEY:name}}` – special keys and multi-mod combinations (e.g., `ctrl+shift+esc`, `win+r`)
-- `{{TEXT:...}}` – literal text
-- `{{MOUSE:MOVE dx dy}}`, `{{MOUSE:CLICK left|right|middle}}`, `{{MOUSE:SCROLL n}}`
-- `{{GAMEPAD:...}}` – press/release buttons, DPAD, sticks, triggers
-- `{{AUDIO:...}}` – volume, mute, play/stop, next/prev track
+**Macro Tokens:**
+- `{{DELAY:ms}}` - Pause execution
+- `{{SPEED:ms}}` - Change typing speed (0-200ms per character)
+- `{{KEY:name}}` - Press special keys (enter, tab, f5, etc.)
+- `{{KEY:combo}}` - Multi-modifier combinations (ctrl+shift+esc, win+r)
+- `{{TEXT:...}}` - Literal text (bypass special chars)
+- `{{MOUSE:MOVE dx dy}}` - Move mouse cursor
+- `{{MOUSE:CLICK left|right|middle}}` - Mouse clicks
+- `{{MOUSE:SCROLL n}}` - Mouse wheel (positive=up, negative=down)
+- `{{GAMEPAD:PRESS|RELEASE button}}` - Gamepad buttons (a, b, x, y, lb, rb, etc.)
+- `{{GAMEPAD:DPAD direction}}` - D-pad (up, down, left, right)
+- `{{GAMEPAD:LS|RS x y}}` - Analog sticks (-127 to 127)
+- `{{GAMEPAD:LT|RT value}}` - Triggers (-127 to 127)
+- `{{AUDIO:VOLUP|VOLDOWN}}` - Volume control
+- `{{AUDIO:MUTE|PLAY|STOP|NEXT|PREV}}` - Media keys
 
-See the main `README.md` for full syntax and examples. Sample files are in `samples/`.
+**Plain text without tokens is typed directly** - no command prefix needed!
+
+See the main `README.md` for complete syntax and examples. Sample files in `samples/` show all features.
+
+**Tip: SD Text Typing**
+- Type files from microSD without BLE: Enter code `5550` at boot
+- Shows two-column list of up to 15 `.txt` files (e.g., `0001.txt`)
+- Enter 4-digit number to type that file over USB HID
 
 ### Example Session
 ```
@@ -67,7 +81,14 @@ See the main `README.md` for full syntax and examples. Sample files are in `samp
 <   PWUPDATE - update passwords (requires login auth)
 <   RETRIEVEPW - retrieve stored passwords (requires login auth)
 <   CHANGELOGIN - change the 4-digit login code
-< Usage: send command, then follow prompts from device
+< Macro syntax: {{KEY:name}}, {{DELAY:ms}}, {{MOUSE:...}}, {{GAMEPAD:...}}, {{AUDIO:...}}
+< Any text without command prefix is typed via USB HID
+
+> Hello World{{KEY:enter}}
+< OK: Processed
+
+> {{KEY:win+r}}{{DELAY:200}}notepad{{KEY:enter}}
+< OK: Processed
 
 > PWUPDATE
 < OK: Enter the login code to authorize PW update

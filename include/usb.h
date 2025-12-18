@@ -28,6 +28,7 @@ void startUSBMode(int mode);
 // HID keyboard operations
 void sendPassword(String password);
 bool typeTextFileFromSD(const String& baseName);
+void processMacroText(const String& text);
 
 // SD file listing
 void listSDTextFiles(String fileList[15], int& count);
