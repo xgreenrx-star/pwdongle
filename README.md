@@ -211,6 +211,27 @@ Hello {{DELAY:500}}world!{{KEY:enter}}
 - `{{DELAY:1000}}` – Wait 1 second
 - `{{SPEED:50}}` – Slow down typing (50ms per character)
 
+#### Mouse Macros (Phase 2)
+
+Control the mouse cursor and perform mouse actions embedded in text files.
+
+**Mouse Commands:**
+- `{{MOUSE:MOVE dx dy}}` – Move mouse cursor by `dx` and `dy` pixels (relative movement). Positive dx = right, negative dx = left; positive dy = down, negative dy = up. Example: `{{MOUSE:MOVE 100 50}}`
+- `{{MOUSE:CLICK button}}` – Click a mouse button (`left`, `right`, or `middle`). Example: `{{MOUSE:CLICK left}}`
+- `{{MOUSE:SCROLL n}}` – Scroll by `n` clicks. Positive n = scroll up, negative n = scroll down. Example: `{{MOUSE:SCROLL 3}}`
+
+**Example File Content with Mouse:**
+```
+Testing mouse control{{DELAY:500}}{{MOUSE:MOVE 100 0}}{{KEY:enter}}
+{{MOUSE:CLICK left}}{{DELAY:300}}{{MOUSE:SCROLL 5}}
+Right-click menu:{{MOUSE:CLICK right}}
+```
+
+**Notes:**
+- Mouse commands are ignored in BLE mode; they only work when typing via USB HID
+- Relative movements are in pixels and depend on cursor speed settings in your OS
+- Scrolling typically applies to the focused window
+
 ### Supported Keys (Legacy Reference)
 
 ## Project Structure

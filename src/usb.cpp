@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <USB.h>
 #include <USBHIDKeyboard.h>
+#include <USBHIDMouse.h>
 #include <SD.h>
 #include <SD_MMC.h>
 #include <SPI.h>
@@ -11,6 +12,7 @@
 
 // External references (defined in main.cpp)
 extern USBHIDKeyboard Keyboard;
+extern USBHIDMouse Mouse;
 
 // Runtime USB mode
 int currentUSBMode = MODE_HID;
@@ -475,21 +477,34 @@ bool typeTextFileFromSD(const String& baseName) {
     else if (key == "f10") { Keyboard.press(KEY_F10); delay(50); Keyboard.release(KEY_F10); }
     else if (key == "f11") { Keyboard.press(KEY_F11); delay(50); Keyboard.release(KEY_F11); }
     else if (key == "f12") { Keyboard.press(KEY_F12); delay(50); Keyboard.release(KEY_F12); }
-    // Lock keys
+    // Lock keys (wrapped in #ifdef since not all boards support these)
+    #ifdef KEY_CAPS_LOCK
     else if (key == "capslock" || key == "caps") { Keyboard.press(KEY_CAPS_LOCK); delay(50); Keyboard.release(KEY_CAPS_LOCK); }
+    #endif
+    #ifdef KEY_NUM_LOCK
     else if (key == "numlock" || key == "num") { Keyboard.press(KEY_NUM_LOCK); delay(50); Keyboard.release(KEY_NUM_LOCK); }
+    #endif
+    #ifdef KEY_SCROLL_LOCK
     else if (key == "scrolllock" || key == "scroll") { Keyboard.press(KEY_SCROLL_LOCK); delay(50); Keyboard.release(KEY_SCROLL_LOCK); }
+    #endif
     // Print/Pause
+    #ifdef KEY_PRINT_SCREEN
     else if (key == "printscreen" || key == "print") { Keyboard.press(KEY_PRINT_SCREEN); delay(50); Keyboard.release(KEY_PRINT_SCREEN); }
+    #endif
+    #ifdef KEY_PAUSE
     else if (key == "pause" || key == "break") { Keyboard.press(KEY_PAUSE); delay(50); Keyboard.release(KEY_PAUSE); }
+    #endif
     // Insert
     else if (key == "insert" || key == "ins") { Keyboard.press(KEY_INSERT); delay(50); Keyboard.release(KEY_INSERT); }
     // Windows/GUI keys
     else if (key == "win" || key == "windows") { Keyboard.press(KEY_LEFT_GUI); delay(50); Keyboard.release(KEY_LEFT_GUI); }
     else if (key == "rwin" || key == "rwindows") { Keyboard.press(KEY_RIGHT_GUI); delay(50); Keyboard.release(KEY_RIGHT_GUI); }
     // Application/Menu keys
+    #ifdef KEY_MENU
     else if (key == "menu" || key == "app") { Keyboard.press(KEY_MENU); delay(50); Keyboard.release(KEY_MENU); }
-    // Numpad keys
+    #endif
+    // Numpad keys (wrapped in #ifdef since not all boards support these)
+    #ifdef KEY_KP_0
     else if (key == "kp0" || key == "numpad0") { Keyboard.press(KEY_KP_0); delay(50); Keyboard.release(KEY_KP_0); }
     else if (key == "kp1" || key == "numpad1") { Keyboard.press(KEY_KP_1); delay(50); Keyboard.release(KEY_KP_1); }
     else if (key == "kp2" || key == "numpad2") { Keyboard.press(KEY_KP_2); delay(50); Keyboard.release(KEY_KP_2); }
@@ -506,6 +521,7 @@ bool typeTextFileFromSD(const String& baseName) {
     else if (key == "kp_divide" || key == "numpad_divide") { Keyboard.press(KEY_KP_DIVIDE); delay(50); Keyboard.release(KEY_KP_DIVIDE); }
     else if (key == "kp_decimal" || key == "numpad_decimal" || key == "kp_dot") { Keyboard.press(KEY_KP_DECIMAL); delay(50); Keyboard.release(KEY_KP_DECIMAL); }
     else if (key == "kp_enter" || key == "numpad_enter") { Keyboard.press(KEY_KP_ENTER); delay(50); Keyboard.release(KEY_KP_ENTER); }
+    #endif
     // Right-side modifiers (for advanced combos)
     else if (key == "rctrl" || key == "rcontrol") { Keyboard.press(KEY_RIGHT_CTRL); delay(50); Keyboard.release(KEY_RIGHT_CTRL); }
     else if (key == "ralt" || key == "raltgr") { Keyboard.press(KEY_RIGHT_ALT); delay(50); Keyboard.release(KEY_RIGHT_ALT); }
@@ -574,6 +590,29 @@ bool typeTextFileFromSD(const String& baseName) {
             for (size_t k = 0; k < text.length(); ++k) {
               Keyboard.write((uint8_t)text[k]);
               if (speedMs > 0) delay(speedMs);
+            }
+          } else if (body.startsWith("MOUSE:")) {
+            String cmd = body.substring(6); cmd.trim();
+            if (cmd.startsWith("MOVE ")) {
+              // Parse "MOVE dx dy" (space-separated signed integers)
+              String rest = cmd.substring(5);
+              int spaceIdx = rest.indexOf(' ');
+              if (spaceIdx > 0) {
+                int dx = rest.substring(0, spaceIdx).toInt();
+                int dy = rest.substring(spaceIdx+1).toInt();
+                Mouse.move(dx, dy);
+              }
+            } else if (cmd.startsWith("CLICK ")) {
+              String btn = cmd.substring(6); btn.trim(); btn.toLowerCase();
+              if (btn == "left") { Mouse.click(MOUSE_LEFT); }
+              else if (btn == "right") { Mouse.click(MOUSE_RIGHT); }
+              else if (btn == "middle") { Mouse.click(MOUSE_MIDDLE); }
+            } else if (cmd.startsWith("SCROLL ")) {
+              int n = cmd.substring(7).toInt();
+              // Use the wheel parameter in move() for scrolling
+              // Positive n scrolls up (wheel > 0), negative n scrolls down (wheel < 0)
+              if (n > 0) { for (int j = 0; j < n; ++j) { Mouse.move(0, 0, 1); delay(10); } }
+              else if (n < 0) { for (int j = 0; j < -n; ++j) { Mouse.move(0, 0, -1); delay(10); } }
             }
           } else {
             String literal = String("{{") + body + String("}}");
