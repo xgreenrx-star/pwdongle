@@ -106,7 +106,13 @@ void processBLELine(const String& rawLine) {
       serialState = CMD_CHANGELOGIN_WAIT_OLD;
       return;
     }
-    sendBLEResponse("ERR: Unknown command");
+    // Not a system command - treat as macro text to type via USB HID
+    if (dualModeActive) {
+      Serial.print("Processing as macro text: ");
+      Serial.println(line);
+      processMacroText(line);
+      sendBLEResponse("OK: Processed");
+    }
     return;
   }
 
@@ -288,16 +294,6 @@ void processSerialLine(const String& rawLine) {
     sendSerialResponse("OK: New login code set");
     resetSerialState();
     return;
-  }
-
-  // Fallback: treat any non-command text as macro text to type via USB HID
-  // This supports {{KEY:...}}, {{MOUSE:...}}, {{GAMEPAD:...}}, {{AUDIO:...}}, {{DELAY:...}}, {{SPEED:...}}, {{TEXT:...}}
-  // Normal text without {{}} tokens is typed as-is
-  if (dualModeActive) {
-    Serial.print("Processing as macro text: ");
-    Serial.println(line);
-    processMacroText(line);
-    sendBLEResponse("OK: Processed");
   }
 }
 
