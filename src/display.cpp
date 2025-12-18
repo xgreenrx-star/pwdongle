@@ -60,7 +60,7 @@ void showDigitScreen() {
   // If we're in file-number mode, show inline instructions on the same screen
   if (awaitingFileNumber) {
     tft.setTextColor(TFT_YELLOW, TFT_BLACK);
-    tft.setCursor(10, 6);
+    tft.setCursor(10, 140);
     tft.setTextSize(1);
     tft.setTextFont(2);
     tft.println("File mode: enter number");
