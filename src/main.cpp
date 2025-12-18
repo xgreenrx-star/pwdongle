@@ -48,6 +48,48 @@ void setup() {
   // Configure the boot button early for countdown check
   pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
 
+  // Check for explicit BLE mode boot flag (from entering 0000 code) BEFORE countdown
+  prefs.begin("BLE", true);
+  bool bootToBLE = prefs.getBool("bootToBLE", false);
+  prefs.end();
+
+  if (bootToBLE) {
+    // Clear explicit flag
+    prefs.begin("BLE", false);
+    prefs.putBool("bootToBLE", false);
+    prefs.end();
+
+    // Initialize USB HID first (needed for TYPE/KEY relay to PC)
+    startUSBMode(MODE_HID);
+
+    // Start BLE immediately (skip countdown entirely)
+    startBLEMode();
+
+    // Show UI
+    tft.fillScreen(TFT_GREEN);
+    tft.setTextColor(TFT_BLACK, TFT_GREEN);
+    tft.setTextSize(2);
+    tft.setCursor(10, 40);
+    tft.println("BLE ACTIVE");
+    tft.setCursor(10, 70);
+    tft.setTextSize(1);
+    tft.println("");
+    tft.println("Scan for:");
+    tft.setTextSize(2);
+    tft.println("  PWDongle");
+    tft.setTextSize(1);
+    tft.println("");
+    tft.println("Using BLE terminal app:");
+    tft.println("- Serial Bluetooth Term");
+    tft.println("- nRF Connect");
+    tft.println("- LightBlue (iOS)");
+    tft.println("");
+    tft.println("Advertising now...");
+
+    // Stay in BLE mode; skip further setup paths
+    return;
+  }
+
   // 3-second countdown: default to BLE unless button pressed
   bool userWantsPinEntry = false;
   for (int countdown = 3; countdown > 0; countdown--) {
@@ -63,20 +105,8 @@ void setup() {
     if (userWantsPinEntry) break;
   }
 
-  // Check for explicit BLE mode boot flag (from entering 0000 code)
-  prefs.begin("BLE", true);
-  bool bootToBLE = prefs.getBool("bootToBLE", false);
-  prefs.end();
-  
-  // Enter BLE mode if: countdown expired without button OR explicit flag set
-  if (bootToBLE || !userWantsPinEntry) {
-    // Clear explicit flag if it was set
-    if (bootToBLE) {
-      prefs.begin("BLE", false);
-      prefs.putBool("bootToBLE", false);
-      prefs.end();
-    }
-    
+  // Enter BLE mode if countdown expires without button
+  if (!userWantsPinEntry) {
     // Initialize USB HID first (needed for TYPE/KEY relay to PC)
     startUSBMode(MODE_HID);
     
