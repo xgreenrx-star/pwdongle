@@ -1,0 +1,25 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build (PlatformIO)",
+			"type": "shell",
+			"command": "platformio",
+			"args": [
+				"run"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Build (pio)",
+			"type": "shell",
+			"command": "pio",
+			"args": [
+				"run"
+			],
+			"isBackground": false,
+			"group": "build"
+		}
+	]
+}

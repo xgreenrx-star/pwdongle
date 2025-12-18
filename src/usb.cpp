@@ -436,9 +436,112 @@ bool typeTextFileFromSD(const String& baseName) {
     return false;
   }
 
-  // Raw typing: send every byte as-is, including control chars (CR, LF)
   showStartupMessage("Typing file...");
   delay(300);
+
+  // Macro-aware stream parser
+  // Supported tokens: {{DELAY:ms}}, {{SPEED:ms}}, {{KEY:name}}, {{TEXT:...}}
+  int speedMs = 3;
+  bool inToken = false;
+  bool sawFirstBrace = false;
+  String token;
+
+  // Local helper for KEY tokens (independent of BLE state)
+  auto sendKeyByName = [](String keyName) {
+    String key = keyName; key.toLowerCase();
+    if (key == "enter" || key == "return") { Keyboard.press(KEY_RETURN); delay(50); Keyboard.release(KEY_RETURN); }
+    else if (key == "backspace") { Keyboard.press(KEY_BACKSPACE); delay(50); Keyboard.release(KEY_BACKSPACE); }
+    else if (key == "delete") { Keyboard.press(KEY_DELETE); delay(50); Keyboard.release(KEY_DELETE); }
+    else if (key == "tab") { Keyboard.press(KEY_TAB); delay(50); Keyboard.release(KEY_TAB); }
+    else if (key == "escape" || key == "esc") { Keyboard.press(KEY_ESC); delay(50); Keyboard.release(KEY_ESC); }
+    else if (key == "up") { Keyboard.press(KEY_UP_ARROW); delay(50); Keyboard.release(KEY_UP_ARROW); }
+    else if (key == "down") { Keyboard.press(KEY_DOWN_ARROW); delay(50); Keyboard.release(KEY_DOWN_ARROW); }
+    else if (key == "left") { Keyboard.press(KEY_LEFT_ARROW); delay(50); Keyboard.release(KEY_LEFT_ARROW); }
+    else if (key == "right") { Keyboard.press(KEY_RIGHT_ARROW); delay(50); Keyboard.release(KEY_RIGHT_ARROW); }
+    else if (key == "home") { Keyboard.press(KEY_HOME); delay(50); Keyboard.release(KEY_HOME); }
+    else if (key == "end") { Keyboard.press(KEY_END); delay(50); Keyboard.release(KEY_END); }
+    else if (key == "pageup") { Keyboard.press(KEY_PAGE_UP); delay(50); Keyboard.release(KEY_PAGE_UP); }
+    else if (key == "pagedown") { Keyboard.press(KEY_PAGE_DOWN); delay(50); Keyboard.release(KEY_PAGE_DOWN); }
+    // Function keys
+    else if (key == "f1") { Keyboard.press(KEY_F1); delay(50); Keyboard.release(KEY_F1); }
+    else if (key == "f2") { Keyboard.press(KEY_F2); delay(50); Keyboard.release(KEY_F2); }
+    else if (key == "f3") { Keyboard.press(KEY_F3); delay(50); Keyboard.release(KEY_F3); }
+    else if (key == "f4") { Keyboard.press(KEY_F4); delay(50); Keyboard.release(KEY_F4); }
+    else if (key == "f5") { Keyboard.press(KEY_F5); delay(50); Keyboard.release(KEY_F5); }
+    else if (key == "f6") { Keyboard.press(KEY_F6); delay(50); Keyboard.release(KEY_F6); }
+    else if (key == "f7") { Keyboard.press(KEY_F7); delay(50); Keyboard.release(KEY_F7); }
+    else if (key == "f8") { Keyboard.press(KEY_F8); delay(50); Keyboard.release(KEY_F8); }
+    else if (key == "f9") { Keyboard.press(KEY_F9); delay(50); Keyboard.release(KEY_F9); }
+    else if (key == "f10") { Keyboard.press(KEY_F10); delay(50); Keyboard.release(KEY_F10); }
+    else if (key == "f11") { Keyboard.press(KEY_F11); delay(50); Keyboard.release(KEY_F11); }
+    else if (key == "f12") { Keyboard.press(KEY_F12); delay(50); Keyboard.release(KEY_F12); }
+    // Lock keys
+    else if (key == "capslock" || key == "caps") { Keyboard.press(KEY_CAPS_LOCK); delay(50); Keyboard.release(KEY_CAPS_LOCK); }
+    else if (key == "numlock" || key == "num") { Keyboard.press(KEY_NUM_LOCK); delay(50); Keyboard.release(KEY_NUM_LOCK); }
+    else if (key == "scrolllock" || key == "scroll") { Keyboard.press(KEY_SCROLL_LOCK); delay(50); Keyboard.release(KEY_SCROLL_LOCK); }
+    // Print/Pause
+    else if (key == "printscreen" || key == "print") { Keyboard.press(KEY_PRINT_SCREEN); delay(50); Keyboard.release(KEY_PRINT_SCREEN); }
+    else if (key == "pause" || key == "break") { Keyboard.press(KEY_PAUSE); delay(50); Keyboard.release(KEY_PAUSE); }
+    // Insert
+    else if (key == "insert" || key == "ins") { Keyboard.press(KEY_INSERT); delay(50); Keyboard.release(KEY_INSERT); }
+    // Windows/GUI keys
+    else if (key == "win" || key == "windows") { Keyboard.press(KEY_LEFT_GUI); delay(50); Keyboard.release(KEY_LEFT_GUI); }
+    else if (key == "rwin" || key == "rwindows") { Keyboard.press(KEY_RIGHT_GUI); delay(50); Keyboard.release(KEY_RIGHT_GUI); }
+    // Application/Menu keys
+    else if (key == "menu" || key == "app") { Keyboard.press(KEY_MENU); delay(50); Keyboard.release(KEY_MENU); }
+    // Numpad keys
+    else if (key == "kp0" || key == "numpad0") { Keyboard.press(KEY_KP_0); delay(50); Keyboard.release(KEY_KP_0); }
+    else if (key == "kp1" || key == "numpad1") { Keyboard.press(KEY_KP_1); delay(50); Keyboard.release(KEY_KP_1); }
+    else if (key == "kp2" || key == "numpad2") { Keyboard.press(KEY_KP_2); delay(50); Keyboard.release(KEY_KP_2); }
+    else if (key == "kp3" || key == "numpad3") { Keyboard.press(KEY_KP_3); delay(50); Keyboard.release(KEY_KP_3); }
+    else if (key == "kp4" || key == "numpad4") { Keyboard.press(KEY_KP_4); delay(50); Keyboard.release(KEY_KP_4); }
+    else if (key == "kp5" || key == "numpad5") { Keyboard.press(KEY_KP_5); delay(50); Keyboard.release(KEY_KP_5); }
+    else if (key == "kp6" || key == "numpad6") { Keyboard.press(KEY_KP_6); delay(50); Keyboard.release(KEY_KP_6); }
+    else if (key == "kp7" || key == "numpad7") { Keyboard.press(KEY_KP_7); delay(50); Keyboard.release(KEY_KP_7); }
+    else if (key == "kp8" || key == "numpad8") { Keyboard.press(KEY_KP_8); delay(50); Keyboard.release(KEY_KP_8); }
+    else if (key == "kp9" || key == "numpad9") { Keyboard.press(KEY_KP_9); delay(50); Keyboard.release(KEY_KP_9); }
+    else if (key == "kp_add" || key == "numpad_add") { Keyboard.press(KEY_KP_ADD); delay(50); Keyboard.release(KEY_KP_ADD); }
+    else if (key == "kp_subtract" || key == "numpad_subtract") { Keyboard.press(KEY_KP_SUBTRACT); delay(50); Keyboard.release(KEY_KP_SUBTRACT); }
+    else if (key == "kp_multiply" || key == "numpad_multiply") { Keyboard.press(KEY_KP_MULTIPLY); delay(50); Keyboard.release(KEY_KP_MULTIPLY); }
+    else if (key == "kp_divide" || key == "numpad_divide") { Keyboard.press(KEY_KP_DIVIDE); delay(50); Keyboard.release(KEY_KP_DIVIDE); }
+    else if (key == "kp_decimal" || key == "numpad_decimal" || key == "kp_dot") { Keyboard.press(KEY_KP_DECIMAL); delay(50); Keyboard.release(KEY_KP_DECIMAL); }
+    else if (key == "kp_enter" || key == "numpad_enter") { Keyboard.press(KEY_KP_ENTER); delay(50); Keyboard.release(KEY_KP_ENTER); }
+    // Right-side modifiers (for advanced combos)
+    else if (key == "rctrl" || key == "rcontrol") { Keyboard.press(KEY_RIGHT_CTRL); delay(50); Keyboard.release(KEY_RIGHT_CTRL); }
+    else if (key == "ralt" || key == "raltgr") { Keyboard.press(KEY_RIGHT_ALT); delay(50); Keyboard.release(KEY_RIGHT_ALT); }
+    else if (key == "rshift") { Keyboard.press(KEY_RIGHT_SHIFT); delay(50); Keyboard.release(KEY_RIGHT_SHIFT); }
+    // Media keys (may not be supported on all systems; gracefully ignored if unavailable)
+    #ifdef KEY_MEDIA_PLAY_PAUSE
+    else if (key == "play" || key == "playpause") { Keyboard.press(KEY_MEDIA_PLAY_PAUSE); delay(50); Keyboard.release(KEY_MEDIA_PLAY_PAUSE); }
+    #endif
+    #ifdef KEY_MEDIA_STOP
+    else if (key == "stop") { Keyboard.press(KEY_MEDIA_STOP); delay(50); Keyboard.release(KEY_MEDIA_STOP); }
+    #endif
+    #ifdef KEY_MEDIA_NEXT_TRACK
+    else if (key == "next" || key == "nexttrack") { Keyboard.press(KEY_MEDIA_NEXT_TRACK); delay(50); Keyboard.release(KEY_MEDIA_NEXT_TRACK); }
+    #endif
+    #ifdef KEY_MEDIA_PREV_TRACK
+    else if (key == "prev" || key == "prevtrack") { Keyboard.press(KEY_MEDIA_PREV_TRACK); delay(50); Keyboard.release(KEY_MEDIA_PREV_TRACK); }
+    #endif
+    #ifdef KEY_MEDIA_VOLUME_UP
+    else if (key == "volup" || key == "volumeup") { Keyboard.press(KEY_MEDIA_VOLUME_UP); delay(50); Keyboard.release(KEY_MEDIA_VOLUME_UP); }
+    #endif
+    #ifdef KEY_MEDIA_VOLUME_DOWN
+    else if (key == "voldown" || key == "volumedown") { Keyboard.press(KEY_MEDIA_VOLUME_DOWN); delay(50); Keyboard.release(KEY_MEDIA_VOLUME_DOWN); }
+    #endif
+    #ifdef KEY_MEDIA_VOLUME_MUTE
+    else if (key == "mute" || key == "volumemute") { Keyboard.press(KEY_MEDIA_VOLUME_MUTE); delay(50); Keyboard.release(KEY_MEDIA_VOLUME_MUTE); }
+    #endif
+    // Modifier combinations
+    else if (key.startsWith("ctrl+")) { String c = key.substring(5); Keyboard.press(KEY_LEFT_CTRL); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_LEFT_CTRL); }
+    else if (key.startsWith("alt+")) { String c = key.substring(4); Keyboard.press(KEY_LEFT_ALT); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_LEFT_ALT); }
+    else if (key.startsWith("shift+")) { String c = key.substring(6); Keyboard.press(KEY_LEFT_SHIFT); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_LEFT_SHIFT); }
+    else if (key.startsWith("win+")) { String c = key.substring(4); Keyboard.press(KEY_LEFT_GUI); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_LEFT_GUI); }
+    else if (key.startsWith("rwin+")) { String c = key.substring(5); Keyboard.press(KEY_RIGHT_GUI); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_RIGHT_GUI); }
+    else if (key.startsWith("rctrl+")) { String c = key.substring(6); Keyboard.press(KEY_RIGHT_CTRL); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_RIGHT_CTRL); }
+    else if (key.startsWith("ralt+")) { String c = key.substring(5); Keyboard.press(KEY_RIGHT_ALT); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_RIGHT_ALT); }
+    else if (key.startsWith("rshift+")) { String c = key.substring(7); Keyboard.press(KEY_RIGHT_SHIFT); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_RIGHT_SHIFT); }
+  };
 
   const size_t BUF_SZ = 256;
   uint8_t buf[BUF_SZ];
@@ -446,11 +549,72 @@ bool typeTextFileFromSD(const String& baseName) {
     int n = f.read(buf, BUF_SZ);
     if (n <= 0) break;
     for (int i = 0; i < n; ++i) {
-      Keyboard.write(buf[i]);
-      delay(3); // small pacing to avoid overruns
+      char c = (char)buf[i];
+
+      if (inToken) {
+        token += c;
+        int L = token.length();
+        if (L >= 2 && token.charAt(L-2) == '}' && token.charAt(L-1) == '}') {
+          String body = token.substring(0, L-2);
+          body.trim();
+
+          if (body.startsWith("DELAY:")) {
+            long ms = body.substring(6).toInt();
+            if (ms < 0) ms = 0; if (ms > 5000) ms = 5000;
+            delay((uint32_t)ms);
+          } else if (body.startsWith("SPEED:")) {
+            long ms = body.substring(6).toInt();
+            if (ms < 0) ms = 0; if (ms > 200) ms = 200;
+            speedMs = (int)ms;
+          } else if (body.startsWith("KEY:")) {
+            String keyName = body.substring(4); keyName.trim();
+            sendKeyByName(keyName);
+          } else if (body.startsWith("TEXT:")) {
+            String text = body.substring(5);
+            for (size_t k = 0; k < text.length(); ++k) {
+              Keyboard.write((uint8_t)text[k]);
+              if (speedMs > 0) delay(speedMs);
+            }
+          } else {
+            String literal = String("{{") + body + String("}}");
+            for (size_t k = 0; k < literal.length(); ++k) {
+              Keyboard.write((uint8_t)literal[k]);
+              if (speedMs > 0) delay(speedMs);
+            }
+          }
+
+          inToken = false;
+          token = "";
+        }
+        continue;
+      }
+
+      if (!sawFirstBrace) {
+        if (c == '{') { sawFirstBrace = true; continue; }
+        Keyboard.write((uint8_t)c);
+        if (speedMs > 0) delay(speedMs);
+      } else {
+        if (c == '{') {
+          inToken = true;
+          sawFirstBrace = false;
+          token = "";
+        } else {
+          Keyboard.write((uint8_t)'{'); if (speedMs > 0) delay(speedMs);
+          Keyboard.write((uint8_t)c); if (speedMs > 0) delay(speedMs);
+          sawFirstBrace = false;
+        }
+      }
     }
   }
   f.close();
+
+  if (inToken || sawFirstBrace) {
+    String leftover = String( (sawFirstBrace && !inToken) ? "{" : "" ) + token;
+    for (size_t k = 0; k < leftover.length(); ++k) {
+      Keyboard.write((uint8_t)leftover[k]);
+      if (speedMs > 0) delay(speedMs);
+    }
+  }
 
   showStartupMessage("File typed");
   delay(600);

@@ -131,7 +131,7 @@ Tip: SD Text Typing
 
 ### SD Text File Typing
 
-Type the contents of text files stored on the microSD card via USB HID.
+Type the contents of text files stored on the microSD card via USB HID. Files support **macros** for delays, special keys, and more.
 
 - File format: place files in SD root named `NNNN.txt` (4 digits), e.g., `0001.txt`
 - Activation code: enter boot code `5550` to enter file-number mode
@@ -143,10 +143,75 @@ Type the contents of text files stored on the microSD card via USB HID.
 Screenshot (placeholder):
 ![SD file list UI](docs/sd-file-list-ui.svg)
 
-### Supported Keys
-- Navigation: `up`, `down`, `left`, `right`, `home`, `end`, `pageup`, `pagedown`
-- Editing: `backspace`, `delete`, `tab`, `escape`, `enter`
-- Modifiers: `ctrl+X`, `alt+X`, `shift+X` (where X is any letter)
+#### Macro Syntax
+
+Embed control tokens directly in text files using `{{COMMAND[:ARGS]}}` format. Normal text is typed as-is; only tokens are interpreted.
+
+**Core Macros:**
+- `{{DELAY:ms}}` – Pause for specified milliseconds (0–5000 ms clamped). Example: `{{DELAY:500}}`
+- `{{SPEED:ms}}` – Set per-character typing delay (0–200 ms clamped). Example: `{{SPEED:10}}`
+- `{{KEY:name}}` – Send a special key or key combination. Examples: `{{KEY:enter}}`, `{{KEY:tab}}`, `{{KEY:ctrl+s}}`
+- `{{TEXT:...}}` – Type literal text (useful for embedding braces). Example: `{{TEXT:Hello {world}}}`
+
+**Escaping:**
+- `\{{` – Literal `{{`
+- `\}}` – Literal `}}`
+
+**Example File Content:**
+```
+Hello {{DELAY:500}}world!{{KEY:enter}}
+{{SPEED:10}}Slower typing...{{KEY:ctrl+s}}{{DELAY:300}}{{KEY:enter}}
+```
+
+#### Supported Keys
+
+**Basic Navigation:**
+- `up`, `down`, `left`, `right`
+- `home`, `end`, `pageup`, `pagedown`
+
+**Editing:**
+- `enter` / `return`, `backspace`, `delete`, `tab`, `escape` / `esc`, `insert` / `ins`
+
+**Function Keys:**
+- `f1` through `f12`
+
+**Lock Keys:**
+- `capslock` / `caps`, `numlock` / `num`, `scrolllock` / `scroll`
+
+**Print/Pause:**
+- `printscreen` / `print`, `pause` / `break`
+
+**Numpad (Keypad):**
+- `kp0` through `kp9` (or `numpad0` through `numpad9`)
+- `kp_add` / `numpad_add`, `kp_subtract` / `numpad_subtract`
+- `kp_multiply` / `numpad_multiply`, `kp_divide` / `numpad_divide`
+- `kp_decimal` / `numpad_decimal` / `kp_dot`, `kp_enter` / `numpad_enter`
+
+**GUI/Windows Keys:**
+- `win` / `windows`, `rwin` / `rwindows`
+- `menu` / `app` (Application/Context menu key)
+
+**Modifier Keys (Left):**
+- `ctrl`, `alt`, `shift`
+- Combos: `ctrl+X`, `alt+X`, `shift+X` (where X is any character)
+
+**Modifier Keys (Right):**
+- `rctrl` / `rcontrol`, `ralt` / `raltgr`, `rshift`
+- Combos: `rctrl+X`, `ralt+X`, `rshift+X`
+- GUI combos: `win+X`, `rwin+X`
+
+**Media Keys** (if supported by your system):
+- `play` / `playpause`, `stop`, `next` / `nexttrack`, `prev` / `prevtrack`
+- `volup` / `volumeup`, `voldown` / `volumedown`, `mute` / `volumemute`
+
+**Common Examples:**
+- `{{KEY:win+e}}` – Open Windows Explorer
+- `{{KEY:ctrl+alt+delete}}` – Open Task Manager (Windows)
+- `{{KEY:f5}}` – Refresh page/app
+- `{{DELAY:1000}}` – Wait 1 second
+- `{{SPEED:50}}` – Slow down typing (50ms per character)
+
+### Supported Keys (Legacy Reference)
 
 ## Project Structure
 
