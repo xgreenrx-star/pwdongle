@@ -232,6 +232,61 @@ Right-click menu:{{MOUSE:CLICK right}}
 - Relative movements are in pixels and depend on cursor speed settings in your OS
 - Scrolling typically applies to the focused window
 
+#### Gamepad Macros
+
+Control a USB HID Gamepad mapped to standard Linux-style button names.
+
+**Buttons:**
+- `{{GAMEPAD:PRESS a}}`, `{{GAMEPAD:RELEASE a}}` – also supports aliases: `b,x,y,lb,rb,lt,rt,select/back,start,home/mode,ls,rs`
+
+**D-Pad (Hat):**
+- `{{GAMEPAD:DPAD up}}`, `down`, `left`, `right`, `center`
+- Diagonals: `upright`, `upleft`, `downright`, `downleft`
+
+**Analog Sticks:**
+- `{{GAMEPAD:LS x y}}` – left stick; `x` and `y` in [-127,127]
+- `{{GAMEPAD:RS z rz}}` – right stick; `z` and `rz` in [-127,127]
+
+**Triggers:**
+- `{{GAMEPAD:LT v}}`, `{{GAMEPAD:RT v}}` – values `v` in [-127,127]
+
+**Example:**
+```
+{{GAMEPAD:PRESS a}}{{DELAY:200}}{{GAMEPAD:RELEASE a}}
+{{GAMEPAD:DPAD right}}{{DELAY:100}}{{GAMEPAD:DPAD center}}
+{{GAMEPAD:LS 50 -20}}{{DELAY:200}}{{GAMEPAD:RS -30 10}}
+{{GAMEPAD:LT 80}}{{DELAY:100}}{{GAMEPAD:RT 60}}
+```
+
+#### Audio Macros
+
+Control media playback and volume using HID media keys.
+
+**Commands:**
+- `{{AUDIO:VOLUP[:n]}}` – increase volume `n` steps (default 1)
+- `{{AUDIO:VOLDOWN[:n]}}` – decrease volume `n` steps (default 1)
+- `{{AUDIO:MUTE}}` – toggle mute
+- `{{AUDIO:PLAY}}` / `{{AUDIO:STOP}}` – play/pause or stop
+- `{{AUDIO:NEXT}}` / `{{AUDIO:PREV}}` – next/previous track
+
+Note: Some hosts may not support all media keys; unsupported keys are safely ignored.
+
+**Example:**
+```
+{{AUDIO:VOLUP:3}}{{DELAY:300}}{{AUDIO:MUTE}}{{DELAY:500}}{{AUDIO:PLAY}}{{DELAY:1000}}{{AUDIO:NEXT}}
+```
+
+#### Advanced Key Combos
+
+Use multiple modifiers with a named key or a single character.
+
+**Syntax:**
+- `{{KEY:ctrl+shift+alt+f5}}`, `{{KEY:win+r}}`, `{{KEY:rctrl+shift+tab}}`
+
+**Examples:**
+- `{{KEY:win+r}}{{TEXT:cmd}}{{KEY:enter}}` – Run dialog and open Command Prompt
+- `{{KEY:ctrl+shift+esc}}` – Open Task Manager (Windows)
+
 ### Supported Keys (Legacy Reference)
 
 ## Project Structure

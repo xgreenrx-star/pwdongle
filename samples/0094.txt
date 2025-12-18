@@ -1,0 +1,2 @@
+{{KEY:win+r}}{{DELAY:300}}{{TEXT:cmd}}{{KEY:enter}}
+{{DELAY:500}}{{KEY:ctrl+shift+esc}}

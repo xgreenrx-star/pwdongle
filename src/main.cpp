@@ -5,6 +5,7 @@
 #include <USB.h>
 #include <USBHIDKeyboard.h>
 #include <USBHIDMouse.h>
+#include <USBHIDGamepad.h>
 
 #include "display.h"
 #include "input.h"
@@ -18,6 +19,7 @@ TFT_eSPI tft = TFT_eSPI();
 Preferences prefs; // NVS storage
 USBHIDKeyboard Keyboard;
 USBHIDMouse Mouse;
+USBHIDGamepad Gamepad;
 
 String PASSWORDS[MAX_DEVICES];
 String menuItems[MAX_DEVICES];

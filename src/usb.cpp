@@ -2,10 +2,12 @@
 #include <USB.h>
 #include <USBHIDKeyboard.h>
 #include <USBHIDMouse.h>
+#include <USBHIDGamepad.h>
 #include <SD.h>
 #include <SD_MMC.h>
 #include <SPI.h>
 #include <stdio.h>
+#include <vector>
 #include "usb.h"
 #include "security.h"
 #include "display.h"
@@ -13,6 +15,7 @@
 // External references (defined in main.cpp)
 extern USBHIDKeyboard Keyboard;
 extern USBHIDMouse Mouse;
+extern USBHIDGamepad Gamepad;
 
 // Runtime USB mode
 int currentUSBMode = MODE_HID;
@@ -319,6 +322,8 @@ void startUSBMode(int mode) {
     USB.serialNumber("SN-0000001");
     USB.productName("PWDongle v0.1 HID");
     Keyboard.begin();
+    Mouse.begin();
+    Gamepad.begin();
     USB.begin();
     currentUSBMode = MODE_HID;
 
@@ -548,15 +553,121 @@ bool typeTextFileFromSD(const String& baseName) {
     #ifdef KEY_MEDIA_VOLUME_MUTE
     else if (key == "mute" || key == "volumemute") { Keyboard.press(KEY_MEDIA_VOLUME_MUTE); delay(50); Keyboard.release(KEY_MEDIA_VOLUME_MUTE); }
     #endif
-    // Modifier combinations
-    else if (key.startsWith("ctrl+")) { String c = key.substring(5); Keyboard.press(KEY_LEFT_CTRL); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_LEFT_CTRL); }
-    else if (key.startsWith("alt+")) { String c = key.substring(4); Keyboard.press(KEY_LEFT_ALT); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_LEFT_ALT); }
-    else if (key.startsWith("shift+")) { String c = key.substring(6); Keyboard.press(KEY_LEFT_SHIFT); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_LEFT_SHIFT); }
-    else if (key.startsWith("win+")) { String c = key.substring(4); Keyboard.press(KEY_LEFT_GUI); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_LEFT_GUI); }
-    else if (key.startsWith("rwin+")) { String c = key.substring(5); Keyboard.press(KEY_RIGHT_GUI); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_RIGHT_GUI); }
-    else if (key.startsWith("rctrl+")) { String c = key.substring(6); Keyboard.press(KEY_RIGHT_CTRL); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_RIGHT_CTRL); }
-    else if (key.startsWith("ralt+")) { String c = key.substring(5); Keyboard.press(KEY_RIGHT_ALT); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_RIGHT_ALT); }
-    else if (key.startsWith("rshift+")) { String c = key.substring(7); Keyboard.press(KEY_RIGHT_SHIFT); Keyboard.press(c[0]); delay(50); Keyboard.release(c[0]); Keyboard.release(KEY_RIGHT_SHIFT); }
+    // Advanced modifier combinations: support multiple modifiers + named key
+    else if (key.indexOf('+') >= 0) {
+      // Parse tokens split by '+' and press all modifiers first
+      // Supported modifiers: ctrl, alt, shift, win, rctrl, ralt, rshift, rwin
+      // Final token can be a single character or a named key (e.g., f5, enter)
+      std::vector<String> parts;
+      int start = 0;
+      while (true) {
+        int p = key.indexOf('+', start);
+        if (p < 0) { parts.push_back(key.substring(start)); break; }
+        parts.push_back(key.substring(start, p));
+        start = p + 1;
+      }
+      // Press modifiers
+      for (size_t i = 0; i + 1 < parts.size(); ++i) {
+        String m = parts[i]; m.toLowerCase();
+        if (m == "ctrl") Keyboard.press(KEY_LEFT_CTRL);
+        else if (m == "alt") Keyboard.press(KEY_LEFT_ALT);
+        else if (m == "shift") Keyboard.press(KEY_LEFT_SHIFT);
+        else if (m == "win" || m == "gui" || m == "windows") Keyboard.press(KEY_LEFT_GUI);
+        else if (m == "rctrl" || m == "rcontrol") Keyboard.press(KEY_RIGHT_CTRL);
+        else if (m == "ralt" || m == "raltgr") Keyboard.press(KEY_RIGHT_ALT);
+        else if (m == "rshift") Keyboard.press(KEY_RIGHT_SHIFT);
+        else if (m == "rwin" || m == "rgui" || m == "rwindows") Keyboard.press(KEY_RIGHT_GUI);
+      }
+      // Press final key
+      String last = parts.back(); last.toLowerCase();
+      bool pressed = false;
+      if (last.length() == 1) {
+        Keyboard.press((uint8_t)last[0]); pressed = true;
+      } else {
+        // Named key support (subset sufficient for common combos)
+        if (last == "enter" || last == "return") { Keyboard.press(KEY_RETURN); pressed = true; }
+        else if (last == "tab") { Keyboard.press(KEY_TAB); pressed = true; }
+        else if (last == "esc" || last == "escape") { Keyboard.press(KEY_ESC); pressed = true; }
+        else if (last == "space") { Keyboard.press(' '); pressed = true; }
+        else if (last == "up") { Keyboard.press(KEY_UP_ARROW); pressed = true; }
+        else if (last == "down") { Keyboard.press(KEY_DOWN_ARROW); pressed = true; }
+        else if (last == "left") { Keyboard.press(KEY_LEFT_ARROW); pressed = true; }
+        else if (last == "right") { Keyboard.press(KEY_RIGHT_ARROW); pressed = true; }
+        else if (last == "home") { Keyboard.press(KEY_HOME); pressed = true; }
+        else if (last == "end") { Keyboard.press(KEY_END); pressed = true; }
+        else if (last == "pageup") { Keyboard.press(KEY_PAGE_UP); pressed = true; }
+        else if (last == "pagedown") { Keyboard.press(KEY_PAGE_DOWN); pressed = true; }
+        else if (last == "delete") { Keyboard.press(KEY_DELETE); pressed = true; }
+        else if (last == "backspace") { Keyboard.press(KEY_BACKSPACE); pressed = true; }
+        else if (last.startsWith("f")) {
+          int fn = last.substring(1).toInt();
+          switch (fn) {
+            case 1: Keyboard.press(KEY_F1); pressed = true; break;
+            case 2: Keyboard.press(KEY_F2); pressed = true; break;
+            case 3: Keyboard.press(KEY_F3); pressed = true; break;
+            case 4: Keyboard.press(KEY_F4); pressed = true; break;
+            case 5: Keyboard.press(KEY_F5); pressed = true; break;
+            case 6: Keyboard.press(KEY_F6); pressed = true; break;
+            case 7: Keyboard.press(KEY_F7); pressed = true; break;
+            case 8: Keyboard.press(KEY_F8); pressed = true; break;
+            case 9: Keyboard.press(KEY_F9); pressed = true; break;
+            case 10: Keyboard.press(KEY_F10); pressed = true; break;
+            case 11: Keyboard.press(KEY_F11); pressed = true; break;
+            case 12: Keyboard.press(KEY_F12); pressed = true; break;
+          }
+        }
+      }
+      delay(50);
+      // Release final key if pressed
+      if (pressed) {
+        if (last.length() == 1) Keyboard.release((uint8_t)last[0]);
+        else {
+          if (last == "enter" || last == "return") Keyboard.release(KEY_RETURN);
+          else if (last == "tab") Keyboard.release(KEY_TAB);
+          else if (last == "esc" || last == "escape") Keyboard.release(KEY_ESC);
+          else if (last == "space") Keyboard.release(' ');
+          else if (last == "up") Keyboard.release(KEY_UP_ARROW);
+          else if (last == "down") Keyboard.release(KEY_DOWN_ARROW);
+          else if (last == "left") Keyboard.release(KEY_LEFT_ARROW);
+          else if (last == "right") Keyboard.release(KEY_RIGHT_ARROW);
+          else if (last == "home") Keyboard.release(KEY_HOME);
+          else if (last == "end") Keyboard.release(KEY_END);
+          else if (last == "pageup") Keyboard.release(KEY_PAGE_UP);
+          else if (last == "pagedown") Keyboard.release(KEY_PAGE_DOWN);
+          else if (last == "delete") Keyboard.release(KEY_DELETE);
+          else if (last == "backspace") Keyboard.release(KEY_BACKSPACE);
+          else if (last.startsWith("f")) {
+            int fn = last.substring(1).toInt();
+            switch (fn) {
+              case 1: Keyboard.release(KEY_F1); break;
+              case 2: Keyboard.release(KEY_F2); break;
+              case 3: Keyboard.release(KEY_F3); break;
+              case 4: Keyboard.release(KEY_F4); break;
+              case 5: Keyboard.release(KEY_F5); break;
+              case 6: Keyboard.release(KEY_F6); break;
+              case 7: Keyboard.release(KEY_F7); break;
+              case 8: Keyboard.release(KEY_F8); break;
+              case 9: Keyboard.release(KEY_F9); break;
+              case 10: Keyboard.release(KEY_F10); break;
+              case 11: Keyboard.release(KEY_F11); break;
+              case 12: Keyboard.release(KEY_F12); break;
+            }
+          }
+        }
+      }
+      // Release modifiers (reverse order not strictly necessary here)
+      for (size_t i = parts.size(); i-- > 0; ) {
+        String m = parts[i]; m.toLowerCase();
+        if (m == "ctrl") Keyboard.release(KEY_LEFT_CTRL);
+        else if (m == "alt") Keyboard.release(KEY_LEFT_ALT);
+        else if (m == "shift") Keyboard.release(KEY_LEFT_SHIFT);
+        else if (m == "win" || m == "gui" || m == "windows") Keyboard.release(KEY_LEFT_GUI);
+        else if (m == "rctrl" || m == "rcontrol") Keyboard.release(KEY_RIGHT_CTRL);
+        else if (m == "ralt" || m == "raltgr") Keyboard.release(KEY_RIGHT_ALT);
+        else if (m == "rshift") Keyboard.release(KEY_RIGHT_SHIFT);
+        else if (m == "rwin" || m == "rgui" || m == "rwindows") Keyboard.release(KEY_RIGHT_GUI);
+      }
+    }
   };
 
   const size_t BUF_SZ = 256;
@@ -613,6 +724,110 @@ bool typeTextFileFromSD(const String& baseName) {
               // Positive n scrolls up (wheel > 0), negative n scrolls down (wheel < 0)
               if (n > 0) { for (int j = 0; j < n; ++j) { Mouse.move(0, 0, 1); delay(10); } }
               else if (n < 0) { for (int j = 0; j < -n; ++j) { Mouse.move(0, 0, -1); delay(10); } }
+            }
+          } else if (body.startsWith("GAMEPAD:")) {
+            String cmd = body.substring(8); cmd.trim();
+            // Buttons: PRESS/RELEASE <name>
+            auto mapButton = [](String n)->int {
+              n.toLowerCase();
+              if (n == "a" || n == "south") return BUTTON_A;
+              if (n == "b" || n == "east") return BUTTON_B;
+              if (n == "x" || n == "north") return BUTTON_X;
+              if (n == "y" || n == "west") return BUTTON_Y;
+              if (n == "tl" || n == "lb") return BUTTON_TL;
+              if (n == "tr" || n == "rb") return BUTTON_TR;
+              if (n == "tl2" || n == "lt") return BUTTON_TL2;
+              if (n == "tr2" || n == "rt") return BUTTON_TR2;
+              if (n == "select" || n == "back") return BUTTON_SELECT;
+              if (n == "start") return BUTTON_START;
+              if (n == "mode" || n == "home") return BUTTON_MODE;
+              if (n == "thumbl" || n == "ls") return BUTTON_THUMBL;
+              if (n == "thumbr" || n == "rs") return BUTTON_THUMBR;
+              return -1;
+            };
+            auto mapHat = [](String d)->uint8_t {
+              d.toLowerCase();
+              if (d == "center" || d == "neutral") return HAT_CENTER;
+              if (d == "up") return HAT_UP;
+              if (d == "up_right" || d == "upright") return HAT_UP_RIGHT;
+              if (d == "right") return HAT_RIGHT;
+              if (d == "down_right" || d == "downright") return HAT_DOWN_RIGHT;
+              if (d == "down") return HAT_DOWN;
+              if (d == "down_left" || d == "downleft") return HAT_DOWN_LEFT;
+              if (d == "left") return HAT_LEFT;
+              if (d == "up_left" || d == "upleft") return HAT_UP_LEFT;
+              return HAT_CENTER;
+            };
+            if (cmd.startsWith("PRESS ")) {
+              String bn = cmd.substring(6); bn.trim();
+              int b = mapButton(bn);
+              if (b >= 0) Gamepad.pressButton((uint8_t)b);
+            } else if (cmd.startsWith("RELEASE ")) {
+              String bn = cmd.substring(8); bn.trim();
+              int b = mapButton(bn);
+              if (b >= 0) Gamepad.releaseButton((uint8_t)b);
+            } else if (cmd.startsWith("DPAD ")) {
+              String dn = cmd.substring(5); dn.trim();
+              Gamepad.hat(mapHat(dn));
+            } else if (cmd.startsWith("LS ")) {
+              String rest = cmd.substring(3);
+              int sp = rest.indexOf(' ');
+              if (sp > 0) {
+                int x = rest.substring(0, sp).toInt();
+                int y = rest.substring(sp+1).toInt();
+                if (x < -127) x = -127; if (x > 127) x = 127;
+                if (y < -127) y = -127; if (y > 127) y = 127;
+                Gamepad.leftStick((int8_t)x, (int8_t)y);
+              }
+            } else if (cmd.startsWith("RS ")) {
+              String rest = cmd.substring(3);
+              int sp = rest.indexOf(' ');
+              if (sp > 0) {
+                int z = rest.substring(0, sp).toInt();
+                int rz = rest.substring(sp+1).toInt();
+                if (z < -127) z = -127; if (z > 127) z = 127;
+                if (rz < -127) rz = -127; if (rz > 127) rz = 127;
+                Gamepad.rightStick((int8_t)z, (int8_t)rz);
+              }
+            } else if (cmd.startsWith("LT ")) {
+              int v = cmd.substring(3).toInt(); if (v < -127) v = -127; if (v > 127) v = 127;
+              Gamepad.leftTrigger((int8_t)v);
+            } else if (cmd.startsWith("RT ")) {
+              int v = cmd.substring(3).toInt(); if (v < -127) v = -127; if (v > 127) v = 127;
+              Gamepad.rightTrigger((int8_t)v);
+            }
+          } else if (body.startsWith("AUDIO:")) {
+            String cmd = body.substring(6); cmd.trim(); cmd.toLowerCase();
+            if (cmd.startsWith("VOLUP")) {
+              int n = 1; int colon = cmd.indexOf(':'); if (colon > 0) n = cmd.substring(colon+1).toInt(); if (n < 1) n = 1; if (n > 10) n = 10;
+              #ifdef KEY_MEDIA_VOLUME_UP
+              for (int j = 0; j < n; ++j) { Keyboard.press(KEY_MEDIA_VOLUME_UP); delay(30); Keyboard.release(KEY_MEDIA_VOLUME_UP); }
+              #endif
+            } else if (cmd.startsWith("VOLDOWN")) {
+              int n = 1; int colon = cmd.indexOf(':'); if (colon > 0) n = cmd.substring(colon+1).toInt(); if (n < 1) n = 1; if (n > 10) n = 10;
+              #ifdef KEY_MEDIA_VOLUME_DOWN
+              for (int j = 0; j < n; ++j) { Keyboard.press(KEY_MEDIA_VOLUME_DOWN); delay(30); Keyboard.release(KEY_MEDIA_VOLUME_DOWN); }
+              #endif
+            } else if (cmd == "MUTE") {
+              #ifdef KEY_MEDIA_VOLUME_MUTE
+              Keyboard.press(KEY_MEDIA_VOLUME_MUTE); delay(30); Keyboard.release(KEY_MEDIA_VOLUME_MUTE);
+              #endif
+            } else if (cmd == "PLAY" || cmd == "PLAYPAUSE") {
+              #ifdef KEY_MEDIA_PLAY_PAUSE
+              Keyboard.press(KEY_MEDIA_PLAY_PAUSE); delay(30); Keyboard.release(KEY_MEDIA_PLAY_PAUSE);
+              #endif
+            } else if (cmd == "STOP") {
+              #ifdef KEY_MEDIA_STOP
+              Keyboard.press(KEY_MEDIA_STOP); delay(30); Keyboard.release(KEY_MEDIA_STOP);
+              #endif
+            } else if (cmd == "NEXT" || cmd == "NEXTTRACK") {
+              #ifdef KEY_MEDIA_NEXT_TRACK
+              Keyboard.press(KEY_MEDIA_NEXT_TRACK); delay(30); Keyboard.release(KEY_MEDIA_NEXT_TRACK);
+              #endif
+            } else if (cmd == "PREV" || cmd == "PREVTRACK") {
+              #ifdef KEY_MEDIA_PREV_TRACK
+              Keyboard.press(KEY_MEDIA_PREV_TRACK); delay(30); Keyboard.release(KEY_MEDIA_PREV_TRACK);
+              #endif
             }
           } else {
             String literal = String("{{") + body + String("}}");
