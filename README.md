@@ -141,7 +141,7 @@ Type the contents of text files stored on the microSD card via USB HID.
 - Repeat: remains in file-number mode for subsequent files; repeat as needed
 
 Screenshot (placeholder):
-![SD file list UI](docs/sd-file-list-ui.png)
+![SD file list UI](docs/sd-file-list-ui.svg)
 
 ### Supported Keys
 - Navigation: `up`, `down`, `left`, `right`, `home`, `end`, `pageup`, `pagedown`

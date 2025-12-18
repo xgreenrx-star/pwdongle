@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <defs>
+    <style>
+      .bg { fill: #0b0b0b; }
+      .frame { fill: none; stroke: #2dd36f; stroke-width: 3; }
+      .title { fill: #2dd36f; font: 700 20px sans-serif; }
+      .text { fill: #e5e5e5; font: 400 16px monospace; }
+      .hint { fill: #ffd166; font: 400 14px sans-serif; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="640" height="360" rx="12"/>
+  <rect class="frame" x="20" y="20" width="600" height="320" rx="8"/>
+  <text class="title" x="40" y="56">SD File List (Placeholder)</text>
+  <text class="hint" x="40" y="82">Shown after entering code 5550 → file-number mode</text>
+
+  <text class="text" x="40" y="120">Available:</text>
+
+  <!-- Left column -->
+  <text class="text" x="40" y="150">0001</text>
+  <text class="text" x="40" y="172">0002</text>
+  <text class="text" x="40" y="194">0003</text>
+  <text class="text" x="40" y="216">0004</text>
+  <text class="text" x="40" y="238">0005</text>
+  <text class="text" x="40" y="260">0006</text>
+  <text class="text" x="40" y="282">0007</text>
+
+  <!-- Right column -->
+  <text class="text" x="180" y="150">0008</text>
+  <text class="text" x="180" y="172">0009</text>
+  <text class="text" x="180" y="194">0010</text>
+  <text class="text" x="180" y="216">0011</text>
+  <text class="text" x="180" y="238">0012</text>
+  <text class="text" x="180" y="260">0013</text>
+  <text class="text" x="180" y="282">0014</text>
+
+  <text class="hint" x="40" y="318">Replace this image with a real photo/screenshot: docs/SCREENSHOTS.md</text>
+</svg>
