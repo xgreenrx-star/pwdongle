@@ -456,3 +456,61 @@ bool typeTextFileFromSD(const String& baseName) {
   delay(600);
   return true;
 }
+void listSDTextFiles(String fileList[15], int& count) {
+  // Scan SD for .txt files and populate fileList (up to 15)
+  count = 0;
+  if (!ensureSDReady()) return;
+
+  File root;
+  if (sdUseMMC) {
+    root = SD_MMC.open("/");
+  } else {
+    root = SD.open("/");
+  }
+  if (!root || !root.isDirectory()) return;
+
+  File file;
+  while (file = root.openNextFile()) {
+    if (!file.isDirectory()) {
+      String name = String(file.name());
+      // Check if it ends with .txt
+      if (name.endsWith(".txt")) {
+        // Extract the base name (remove .txt)
+        String base = name.substring(0, name.length() - 4);
+        fileList[count] = base;
+        count++;
+        if (count >= 15) break;
+      }
+    }
+    file.close();
+  }
+  root.close();
+
+  // Sort the collected basenames numerically if possible, otherwise lexicographically
+  auto isDigits = [](const String& s) {
+    if (s.length() == 0) return false;
+    for (size_t i = 0; i < s.length(); ++i) {
+      char c = s[i];
+      if (c < '0' || c > '9') return false;
+    }
+    return true;
+  };
+
+  for (int i = 0; i < count; ++i) {
+    for (int j = i + 1; j < count; ++j) {
+      bool di = isDigits(fileList[i]);
+      bool dj = isDigits(fileList[j]);
+      bool doSwap = false;
+      if (di && dj) {
+        if (fileList[i].toInt() > fileList[j].toInt()) doSwap = true;
+      } else {
+        if (fileList[i].compareTo(fileList[j]) > 0) doSwap = true;
+      }
+      if (doSwap) {
+        String tmp = fileList[i];
+        fileList[i] = fileList[j];
+        fileList[j] = tmp;
+      }
+    }
+  }
+}

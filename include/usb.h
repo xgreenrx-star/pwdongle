@@ -29,6 +29,9 @@ void startUSBMode(int mode);
 void sendPassword(String password);
 bool typeTextFileFromSD(const String& baseName);
 
+// SD file listing
+void listSDTextFiles(String fileList[15], int& count);
+
 // CDC serial operations
 bool isSerialDataAvailable();
 String readSerialData();

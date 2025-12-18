@@ -65,6 +65,52 @@ void showDigitScreen() {
     tft.setTextFont(2);
     tft.println("File mode: enter number");
     tft.println("Example: 0001 -> 0001.txt");
+    
+    // Show available SD card text files (up to 15)
+    extern void listSDTextFiles(String fileList[15], int& count);
+    String sdFiles[15];
+    int fileCount = 0;
+    listSDTextFiles(sdFiles, fileCount);
+    
+    if (fileCount > 0) {
+      tft.setTextColor(TFT_GREEN, TFT_BLACK);
+      tft.setTextSize(1);
+      tft.setTextFont(2); // larger, readable font
+
+      // Header
+      tft.setCursor(10, 165);
+      tft.println("Available:");
+
+      // Two-column layout
+      const int leftX = 10;
+      const int rightX = 100; // second column start
+      const int startY = 185;
+      const int rowH = 16; // line height for font 2
+
+      int rows = (fileCount + 1) / 2; // fill left column first, then right
+      for (int r = 0; r < rows; ++r) {
+        int li = r;
+        int ri = r + rows;
+
+        // Left column item
+        if (li < fileCount) {
+          tft.setCursor(leftX, startY + r * rowH);
+          tft.printf("%s", sdFiles[li].c_str());
+        }
+
+        // Right column item
+        if (ri < fileCount) {
+          tft.setCursor(rightX, startY + r * rowH);
+          tft.printf("%s", sdFiles[ri].c_str());
+        }
+      }
+    } else {
+      tft.setTextColor(TFT_RED, TFT_BLACK);
+      tft.setCursor(10, 175);
+      tft.setTextSize(1);
+      tft.setTextFont(2);
+      tft.println("No .txt files found");
+    }
   }
   
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
