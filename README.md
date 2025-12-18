@@ -76,6 +76,7 @@ BLE mode provides smartphone control with keystroke relay, making it the most ve
 | `5550` | SD Text File Typing mode (file-number screen; see "SD Text File Typing") |
 
 Tip: Entering code `5550` shows a two-column list of up to 15 `.txt` files (numerically sorted) for quick selection.
+To start typing a file: enter its 4-digit number, then long-press the BOOT button to confirm.
 
 ### Normal Mode (Password Menu)
 1. Power on device
