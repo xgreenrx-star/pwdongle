@@ -1,5 +1,5 @@
 
-This directory is intended for project header files.
+This directory contains project header files used across modules.
 
 A header file is a file containing C declarations and macro definitions
 to be shared between several project source files. You request the use of a
@@ -26,6 +26,20 @@ finding and changing all the copies as well as the risk that a failure to
 find one copy will result in inconsistencies within a program.
 
 In C, the convention is to give header files names that end with `.h'.
+
+Project headers:
+
+- `display.h` – TFT UI helpers (instructions, menus, status screens)
+- `input.h` – button input handling and state transitions
+- `security.h` – PIN code validation and persistence
+- `storage.h` – NVS read/write for device names and passwords
+- `usb.h` – USB mode control and SD file listing API
+- `bluetooth.h` – BLE UART/NUS integration and command handling
+
+Macro system:
+- Implemented in `src/usb.cpp`; supports `{{DELAY}}`, `{{SPEED}}`, `{{KEY}}`, `{{TEXT}}`,
+  mouse (`{{MOUSE:...}}`), gamepad (`{{GAMEPAD:...}}`), audio (`{{AUDIO:...}}`).
+  See `README.md` for full syntax and examples.
 
 Read more about using header files in official GCC documentation:
 

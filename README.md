@@ -287,6 +287,19 @@ Use multiple modifiers with a named key or a single character.
 - `{{KEY:win+r}}{{TEXT:cmd}}{{KEY:enter}}` – Run dialog and open Command Prompt
 - `{{KEY:ctrl+shift+esc}}` – Open Task Manager (Windows)
 
+### Samples
+
+Example macro files are available in `samples/`:
+
+- `0092.txt` – Audio control demo (volume, mute, play, next)
+- `0093.txt` – Gamepad demo (buttons, DPAD, sticks, triggers)
+- `0094.txt` – Advanced key combos (Win+R, Ctrl+Shift+Esc)
+
+To run a sample:
+- Copy the files to the SD card root
+- Enter file-number mode with code `5550`
+- Type the 4-digit file number (e.g., `0092`) and hold to start
+
 ### Supported Keys (Legacy Reference)
 
 ## Project Structure

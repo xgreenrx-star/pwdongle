@@ -48,6 +48,18 @@ All commands are the same as CDC mode:
 Tip: SD Text Typing
 - You can type text files from microSD without BLE. At boot, enter code `5550` to open the file-number screen. It shows a two-column list of up to 15 `.txt` files (e.g., `0001.txt`). Enter the 4-digit number to type that file over USB HID.
 
+#### Macros in SD Text Files
+
+Files support embedded macros for powerful automation:
+- `{{DELAY:ms}}`, `{{SPEED:ms}}` – timing control
+- `{{KEY:name}}` – special keys and multi-mod combinations (e.g., `ctrl+shift+esc`, `win+r`)
+- `{{TEXT:...}}` – literal text
+- `{{MOUSE:MOVE dx dy}}`, `{{MOUSE:CLICK left|right|middle}}`, `{{MOUSE:SCROLL n}}`
+- `{{GAMEPAD:...}}` – press/release buttons, DPAD, sticks, triggers
+- `{{AUDIO:...}}` – volume, mute, play/stop, next/prev track
+
+See the main `README.md` for full syntax and examples. Sample files are in `samples/`.
+
 ### Example Session
 ```
 > HELP
