@@ -78,6 +78,10 @@ BLE mode provides smartphone control with keystroke relay, making it the most ve
 Tip: Entering code `5550` shows a two-column list of up to 15 `.txt` files (numerically sorted) for quick selection.
 To start typing a file: enter its 4-digit number, then long-press the BOOT button to confirm.
 
+Exit file-number mode:
+- Power cycle the device. On boot, simply do not enter `5550`.
+- Either let the countdown auto-boot to BLE, or press BOOT during countdown to go to PIN entry.
+
 ### Normal Mode (Password Menu)
 1. Power on device
 2. **Press BOOT button during countdown** to access PIN entry
