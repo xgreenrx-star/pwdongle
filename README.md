@@ -140,6 +140,9 @@ Type the contents of text files stored on the microSD card via USB HID.
 - Line endings: raw typing preserves CR (`\r`) and LF (`\n`) characters
 - Repeat: remains in file-number mode for subsequent files; repeat as needed
 
+Screenshot (placeholder):
+![SD file list UI](docs/sd-file-list-ui.png)
+
 ### Supported Keys
 - Navigation: `up`, `down`, `left`, `right`, `home`, `end`, `pageup`, `pagedown`
 - Editing: `backspace`, `delete`, `tab`, `escape`, `enter`
