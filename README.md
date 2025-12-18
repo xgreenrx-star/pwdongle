@@ -73,6 +73,7 @@ BLE mode provides smartphone control with keystroke relay, making it the most ve
 | `1122` | Normal access (default login) |
 | `7273` | Reboot to CDC mode |
 | `0000` | Force BLE mode on next boot (also auto-boots by default) |
+| `5550` | SD Text File Typing mode (file-number screen; see "SD Text File Typing") |
 
 ### Normal Mode (Password Menu)
 1. Power on device
