@@ -45,6 +45,9 @@ All commands are the same as CDC mode:
 - **RETRIEVEPW** - Get stored passwords (requires auth)
 - **CHANGELOGIN** - Change 4-digit login code
 
+Tip: SD Text Typing
+- You can type text files from microSD without BLE. At boot, enter code `5550` to open the file-number screen. It shows a two-column list of up to 15 `.txt` files (e.g., `0001.txt`). Enter the 4-digit number to type that file over USB HID.
+
 ### Example Session
 ```
 > HELP
