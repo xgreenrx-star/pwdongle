@@ -1,9 +1,10 @@
 # PWDongle
 
-Secure ESP32-S3 hardware password manager with TFT display, PIN authentication, USB HID typing, CDC configuration, and BLE smartphone control (including phone-to-PC keystroke relay).
+Secure ESP32-S3 hardware password manager and advanced scripting device with TFT display, PIN authentication, USB HID typing, CDC configuration, and BLE smartphone control.
 
 ## Features
 
+### Core Features
 - **Default BLE Boot** - 3-second countdown auto-boots to BLE mode for smartphone connectivity
 - **4-Digit PIN Authentication** - Hardware button entry with masked digits for security
 - **Password Storage** - Store up to 10 device/password pairs in non-volatile memory
@@ -13,7 +14,14 @@ Secure ESP32-S3 hardware password manager with TFT display, PIN authentication, 
 - **Dual-Mode Keystroke Relay** - Send keystrokes from phone → ESP32 → PC via USB HID
 - **3.3" TFT Display** - Visual UI for PIN entry and menu navigation
 - **Persistent Configuration** - Login codes and passwords survive reboots
- - **SD Text Typing** - Type text files from microSD by code + file number
+
+### Advanced Scripting (v0.4)
+- **Variables & Expressions** - Integer and string variables with arithmetic operations
+- **Conditionals** - IF/ELSE/ENDIF logic with comparison operators
+- **Loops** - LOOP/ENDLOOP and FOR/NEXT constructs with nesting support
+- **Three Script Formats** - Auto-detects Advanced Scripting, DuckyScript, or Macro format
+- **GPC Syntax** - Game Profile Compiler compatibility for gaming automation
+- **SD Card Execution** - Run scripts from microSD with automatic format detection
 
 ## Hardware
 
@@ -41,7 +49,9 @@ Button:
 ### Option 1: Flash Pre-compiled Binary (Recommended)
 
 Download the latest release from the [releases folder](releases/):
-- `PWDongle-v0.3-esp32s3.bin` (1.1MB)
+- **v0.4** `PWDongle-v0.4-esp32s3.bin` (1.12MB) - **Latest with Advanced Scripting**
+- v0.3.1 `PWDongle-v0.3.1-esp32s3.bin` (1.11MB) - DuckyScript support
+- v0.3 `PWDongle-v0.3-esp32s3.bin` (1.1MB) - Boot menu and file browser
 
 #### Using esptool.py (Linux/Mac/Windows)
 ```bash
@@ -469,18 +479,269 @@ Use multiple modifiers with a named key or a single character.
 
 ### Samples
 
-Example macro files are available in `samples/`:
+Example macro and script files are available in `samples/`:
 
+**Macro Format:**
 - `0092.txt` – Audio control demo (volume, mute, play, next)
 - `0093.txt` – Gamepad demo (buttons, DPAD, sticks, triggers)
 - `0094.txt` – Advanced key combos (Win+R, Ctrl+Shift+Esc)
 
-To run a sample:
-- Copy the files to the SD card root
-- Boot to **Storage Mode** or **Macro / Text** from the boot menu
-- Scroll to the desired file and long-press to type
+**DuckyScript Format:**
+- `ducky_calc.txt` – Opens Windows calculator
+- `ducky_notepad.txt` – Opens notepad and types message
 
-### Supported Keys (Legacy Reference)
+**Advanced Scripting:**
+- `advanced_calc.txt` – Variables and conditionals demo
+- `gpc_example.txt` – GPC syntax with FOR loops
+- `nested_loops.txt` – Nested loop structures with multiplication table
+
+To run a sample:
+- Copy the files to the SD card root (FAT32 format)
+- Boot to **Storage Mode** or **Macro / Text** from the boot menu
+- Scroll to the desired file and long-press to execute
+- PWDongle automatically detects the script format
+
+## Advanced Scripting Reference
+
+### Script Format Detection
+
+PWDongle automatically detects three script formats in priority order:
+
+1. **Advanced Scripting** - Detected when file contains: `VAR`, `IF`, `LOOP`, `FOR`, `wait(`, `set_val(`
+2. **DuckyScript** - Detected when file contains: `REM`, `DELAY`, `STRING`, `GUI`, `CTRL`, `ALT`
+3. **Macro Format** - Default format using `{{TOKEN}}` syntax
+
+You can mix formats in a single file - Advanced Scripting can include Macro tokens and DuckyScript commands.
+
+### Variables
+
+**Declaration:**
+```
+VAR counter = 0
+VAR name = "text"
+x = 10              // Shorthand (no VAR keyword)
+```
+
+**Types:**
+- Integer variables: Store numeric values (-2147483648 to 2147483647)
+- String variables: Store text (enclosed in quotes)
+
+**Usage in Expressions:**
+```
+VAR total = x + y * 2
+VAR result = (counter + 5) / 3
+```
+
+### Expressions
+
+**Arithmetic Operators:**
+- `+` Addition
+- `-` Subtraction
+- `*` Multiplication
+- `/` Division (integer)
+- `%` Modulo (remainder)
+
+**Operator Precedence:**
+1. Parentheses `( )`
+2. Multiplication, Division, Modulo `*`, `/`, `%`
+3. Addition, Subtraction `+`, `-`
+
+**Examples:**
+```
+VAR x = 5 + 3 * 2      // Result: 11
+VAR y = (5 + 3) * 2    // Result: 16
+VAR z = 10 % 3         // Result: 1
+```
+
+### Conditionals
+
+**IF Statement:**
+```
+IF condition
+    // Commands when true
+ENDIF
+```
+
+**IF-ELSE Statement:**
+```
+IF condition
+    // Commands when true
+ELSE
+    // Commands when false
+ENDIF
+```
+
+**Comparison Operators:**
+- `==` Equal to
+- `!=` Not equal to
+- `<` Less than
+- `>` Greater than
+- `<=` Less than or equal
+- `>=` Greater than or equal
+
+**Logical Operators:**
+- `&&` Logical AND
+- `||` Logical OR
+
+**Examples:**
+```
+IF x > 5
+    STRING X is greater than 5{{KEY:enter}}
+ENDIF
+
+IF x >= 10 && y < 20
+    STRING Both conditions true{{KEY:enter}}
+ELSE
+    STRING At least one false{{KEY:enter}}
+ENDIF
+```
+
+**Nested Conditionals:**
+```
+IF x > 0
+    IF y > 0
+        STRING Both positive{{KEY:enter}}
+    ELSE
+        STRING X positive, Y not{{KEY:enter}}
+    ENDIF
+ENDIF
+```
+
+### Loops
+
+**Simple LOOP:**
+```
+LOOP count
+    // Commands to repeat
+ENDLOOP
+```
+
+**Example:**
+```
+VAR i = 0
+LOOP 5
+    STRING Iteration{{KEY:enter}}
+    {{DELAY:200}}
+ENDLOOP
+```
+
+**FOR Loop:**
+```
+FOR variable = start TO end
+    // Commands to repeat
+NEXT variable
+```
+
+**Example:**
+```
+FOR i = 1 TO 10
+    STRING Loop: {{KEY:enter}}
+    {{DELAY:100}}
+NEXT i
+```
+
+**Nested Loops:**
+```
+FOR x = 1 TO 3
+    FOR y = 1 TO 3
+        // Inner loop body
+        {{DELAY:100}}
+    NEXT y
+NEXT x
+```
+
+### GPC (Game Profile Compiler) Syntax
+
+Compatible subset of GPC language for gaming automation:
+
+**wait(ms)** - Delay in milliseconds
+```
+wait(500)     // Wait 500ms
+wait(1000)    // Wait 1 second
+```
+
+**set_val(button, value)** - Set gamepad button/axis
+```
+set_val(XB1_A, 100)      // Press A button
+set_val(XB1_A, 0)        // Release A button
+set_val(PS4_CROSS, 100)  // PS4 Cross button
+```
+
+**Supported Buttons:**
+- Xbox: `XB1_A`, `XB1_B`, `XB1_X`, `XB1_Y`
+- PlayStation: `PS4_CROSS`, `PS4_CIRCLE`, `PS4_SQUARE`, `PS4_TRIANGLE`
+
+**combo_run(name)** - Execute combo (placeholder - requires combo definition)
+
+### Complete Script Example
+
+```
+// Advanced Script: Automated Form Filling
+VAR field_count = 5
+VAR delay = 300
+
+// Open application
+{{KEY:win+r}}
+{{DELAY:200}}
+STRING notepad{{KEY:enter}}
+wait(500)
+
+// Type header
+STRING Automated Entry{{KEY:enter}}
+STRING ================={{KEY:enter}}
+{{KEY:enter}}
+
+// Loop through fields
+FOR i = 1 TO field_count
+    STRING Field {{DELAY:100}}
+    
+    IF i == field_count
+        STRING (last)
+    ELSE
+        STRING (continued)
+    ENDIF
+    
+    {{KEY:enter}}
+    wait(delay)
+NEXT i
+
+// Close
+{{KEY:enter}}
+STRING Script complete!{{KEY:enter}}
+```
+
+### Script Best Practices
+
+1. **Start with delays** - Give applications time to load: `{{DELAY:500}}`
+2. **Use variables** - Store repeated values: `VAR delay = 300`
+3. **Test incrementally** - Build scripts step by step
+4. **Comment your code** - Use `//` or `REM` for notes
+5. **Handle timing** - Different systems run at different speeds
+6. **Mix formats** - Combine Advanced, Ducky, and Macro syntax as needed
+7. **Validate conditions** - Always test IF statements with different values
+8. **Keep loops bounded** - Avoid infinite loops with reasonable counts
+
+### Troubleshooting Scripts
+
+**Script doesn't run:**
+- Check file is in SD card root directory
+- Verify `.txt` extension
+- Ensure FAT32 format on SD card
+
+**Commands execute incorrectly:**
+- Add delays between commands: `{{DELAY:200}}`
+- Check syntax (case-insensitive for keywords)
+- Verify variable assignments have correct operators
+
+**Variables not working:**
+- Ensure variable is declared before use
+- Check arithmetic operator precedence
+- Use parentheses for complex expressions
+
+**Loops repeat wrong number of times:**
+- Verify loop count expression: `LOOP 5` or `FOR i = 1 TO 10`
+- Check for early exits in conditionals
+- Ensure ENDLOOP/NEXT matches LOOP/FOR
 
 ## Project Structure
 
@@ -488,26 +749,44 @@ To run a sample:
 PWDongle/
 ├── include/
 │   ├── bluetooth.h      # BLE UART + keystroke relay
+│   ├── duckyscript.h    # RubberDucky script parser
+│   ├── scriptengine.h   # Advanced scripting engine (NEW v0.4)
 │   ├── display.h        # TFT UI functions
 │   ├── input.h          # Button handling & PIN entry
 │   ├── security.h       # PIN validation & persistence
 │   ├── storage.h        # NVS password storage
-│   └── usb.h            # USB HID/CDC + command processing
+│   └── usb.h            # USB HID/CDC/MSC + macro processing
 ├── src/
 │   ├── bluetooth.cpp    # BLE implementation
-│   ├── display.cpp      # TFT rendering
+│   ├── display.cpp      # TFT rendering (boot menu, file browser)
+│   ├── duckyscript.cpp  # DuckyScript parser & executor (NEW v0.3.1)
 │   ├── input.cpp        # Button state machine
 │   ├── main.cpp         # Setup & main loop
+│   ├── scriptengine.cpp # Script engine with variables/loops/conditionals (NEW v0.4)
 │   ├── security.cpp     # Access codes
 │   ├── storage.cpp      # NVS operations
-│   └── usb.cpp          # USB modes + serial commands
+│   └── usb.cpp          # USB modes + format auto-detection
 ├── lib/
 │   └── TFT_eSPI/
 │       └── User_Setup.h # Display driver config
+├── samples/             # Example scripts (NEW)
+│   ├── 0092.txt         # Audio control demo
+│   ├── 0093.txt         # Gamepad demo
+│   ├── 0094.txt         # Key combo demo
+│   ├── ducky_calc.txt   # DuckyScript calculator
+│   ├── ducky_notepad.txt # DuckyScript notepad
+│   ├── advanced_calc.txt # Variables & conditionals
+│   ├── gpc_example.txt  # GPC syntax demo
+│   └── nested_loops.txt # Nested loop example
+├── releases/            # Pre-compiled binaries
+│   ├── PWDongle-v0.4-esp32s3.bin     # Latest (1.12MB)
+│   ├── PWDongle-v0.3.1-esp32s3.bin   # DuckyScript
+│   └── PWDongle-v0.3-esp32s3.bin     # Boot menu
 ├── boards/
 │   └── esp32-s3-lcd-1.47.json  # Custom board definition
 ├── platformio.ini       # PlatformIO configuration
-└── BLE_USAGE.md        # Detailed BLE guide
+├── BLE_USAGE.md        # Detailed BLE guide
+└── README.md           # This file
 ```
 
 ## Technical Details
@@ -562,6 +841,53 @@ PWDongle/
 **Passwords not persisting:**
 - Use `ABOUT` command to verify persistence status
 - Check NVS has not been erased (re-flash with `--erase-all` if needed)
+
+**Script not executing:**
+- Verify file is on SD card root with `.txt` extension
+- Check script syntax (case-insensitive for keywords)
+- Add delays between commands: `{{DELAY:200}}` or `wait(200)`
+- Test with simple script first to verify SD card works
+- Check TFT display for format detection message
+
+## Version History
+
+### v0.4 (Current) - Advanced Scripting
+- **Variables**: Integer and string variable support
+- **Conditionals**: IF/ELSE/ENDIF with comparison operators
+- **Loops**: LOOP/ENDLOOP and FOR/NEXT constructs
+- **Expressions**: Arithmetic (+, -, *, /, %) and logical (&&, ||) operators
+- **GPC Syntax**: Game Profile Compiler compatibility (wait, set_val)
+- **Script Engine**: 500+ lines of parser and executor
+- **Format Detection**: Auto-detect Advanced > DuckyScript > Macro
+- **Sample Scripts**: 3 new advanced scripting examples
+- Flash: 1.12MB (33.5%), RAM: 58KB (17.8%)
+
+### v0.3.1 - DuckyScript Support
+- **RubberDucky**: Full BadUSB DuckyScript compatibility
+- **Auto-Detection**: Detects DuckyScript vs Macro format
+- **Commands**: STRING, DELAY, REM, key combinations
+- **Parser**: 240+ lines of DuckyScript processor
+- **Sample Scripts**: ducky_calc.txt, ducky_notepad.txt
+- Flash: 1.11MB (33.2%)
+
+### v0.3 - Boot Menu & File Browser
+- **Boot Menu**: 5-option menu (Bluetooth, Terminal, Password, Storage, Macro/Text)
+- **File Browser**: Scrollable SD card file selection (9 files visible)
+- **MSC Mode**: Flash drive mode with code 0001
+- **Auto-Boot**: 3-second countdown to Bluetooth mode
+- **UI Updates**: Renamed modes (BLE→Bluetooth, CDC→Terminal)
+- **Documentation**: Complete README and BLE_USAGE updates
+- Flash: 1.1MB (33.1%)
+
+### v0.2 and Earlier
+- Initial password manager functionality
+- USB HID keyboard typing
+- CDC serial configuration
+- BLE smartphone control with keystroke relay
+- Macro language with {{TOKEN}} syntax
+- Mouse, gamepad, and audio control macros
+- 4-digit PIN authentication
+- NVS password storage
 
 ## License
 
