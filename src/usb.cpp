@@ -101,7 +101,7 @@ void processBLELine(const String& rawLine) {
     }
     if (line.equalsIgnoreCase("ABOUT")) {
       char buf[128];
-      snprintf(buf, sizeof(buf), "OK: PWDongle firmware v0.1 - built %s %s", __DATE__, __TIME__);
+      snprintf(buf, sizeof(buf), "OK: PWDongle firmware v0.3 - built %s %s", __DATE__, __TIME__);
       sendBLEResponse(buf);
       sendBLEResponse("Board: ESP32-S3");
       sendBLEResponse("Library: TFT_eSPI + BLE");
@@ -220,7 +220,7 @@ void processSerialLine(const String& rawLine) {
     }
     if (line.equalsIgnoreCase("ABOUT")) {
       char buf[128];
-      snprintf(buf, sizeof(buf), "OK: PWDongle firmware v0.1 - built %s %s", __DATE__, __TIME__);
+      snprintf(buf, sizeof(buf), "OK: PWDongle firmware v0.3 - built %s %s", __DATE__, __TIME__);
       sendSerialResponse(buf);
       sendSerialResponse("Board: ESP32-S3");
       sendSerialResponse("Library: TFT_eSPI");
@@ -328,7 +328,7 @@ void startUSBMode(int mode) {
     // HID Keyboard mode
     USB.manufacturerName("Narcean Technologies");
     USB.serialNumber("SN-0000001");
-    USB.productName("PWDongle v0.1 HID");
+    USB.productName("PWDongle v0.3 HID");
     Keyboard.begin();
     Mouse.begin();
     Gamepad.begin();
@@ -339,7 +339,7 @@ void startUSBMode(int mode) {
     // CDC Serial mode
     USB.manufacturerName("Narcean Technologies");
     USB.serialNumber("SN-0000001");
-    USB.productName("PWDongle v0.1 CDC");
+    USB.productName("PWDongle v0.3 CDC");
    
     Serial.begin(115200);
     Serial.setRxBufferSize(BUF_SIZE);
