@@ -13,6 +13,7 @@
 #include "usb.h"
 #include "security.h"
 #include "display.h"
+#include "duckyscript.h"
 
 // External references (defined in main.cpp)
 extern USBHIDKeyboard Keyboard;
@@ -1395,3 +1396,81 @@ void listSDTextFiles(String fileList[15], int& count) {
     }
   }
 }
+
+// Auto-detect file format and process accordingly
+void processTextFileAuto(const String& baseName) {
+  startUSBMode(MODE_HID);
+
+  if (!ensureSDReady()) {
+    showStartupMessage("SD init failed");
+    delay(800);
+    return;
+  }
+
+  String filename = "/" + baseName + ".txt";
+  File f;
+  
+  if (sdUseMMC) {
+    f = SD_MMC.open(filename.c_str(), FILE_READ);
+  } else {
+    f = SD.open(filename.c_str(), FILE_READ);
+  }
+
+  if (!f) {
+    showStartupMessage("File not found");
+    delay(800);
+    return;
+  }
+
+  // Read first ~512 bytes to detect format
+  String sample = "";
+  int bytesRead = 0;
+  while (f.available() && bytesRead < 512) {
+    char c = f.read();
+    sample += c;
+    bytesRead++;
+  }
+  f.close();
+
+  // Detect if it's DuckyScript
+  bool isDucky = isDuckyScriptFile(sample);
+
+  if (isDucky) {
+    showStartupMessage("DuckyScript detected");
+    delay(300);
+    
+    // Re-open and read entire file
+    if (sdUseMMC) {
+      f = SD_MMC.open(filename.c_str(), FILE_READ);
+    } else {
+      f = SD.open(filename.c_str(), FILE_READ);
+    }
+    
+    if (!f) {
+      showStartupMessage("File read error");
+      delay(800);
+      return;
+    }
+    
+    String content = "";
+    while (f.available()) {
+      content += (char)f.read();
+    }
+    f.close();
+    
+    showStartupMessage("Executing...");
+    delay(200);
+    
+    processDuckyScript(content);
+    
+    showStartupMessage("Script complete");
+    delay(600);
+  } else {
+    showStartupMessage("Macro format");
+    delay(300);
+    
+    // Use existing macro processor
+    typeTextFileFromSD(baseName);
+  }
+}
+

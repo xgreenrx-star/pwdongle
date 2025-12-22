@@ -298,19 +298,11 @@ void loop() {
       handleFileMenuButton(fileMenuSelection, fileConfirmed, fileCount);
       
       if (fileConfirmed && fileCount > 0) {
-        // User selected a file - type it
-        showStartupMessage("Typing file...");
-        delay(300);
+        // User selected a file - auto-detect format and type it
+        showStartupMessage("Loading file...");
+        delay(200);
         
-        bool success = typeTextFileFromSD(fileList[fileMenuSelection]);
-        
-        if (success) {
-          showStartupMessage("File typed!");
-          delay(600);
-        } else {
-          showStartupMessage("Error typing file");
-          delay(800);
-        }
+        processTextFileAuto(fileList[fileMenuSelection]);
         
         // Return to file menu
         drawFileMenu(fileMenuSelection, fileList, fileCount);

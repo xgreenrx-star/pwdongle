@@ -203,6 +203,39 @@ cloudfront.net
 - Recommended naming: `NNNN.txt` (4 digits) for easy sorting
 - FAT32 format recommended for SD card
 
+#### Supported Formats
+
+PWDongle automatically detects and processes two script formats:
+
+**1. DuckyScript (RubberDucky Compatible)**
+
+Classic BadUSB script format. Automatically detected when file contains DuckyScript keywords.
+
+**Supported Commands:**
+- `REM comment` - Comments (ignored)
+- `STRING text` - Type literal text
+- `STRINGLN text` - Type text with Enter
+- `DELAY ms` - Pause for milliseconds
+- `ENTER`, `TAB`, `ESCAPE`, `SPACE` - Special keys
+- `UP`, `DOWN`, `LEFT`, `RIGHT` - Arrow keys  
+- `CTRL key`, `ALT key`, `SHIFT key`, `GUI key` - Key combinations
+- `F1` through `F12` - Function keys
+- `WINDOWS` / `GUI` - Windows/Command key
+
+**Example DuckyScript:**
+```
+REM Open calculator on Windows
+DELAY 500
+GUI r
+DELAY 200
+STRING calc
+ENTER
+```
+
+**2. PWDongle Macro Format**
+
+Advanced macro language with `{{TOKEN}}` syntax. See [Macro Syntax](#macro-syntax) below for full reference.
+
 ### SD Text File Typing
 
 Type the contents of text files stored on the microSD card via USB HID. Files support **macros** for delays, special keys, and more.

@@ -1,0 +1,23 @@
+REM Advanced DuckyScript example
+REM Opens notepad and types a message
+
+DELAY 1000
+GUI r
+DELAY 300
+STRING notepad
+ENTER
+DELAY 500
+STRING Hello from PWDongle!
+ENTER
+STRING This is a RubberDucky script running on ESP32-S3
+ENTER
+ENTER
+STRING Supported commands:
+ENTER
+STRING - STRING (type text)
+ENTER
+STRING - DELAY (wait in ms)
+ENTER
+STRING - Key combinations (CTRL, ALT, SHIFT, GUI)
+ENTER
+STRING - Special keys (ENTER, TAB, ESCAPE, etc.)

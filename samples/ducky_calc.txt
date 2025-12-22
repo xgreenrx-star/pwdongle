@@ -1,0 +1,9 @@
+REM Sample DuckyScript for PWDongle
+REM Opens calculator on Windows
+
+DELAY 500
+GUI r
+DELAY 200
+STRING calc
+DELAY 100
+ENTER

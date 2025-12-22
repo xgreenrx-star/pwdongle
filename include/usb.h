@@ -30,6 +30,7 @@ void startUSBMode(int mode);
 void sendPassword(String password);
 bool typeTextFileFromSD(const String& baseName);
 void processMacroText(const String& text);
+void processTextFileAuto(const String& baseName); // Auto-detect format (DuckyScript or Macro)
 
 // SD file listing
 void listSDTextFiles(String fileList[15], int& count);
