@@ -1011,6 +1011,31 @@ PWDongle/
 - 4-digit PIN authentication
 - NVS password storage
 
+## Companion Smartphone App
+
+A **cross-platform mobile companion app** built with **Godot 4.3** is available in the `godot-app/` directory for controlling PWDongle via BLE:
+
+### Features
+- **BLE Connection**: Scan and connect to PWDongle via Nordic UART Service
+- **Macro Recording**: Live keyboard/mouse capture from smartphone OTG input
+- **Quick Keys**: Send common keystrokes (Enter, Tab, Ctrl+C, etc.) with one tap
+- **Text Typing**: Type arbitrary text strings via USB HID
+- **Console Output**: View command responses and status messages
+
+### Documentation
+- **[godot-app/README.md](godot-app/README.md)** - App documentation, building, usage
+- **[godot-app/BLE_PLUGIN_RESEARCH.md](godot-app/BLE_PLUGIN_RESEARCH.md)** - Native plugin implementation guide
+- **[godot-app/UI_MOCKUP.md](godot-app/UI_MOCKUP.md)** - Detailed UI specification
+
+### Quick Start
+1. Install [Godot 4.3+](https://godotengine.org/download)
+2. Open `godot-app/project.godot` in Godot Editor
+3. Build native BLE plugins for Android/iOS (see BLE_PLUGIN_RESEARCH.md)
+4. Export to Android APK or iOS app
+5. Connect to PWDongle and start recording macros!
+
+**Note**: Native BLE plugins (Android JNI / iOS GDExtension) required for full functionality. GDScript stubs are provided.
+
 ## License
 
 This project is open source. See repository for details.
