@@ -36,13 +36,40 @@ Button:
 - GPIO 0 (Boot button)
 ```
 
-## Build & Upload
+## Installation
 
-### Prerequisites
+### Option 1: Flash Pre-compiled Binary (Recommended)
+
+Download the latest release from the [releases folder](releases/):
+- `PWDongle-v0.3-esp32s3.bin` (1.1MB)
+
+#### Using esptool.py (Linux/Mac/Windows)
+```bash
+# Install esptool
+pip install esptool
+
+# Flash to ESP32-S3 (replace /dev/ttyUSB0 with your port)
+esptool.py --chip esp32s3 --port /dev/ttyUSB0 --baud 460800 write_flash 0x0 PWDongle-v0.3-esp32s3.bin
+```
+
+#### Using ESP Flash Download Tool (Windows)
+1. Download [Flash Download Tools](https://www.espressif.com/en/support/download/other-tools)
+2. Select ESP32-S3
+3. Add binary file at address `0x0`
+4. Select COM port and click START
+
+#### Finding Your Port
+- **Linux**: Usually `/dev/ttyUSB0` or `/dev/ttyACM0` (check with `ls /dev/tty*`)
+- **Mac**: Usually `/dev/cu.usbserial-*` or `/dev/cu.wchusbserial*`
+- **Windows**: Check Device Manager for COM port (e.g., `COM3`)
+
+### Option 2: Build from Source
+
+#### Prerequisites
 - [PlatformIO](https://platformio.org/) installed
 - ESP32-S3 board connected via USB
 
-### Commands
+#### Commands
 ```bash
 # Build firmware
 platformio run
