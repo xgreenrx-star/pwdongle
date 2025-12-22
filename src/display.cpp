@@ -4,6 +4,10 @@
 
 // From main.cpp
 extern bool awaitingFileNumber;
+extern int bootMenuSelection;
+extern String fileList[15];
+extern int fileCount;
+extern int bootMenuSelection;
 
 // Declarations are provided by include/display.h
 
@@ -41,7 +45,7 @@ void showCountdown(int seconds) {
   tft.setTextSize(2);
   tft.setTextColor(TFT_CYAN, TFT_BLACK);
   tft.setCursor(10, 40);
-  tft.println("Starting BLE mode");
+  tft.println("Starting Bluetooth");
   tft.println("");
   tft.setTextColor(TFT_YELLOW, TFT_BLACK);
   tft.println("Press BOOT button");
@@ -248,4 +252,128 @@ void showHelpScreen() {
   tft.setCursor(10, 200);
   tft.setTextColor(TFT_YELLOW, TFT_BLACK);
   tft.println("Follow serial prompts after sending a command");
+}
+
+void drawBootMenu(int selectedIndex) {
+  tft.setRotation(0); // Portrait
+  tft.fillScreen(TFT_BLACK);
+  
+  tft.setTextSize(2);
+  tft.setTextColor(TFT_CYAN, TFT_BLACK);
+  tft.setCursor(10, 10);
+  tft.println("Boot Menu");
+  
+  tft.setTextSize(1);
+  tft.setTextFont(2);
+  
+  const char* menuOptions[] = {
+    "Bluetooth (BLE)",
+    "Terminal (CDC)",
+    "Password Mode",
+    "Storage Mode",
+    "Macro / Text"
+  };
+  
+  int startY = 50;
+  int lineHeight = 24;
+  
+  for (int i = 0; i < 5; i++) {
+    int y = startY + (i * lineHeight);
+    
+    if (i == selectedIndex) {
+      // Highlight selected item
+      tft.fillRect(5, y - 2, 160, lineHeight - 4, TFT_DARKGREY);
+      tft.setTextColor(TFT_YELLOW, TFT_DARKGREY);
+      tft.setCursor(10, y);
+      tft.print("> ");
+    } else {
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      tft.setCursor(10, y);
+      tft.print("  ");
+    }
+    
+    tft.println(menuOptions[i]);
+  }
+  
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+  tft.setCursor(10, 200);
+  tft.println("Short: scroll");
+  tft.setCursor(10, 215);
+  tft.println("Long: select");
+}
+
+void drawFileMenu(int selectedIndex, String fileList[], int fileCount) {
+  tft.setRotation(0); // Portrait
+  tft.fillScreen(TFT_BLACK);
+  
+  tft.setTextSize(2);
+  tft.setTextColor(TFT_CYAN, TFT_BLACK);
+  tft.setCursor(10, 10);
+  tft.println("Select File");
+  
+  if (fileCount == 0) {
+    tft.setTextSize(1);
+    tft.setTextFont(2);
+    tft.setTextColor(TFT_RED, TFT_BLACK);
+    tft.setCursor(10, 50);
+    tft.println("No .txt files found");
+    tft.println("on SD card");
+    return;
+  }
+  
+  tft.setTextSize(1);
+  tft.setTextFont(2);
+  
+  int startY = 50;
+  int lineHeight = 20;
+  int maxVisible = 9; // Maximum files visible at once
+  
+  // Calculate scroll window
+  int scrollStart = 0;
+  if (fileCount > maxVisible) {
+    scrollStart = max(0, min(selectedIndex - maxVisible/2, fileCount - maxVisible));
+  }
+  
+  for (int i = 0; i < min(fileCount, maxVisible); i++) {
+    int fileIdx = scrollStart + i;
+    if (fileIdx >= fileCount) break;
+    
+    int y = startY + (i * lineHeight);
+    
+    if (fileIdx == selectedIndex) {
+      // Highlight selected item
+      tft.fillRect(5, y - 2, 160, lineHeight - 2, TFT_DARKGREY);
+      tft.setTextColor(TFT_YELLOW, TFT_DARKGREY);
+      tft.setCursor(10, y);
+      tft.print("> ");
+    } else {
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      tft.setCursor(10, y);
+      tft.print("  ");
+    }
+    
+    // Truncate long filenames if needed
+    String displayName = fileList[fileIdx];
+    if (displayName.length() > 12) {
+      displayName = displayName.substring(0, 12);
+    }
+    tft.print(displayName);
+    tft.println(".txt");
+  }
+  
+  // Show scroll indicator if needed
+  if (fileCount > maxVisible) {
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+    tft.setCursor(10, 230);
+    tft.printf("%d/%d", selectedIndex + 1, fileCount);
+  }
+  
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+  tft.setCursor(10, 250);
+  tft.println("Short: scroll");
+  tft.setCursor(10, 265);
+  tft.println("Long: type file");
 }

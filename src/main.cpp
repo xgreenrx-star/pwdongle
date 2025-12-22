@@ -27,6 +27,13 @@ int MENU_ITEM_COUNT = 0; // will be set from storage on load
 
 bool codeAccepted = false;
 bool awaitingFileNumber = false;
+int bootMenuSelection = 0;
+
+// File menu state
+bool inFileMenu = false;
+String fileList[15];
+int fileCount = 0;
+int fileMenuSelection = 0;
 
 // Boot button configuration (also referenced in input.h)
 #ifndef BOOT_BUTTON_PIN
@@ -56,6 +63,15 @@ void setup() {
   prefs.begin("BLE", true);
   bool bootToBLE = prefs.getBool("bootToBLE", false);
   prefs.end();
+
+  // Check for explicit MSC mode boot flag (from entering 0001 code) BEFORE countdown
+  initializeMSCFlag();
+  if (getBootToMSC()) {
+    setBootToMSC(false);
+    showStartupMessage("Flash drive mode");
+    startUSBMode(MODE_MSC);
+    return;
+  }
 
   if (bootToBLE) {
     // Clear explicit flag
@@ -95,22 +111,101 @@ void setup() {
   }
 
   // 3-second countdown: default to BLE unless button pressed
-  bool userWantsPinEntry = false;
+  bool userInterrupted = false;
   for (int countdown = 3; countdown > 0; countdown--) {
     showCountdown(countdown);
     unsigned long startWait = millis();
     while (millis() - startWait < 1000) {
       if (digitalRead(BOOT_BUTTON_PIN) == LOW) {
-        userWantsPinEntry = true;
+        userInterrupted = true;
         break;
       }
       delay(10);
     }
-    if (userWantsPinEntry) break;
+    if (userInterrupted) break;
+  }
+
+  // Show boot menu if user interrupted countdown
+  if (userInterrupted) {
+    bootMenuSelection = 0;
+    drawBootMenu(bootMenuSelection);
+    
+    bool menuConfirmed = false;
+    while (!menuConfirmed) {
+      handleBootMenuButton(bootMenuSelection, menuConfirmed);
+      delay(10);
+    }
+    
+    // Handle selected boot mode
+    if (bootMenuSelection == 0) {
+      // BLE Mode
+      startUSBMode(MODE_HID);
+      startBLEMode();
+      
+      tft.fillScreen(TFT_GREEN);
+      tft.setTextColor(TFT_BLACK, TFT_GREEN);
+      tft.setTextSize(2);
+      tft.setCursor(10, 40);
+      tft.println("BLE ACTIVE");
+      tft.setCursor(10, 70);
+      tft.setTextSize(1);
+      tft.println("");
+      tft.println("Scan for:");
+      tft.setTextSize(2);
+      tft.println("  PWDongle");
+      tft.setTextSize(1);
+      tft.println("");
+      tft.println("Using BLE terminal app:");
+      tft.println("- Serial Bluetooth Term");
+      tft.println("- nRF Connect");
+      tft.println("- LightBlue (iOS)");
+      tft.println("");
+      tft.println("Advertising now...");
+      return;
+      
+    } else if (bootMenuSelection == 1) {
+      // CDC Mode
+      initializeCDCFlag();
+      showCDCReadyScreen();
+      startUSBMode(MODE_CDC);
+      
+      unsigned long start = millis();
+      const unsigned long timeout = 300000;
+      while (millis() - start < timeout) {
+        if (isSerialDataAvailable()) {
+          String d = readSerialData();
+          processSerialLine(d);
+        }
+        delay(50);
+      }
+      return;
+      
+    } else if (bootMenuSelection == 2) {
+      // Password Mode - proceed to PIN entry
+      showInstructions();
+      showDigitScreen();
+      
+    } else if (bootMenuSelection == 3) {
+      // Storage Mode - show file selection menu
+      inFileMenu = true;
+      listSDTextFiles(fileList, fileCount);
+      fileMenuSelection = 0;
+      drawFileMenu(fileMenuSelection, fileList, fileCount);
+      
+    } else if (bootMenuSelection == 4) {
+      // Macro / Text Mode - show file selection menu
+      inFileMenu = true;
+      listSDTextFiles(fileList, fileCount);
+      fileMenuSelection = 0;
+      drawFileMenu(fileMenuSelection, fileList, fileCount);
+    }
+    
+    // For Password/Storage/Text File modes, continue to normal HID loop
+    return;
   }
 
   // Enter BLE mode if countdown expires without button
-  if (!userWantsPinEntry) {
+  if (!userInterrupted) {
     // Initialize USB HID first (needed for TYPE/KEY relay to PC)
     startUSBMode(MODE_HID);
     
@@ -143,7 +238,7 @@ void setup() {
     // In the loop, BLE mode won't process HID button input
   }
   
-  // Ensure CDC boot flag exists and handle CDC-mode boot
+  // Ensure CDC boot flag exists and handle CDC-mode boot (explicit flag from code)
   initializeCDCFlag();
   if (getBootToCDC()) {
     // Clear flag for next boot and enter CDC mode
@@ -168,9 +263,9 @@ void setup() {
     }
   }
 
-  // Only show PIN entry UI when NOT in BLE mode
-  if (currentUSBMode == MODE_HID && currentBLEMode == 0) {
-  // Initial UI
+  // Only show PIN entry UI when NOT in BLE mode and not already handled by boot menu
+  if (currentUSBMode == MODE_HID && currentBLEMode == 0 && !codeAccepted && !awaitingFileNumber) {
+    // Initial UI
     showInstructions();
     showDigitScreen();
   }
@@ -189,9 +284,38 @@ void loop() {
     delay(10);
     return;  // Don't process HID input in BLE mode
   }
+
+  // Flash drive (MSC) mode: nothing to process in loop
+  if (currentUSBMode == MODE_MSC) {
+    delay(50);
+    return;
+  }
   
   if (currentUSBMode == MODE_HID) {
-    if (!codeAccepted) {
+    if (inFileMenu) {
+      // Handle file menu navigation
+      bool fileConfirmed = false;
+      handleFileMenuButton(fileMenuSelection, fileConfirmed, fileCount);
+      
+      if (fileConfirmed && fileCount > 0) {
+        // User selected a file - type it
+        showStartupMessage("Typing file...");
+        delay(300);
+        
+        bool success = typeTextFileFromSD(fileList[fileMenuSelection]);
+        
+        if (success) {
+          showStartupMessage("File typed!");
+          delay(600);
+        } else {
+          showStartupMessage("Error typing file");
+          delay(800);
+        }
+        
+        // Return to file menu
+        drawFileMenu(fileMenuSelection, fileList, fileCount);
+      }
+    } else if (!codeAccepted) {
       readButton();
     } else {
       // Menu handling (short press to scroll, hold to send)

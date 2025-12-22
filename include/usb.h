@@ -13,6 +13,7 @@
 
 #define MODE_HID 0
 #define MODE_CDC 1
+#define MODE_MSC 2
 // Serial RX buffer size used when starting CDC mode
 #define BUF_SIZE 1024
 

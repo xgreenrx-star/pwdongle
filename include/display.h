@@ -41,4 +41,10 @@ void showStartupMessage(const char* message);
 // Display help/commands on the TFT
 void showHelpScreen();
 
+// Boot menu
+void drawBootMenu(int selectedIndex);
+
+// File selection menu
+void drawFileMenu(int selectedIndex, String fileList[], int fileCount);
+
 #endif

@@ -7,13 +7,23 @@ PWDongle supports BLE connectivity for smartphone control using the Nordic UART 
 
 ### Automatic (Default)
 1. Power on the device
-2. Wait for the 3-second countdown to complete (displays "Starting BLE mode" with countdown)
-3. Device automatically enters BLE mode and displays "BLE ACTIVE"
+2. Wait for the 3-second countdown to complete (displays "Starting Bluetooth" with countdown)
+3. Device automatically enters Bluetooth mode and displays "BLE ACTIVE"
 4. Device advertises as: **PWDongle**
 
-### Manual Override
-- **To access PIN entry instead**: Press the BOOT button during the countdown
-- **To force BLE on next boot**: Enter code **0000** (though it's already the default)
+### Manual Selection (Boot Menu)
+1. Power on the device
+2. **Press BOOT button during the countdown**
+3. Boot menu appears with 5 options:
+   - **Bluetooth (BLE)** - Smartphone control
+   - Terminal (CDC) - Serial configuration
+   - Password Mode - PIN entry for password menu
+   - Storage Mode - Browse SD card files
+   - Macro / Text - Browse SD card macro files
+4. Short press to scroll, long press to select **Bluetooth (BLE)**
+
+### Legacy Code Method
+- Enter code **0000** in Password Mode to force Bluetooth on next boot
 
 ## Smartphone Setup
 
@@ -70,9 +80,9 @@ BLE now supports **full macro syntax** - identical to SD text files. Any text yo
 See the main `README.md` for complete syntax and examples. Sample files in `samples/` show all features.
 
 **Tip: SD Text Typing**
-- Type files from microSD without BLE: Enter code `5550` at boot
-- Shows two-column list of up to 15 `.txt` files (e.g., `0001.txt`)
-- Enter 4-digit number to type that file over USB HID
+- Type files from microSD without Bluetooth: Select **Storage Mode** or **Macro / Text** from boot menu
+- Scrollable menu shows up to 15 `.txt` files
+- Short press to scroll, long press to type selected file over USB HID
 
 ### Example Session
 ```
@@ -114,27 +124,41 @@ See the main `README.md` for complete syntax and examples. Sample files in `samp
 
 ## Switching to Other Modes
 
-### To PIN Entry Mode (Password Menu)
+### To Password Menu
 1. Power cycle the device (disconnect USB)
 2. **Press BOOT button during the 3-second countdown**
-3. Enter normal code (1122) to access password menu
+3. Select **Password Mode** from boot menu
+4. Enter login code (1122) to access password menu
 
-### To CDC Mode (USB Serial)
-1. Access PIN entry mode (press BOOT during countdown)
+### To Terminal (CDC) Mode
+**Option 1: Boot Menu**
+1. Power cycle and press BOOT during countdown
+2. Select **Terminal (CDC)** from boot menu
+3. Long press to confirm
+
+**Option 2: Legacy Code**
+1. Access Password Mode from boot menu
 2. Enter CDC mode code (7273)
 3. Device reboots to USB serial configuration mode
 
-### Back to BLE Mode
+### To Storage/Macro Mode
+1. Power cycle and press BOOT during countdown
+2. Select **Storage Mode** or **Macro / Text**
+3. Long press to confirm
+4. Browse and type SD card files
+
+### Back to Bluetooth Mode
 - Power cycle the device and let countdown complete (default behavior)
-- Or enter code (0000) to force BLE mode
+- Or press BOOT during countdown, select **Bluetooth (BLE)** from menu
 
 ## Troubleshooting
 
 **Can't find "PWDongle" in scan**
-- Ensure countdown completed without button press (BLE is default)
+- Ensure countdown completed without button press (Bluetooth is default)
+- Or manually select **Bluetooth (BLE)** from boot menu
 - Check device shows "BLE ACTIVE" on screen
 - Some phones scan slowly - wait 10-15 seconds
-- If you pressed BOOT during countdown, you're in PIN mode instead
+- If you pressed BOOT during countdown, you need to select Bluetooth from menu
 
 **Connection drops frequently**
 - Move phone closer to device

@@ -5,6 +5,7 @@
 #include "display.h"
 #include "usb.h"
 #include "input.h"
+#include "storage.h"
 
 // External references (defined in main.cpp)
 extern Preferences prefs;
@@ -16,6 +17,7 @@ int correctCode[4] = {1, 1, 2, 2};
 int comModeCode[4] = {7, 2, 7, 3};
 int bleModeCode[4] = {0, 0, 0, 0};
 int fileModeCode[4] = {5, 5, 5, 0};
+int mscModeCode[4] = {0, 0, 0, 1};
 
 // External state from input.cpp
 extern int enteredCode[4];
@@ -53,6 +55,7 @@ void checkCode() {
   bool comMode = true;
   bool bleMode = true;
   bool fileMode = true;
+  bool mscMode = true;
 
   for (int i = 0; i < 4; i++) {
     if (enteredCode[i] != correctCode[i]){
@@ -66,6 +69,9 @@ void checkCode() {
     }
     if (enteredCode[i] != fileModeCode[i]){
       fileMode = false;
+    }
+    if (enteredCode[i] != mscModeCode[i]){
+      mscMode = false;
     }
   }
   
@@ -87,6 +93,14 @@ void checkCode() {
     showFileNumberPrompt();
     showDigitScreen();
     return;
+  }
+
+  if (mscMode) {
+    // Switch to flash drive (MSC) mode on next boot
+    setBootToMSC(true);
+    showStartupMessage("Switching to flash drive mode");
+    delay(1000);
+    ESP.restart();
   }
   
   if (comMode) {

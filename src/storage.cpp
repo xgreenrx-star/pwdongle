@@ -10,6 +10,7 @@ extern int MENU_ITEM_COUNT;
 
 #define DEVSTORE_NAMESPACE "devstore"
 #define CDC_NAMESPACE "CDC"
+#define MSC_NAMESPACE "MSC"
 
 void storeDeviceData(int index, const String &device, const String &password) {
   prefs.begin(DEVSTORE_NAMESPACE, false);  // writable
@@ -162,4 +163,29 @@ bool initializeCDCFlag() {
   
   prefs.end();
   return false;  // Already initialized
+}
+
+bool setBootToMSC(bool value) {
+  prefs.begin(MSC_NAMESPACE, false);
+  prefs.putBool("bootToMSC", value);
+  prefs.end();
+  return true;
+}
+
+bool getBootToMSC() {
+  prefs.begin(MSC_NAMESPACE, true);
+  bool bootToMSC = prefs.getBool("bootToMSC", false);
+  prefs.end();
+  return bootToMSC;
+}
+
+bool initializeMSCFlag() {
+  prefs.begin(MSC_NAMESPACE, false);
+  if (!prefs.isKey("bootToMSC")) {
+    prefs.putBool("bootToMSC", false);
+    prefs.end();
+    return true;
+  }
+  prefs.end();
+  return false;
 }

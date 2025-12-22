@@ -17,6 +17,11 @@ bool digitAccepted[4] = { false, false, false, false };
 // Menu state
 int selectedItem = 0;
 
+// Boot menu state
+static int bootMenuSelection = 0;
+static bool bootMenuPressed = false;
+static unsigned long bootMenuPressStart = 0;
+
 void scrollMenu() {
   selectedItem++;
   if (selectedItem >= MENU_ITEM_COUNT) {
@@ -132,4 +137,66 @@ int getCurrentDigit() {
 
 int getDigitIndex() {
   return digitIndex;
+}
+
+void handleBootMenuButton(int& selection, bool& confirmed) {
+  int state = digitalRead(BOOT_BUTTON_PIN);
+  confirmed = false;
+
+  if (state == LOW) {
+    if (!bootMenuPressed) {
+      bootMenuPressed = true;
+      bootMenuPressStart = millis();
+    }
+  } else {
+    if (bootMenuPressed) {
+      unsigned long pressTime = millis() - bootMenuPressStart;
+
+      if (pressTime > HOLD_THRESHOLD) {
+        // Long press - confirm selection
+        confirmed = true;
+      } else if (pressTime > DEBOUNCE_DELAY) {
+        // Short press - scroll menu
+        selection = (selection + 1) % 5;
+        drawBootMenu(selection);
+      }
+
+      bootMenuPressed = false;
+    }
+  }
+}
+
+void handleFileMenuButton(int& selection, bool& confirmed, int maxItems) {
+  int state = digitalRead(BOOT_BUTTON_PIN);
+  confirmed = false;
+  
+  static bool fileMenuPressed = false;
+  static unsigned long fileMenuPressStart = 0;
+
+  if (state == LOW) {
+    if (!fileMenuPressed) {
+      fileMenuPressed = true;
+      fileMenuPressStart = millis();
+    }
+  } else {
+    if (fileMenuPressed) {
+      unsigned long pressTime = millis() - fileMenuPressStart;
+
+      if (pressTime > HOLD_THRESHOLD) {
+        // Long press - confirm selection
+        confirmed = true;
+      } else if (pressTime > DEBOUNCE_DELAY) {
+        // Short press - scroll to next file
+        if (maxItems > 0) {
+          selection = (selection + 1) % maxItems;
+          // Need to redraw menu with new selection
+          extern String fileList[15];
+          extern int fileCount;
+          drawFileMenu(selection, fileList, fileCount);
+        }
+      }
+
+      fileMenuPressed = false;
+    }
+  }
 }

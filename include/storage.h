@@ -29,5 +29,8 @@ String getDevicePassword(int index);
 bool setBootToCDC(bool value);
 bool getBootToCDC();
 bool initializeCDCFlag();
+bool setBootToMSC(bool value);
+bool getBootToMSC();
+bool initializeMSCFlag();
 
 #endif

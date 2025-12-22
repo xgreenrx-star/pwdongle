@@ -3,9 +3,11 @@
 #include <USBHIDKeyboard.h>
 #include <USBHIDMouse.h>
 #include <USBHIDGamepad.h>
+#include <USBMSC.h>
 #include <SD.h>
 #include <SD_MMC.h>
 #include <SPI.h>
+#include <sdmmc_cmd.h>
 #include <stdio.h>
 #include <vector>
 #include "usb.h"
@@ -19,6 +21,11 @@ extern USBHIDGamepad Gamepad;
 
 // Runtime USB mode
 int currentUSBMode = MODE_HID;
+static USBMSC MSC;
+static sdmmc_card_t* sdCard = nullptr;
+static bool sdUseMMC = false;
+static bool sdReady = false;
+static SPIClass sdSPI(HSPI);
 
 // Command processing state
 enum SerialCmdState {
@@ -34,6 +41,13 @@ static SerialCmdState serialState = CMD_IDLE;
 
 // Temp storage for operations
 static int candidateOldCode[4];
+
+// Forward declarations
+static bool ensureSDReady();
+static sdmmc_card_t* getMMCCardPtr();
+static int32_t mscRead(uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize);
+static int32_t mscWrite(uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize);
+static bool mscStartStop(uint8_t power_condition, bool start, bool load_eject);
 
 // Helpers
 static void parseFourDigitString(const String &s, int out[4]) {
@@ -332,6 +346,38 @@ void startUSBMode(int mode) {
     Serial.setTxBufferSize(BUF_SIZE);
     currentUSBMode = MODE_CDC;
     
+  } else if (mode == MODE_MSC) {
+    if (!ensureSDReady()) {
+      showStartupMessage("SD not ready for MSC");
+      delay(1200);
+      return;
+    }
+
+    if (!sdUseMMC) {
+      showStartupMessage("MSC needs SD_MMC");
+      delay(1200);
+      return;
+    }
+
+    sdCard = getMMCCardPtr();
+    if (!sdCard) {
+      showStartupMessage("MSC no card");
+      delay(1200);
+      return;
+    }
+
+    uint32_t sectorSize = 512;
+    uint32_t sectorCount = (uint32_t)(SD_MMC.cardSize() / sectorSize);
+    MSC.vendorID("PWD");
+    MSC.productID("PWD MSC");
+    MSC.productRevision("1.0");
+    MSC.onRead(mscRead);
+    MSC.onWrite(mscWrite);
+    MSC.onStartStop(mscStartStop);
+    MSC.mediaPresent(true);
+    MSC.begin(sectorCount, (uint16_t)sectorSize);
+    USB.begin();
+    currentUSBMode = MODE_MSC;
   }
 }
 
@@ -370,9 +416,13 @@ void sendSerialCSV(const String& name, const String& password) {
 #define SD_CS_PIN 5
 #endif
 
-static bool sdUseMMC = false;
-static bool sdReady = false;
-static SPIClass sdSPI(HSPI);
+struct SDMMCAccess : public fs::SDMMCFS {
+  sdmmc_card_t* getCardPtr() { return _card; }
+};
+
+static sdmmc_card_t* getMMCCardPtr() {
+  return reinterpret_cast<SDMMCAccess*>(&SD_MMC)->getCardPtr();
+}
 
 static bool ensureSDReady() {
   // Try SD_MMC with known board pins first; if that fails, try SPI SD.
@@ -410,6 +460,27 @@ static bool ensureSDReady() {
     }
   }
   return false;
+}
+
+static int32_t mscRead(uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) {
+  if (!sdReady || !sdCard) return -1;
+  if (offset != 0) return -1; // offset within sector not supported
+  size_t blocks = bufsize / 512;
+  esp_err_t err = sdmmc_read_sectors(sdCard, (uint8_t*)buffer, lba, blocks);
+  return (err == ESP_OK) ? (int32_t)bufsize : -1;
+}
+
+static int32_t mscWrite(uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize) {
+  if (!sdReady || !sdCard) return -1;
+  if (offset != 0) return -1;
+  size_t blocks = bufsize / 512;
+  esp_err_t err = sdmmc_write_sectors(sdCard, buffer, lba, blocks);
+  return (err == ESP_OK) ? (int32_t)bufsize : -1;
+}
+
+static bool mscStartStop(uint8_t power_condition, bool start, bool load_eject) {
+  // Accept start/stop; no special handling needed
+  return true;
 }
 
 // Process macro text: parses {{TOKEN}} syntax and types via USB HID

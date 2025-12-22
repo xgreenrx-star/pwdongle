@@ -38,6 +38,12 @@ void acceptDigit();
 void scrollMenu();
 void handleMenuButton();
 
+// Boot menu functions
+void handleBootMenuButton(int& selection, bool& confirmed);
+
+// File menu functions
+void handleFileMenuButton(int& selection, bool& confirmed, int maxItems);
+
 // Utility functions
 void resetInputState();
 int getSelectedItem();
@@ -50,6 +56,8 @@ void checkCode();
 // Forward declarations (display.cpp)
 void showDigitScreen();
 void drawMenu();
+void drawBootMenu(int selectedIndex);
+void drawFileMenu(int selectedIndex, String fileList[], int fileCount);
 
 // Forward declarations (usb.cpp)
 void sendPassword(String password);

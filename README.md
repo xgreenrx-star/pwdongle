@@ -58,41 +58,53 @@ platformio device monitor --baud 115200
 
 ### Boot Behavior
 
-On power-up, the device displays a **3-second countdown** and automatically boots to BLE mode for smartphone connectivity:
+On power-up, the device displays a **3-second countdown** and automatically boots to Bluetooth (BLE) mode for smartphone connectivity:
 
-- **Default**: Let countdown complete → BLE mode starts
-- **Override**: Press BOOT button during countdown → PIN entry screen appears
+- **Default**: Let countdown complete → Bluetooth mode starts
+- **Override**: Press BOOT button during countdown → **Boot Menu** appears
 
-#### Why BLE is Default?
-BLE mode provides smartphone control with keystroke relay, making it the most versatile mode for everyday use. PIN entry mode is still instantly accessible via button press.
+#### Boot Menu
 
-### Access Codes
+When you interrupt the countdown, a menu with 5 boot options appears:
+
+1. **Bluetooth (BLE)** - Smartphone control with keystroke relay
+2. **Terminal (CDC)** - Serial configuration mode
+3. **Password Mode** - Enter PIN to access password menu
+4. **Storage Mode** - Browse and type files from SD card
+5. **Macro / Text** - Browse and type macro files from SD card
+
+**Navigation:**
+- **Short press**: Scroll through menu items
+- **Long press** (>600ms): Select highlighted option
+
+#### Why Bluetooth is Default?
+Bluetooth mode provides smartphone control with keystroke relay, making it the most versatile mode for everyday use. All other modes are instantly accessible via the boot menu.
+
+### Access Codes (Legacy PIN Entry)
+
+These codes are only used in **Password Mode** selected from the boot menu:
 
 | Code | Function |
 |------|----------|
 | `1122` | Normal access (default login) |
-| `7273` | Reboot to CDC mode |
-| `0000` | Force BLE mode on next boot (also auto-boots by default) |
-| `5550` | SD Text File Typing mode (file-number screen; see "SD Text File Typing") |
+| `7273` | Reboot to Terminal (CDC) mode |
+| `0000` | Force Bluetooth mode on next boot |
+| `0001` | Reboot to Flash Drive (MSC) mode |
 
-Tip: Entering code `5550` shows a two-column list of up to 15 `.txt` files (numerically sorted) for quick selection.
-To start typing a file: enter its 4-digit number, then long-press the BOOT button to confirm.
+**Note**: The old `5550` file mode code is deprecated. Use **Storage Mode** or **Macro / Text** from the boot menu instead.
 
-Exit file-number mode:
-- Power cycle the device. On boot, simply do not enter `5550`.
-- Either let the countdown auto-boot to BLE, or press BOOT during countdown to go to PIN entry.
-
-### Normal Mode (Password Menu)
+### Password Mode
 1. Power on device
-2. **Press BOOT button during countdown** to access PIN entry
-3. Enter login code `1122` using boot button
+2. **Press BOOT button during countdown** to access boot menu
+3. Select **Password Mode** and long-press to confirm
+4. Enter login code `1122` using boot button
    - Short press: increment digit (0-9)
    - Long press (>600ms): confirm digit
-4. Select password from menu
-5. Hold button to type password via USB HID
+5. Select password from menu
+6. Hold button to type password via USB HID
 
-### CDC Mode (USB Serial Configuration)
-1. Enter code `7273` at boot
+### Terminal Mode (USB Serial Configuration)
+1. Press BOOT during countdown, select **Terminal (CDC)**, long-press to confirm
 2. Connect serial terminal at 115200 baud
 3. Available commands:
    - `HELP` - Show command list
@@ -100,6 +112,8 @@ Exit file-number mode:
    - `PWUPDATE` - Update passwords (requires auth)
    - `RETRIEVEPW` - Get stored passwords (requires auth)
    - `CHANGELOGIN` - Change 4-digit login code
+
+**Alternative**: Enter code `7273` in Password Mode to reboot directly to Terminal mode.
 
 Example:
 ```
@@ -111,13 +125,15 @@ Example:
 < OK: Passwords updated
 ```
 
-### BLE Mode (Smartphone Control)
-1. **Default**: Let 3-second countdown complete (or enter code `0000` for explicit boot)
+### Bluetooth Mode (Smartphone Control)
+1. **Default**: Let 3-second countdown complete
+   - **OR**: Press BOOT during countdown, select **Bluetooth (BLE)**, long-press to confirm
+   - **OR**: Enter code `0000` in Password Mode for explicit boot
 2. Device shows "BLE ACTIVE" and advertises as "PWDongle"
 3. Connect from smartphone using BLE UART terminal app:
    - Android: "Serial Bluetooth Terminal" or "nRF Connect"
    - iOS: "LightBlue" or "nRF Connect"
-4. Available commands (same as CDC mode, plus):
+4. Available commands (same as Terminal mode, plus):
    - `TYPE:text` - Type text on connected PC
    - `KEY:enter` - Send special key (enter, tab, backspace, etc.)
    - `KEY:ctrl+c` - Send key combination
@@ -133,23 +149,36 @@ Example keystroke relay:
 > KEY:enter
 < OK: Key sent to PC
 ```
+cloudfront.net
+### SD Card File Typing (Storage & Macro / Text Modes)
 
-Tip: SD Text Typing
-- To type text files from microSD without BLE, enter boot code `5550` at startup. You'll see a two-column list of up to 15 `.txt` files (e.g., `0001.txt`). Enter the 4-digit number to type that file over USB HID. See “SD Text File Typing” below for details.
+**New**: Browse and type text files from SD card using a scrollable menu instead of entering file numbers.
+
+#### How to Use
+1. Press BOOT button during countdown to access boot menu
+2. Select **Storage Mode** or **Macro / Text** (they work identically)
+3. Long-press to confirm
+4. Device scans SD card and displays up to 15 `.txt` files
+5. **Short press** - scroll through available files
+6. **Long press** - type the selected file via USB HID keyboard
+7. After typing completes, menu returns for next file selection
+
+#### File Menu Features
+- Displays up to 9 files at once with scrolling
+- Shows file counter (e.g., "3/12")
+- Automatically truncates long filenames
+- Files sorted numerically (0001.txt, 0002.txt, etc.)
+- Returns to menu after each file for quick re-typing
+
+#### File Requirements
+- Files must be in SD card root directory
+- Use `.txt` extension
+- Recommended naming: `NNNN.txt` (4 digits) for easy sorting
+- FAT32 format recommended for SD card
 
 ### SD Text File Typing
 
 Type the contents of text files stored on the microSD card via USB HID. Files support **macros** for delays, special keys, and more.
-
-- File format: place files in SD root named `NNNN.txt` (4 digits), e.g., `0001.txt`
-- Activation code: enter boot code `5550` to enter file-number mode
-- Screen UI: shows a two-column list of up to 15 available `.txt` files (basenames only), sorted numerically
-- Selecting file: enter the 4-digit number (e.g., `0001`) and hold to confirm; device types the file contents verbatim
-- Line endings: raw typing preserves CR (`\r`) and LF (`\n`) characters
-- Repeat: remains in file-number mode for subsequent files; repeat as needed
-
-Screenshot (placeholder):
-![SD file list UI](docs/sd-file-list-ui.svg)
 
 #### Macro Syntax
 
@@ -325,8 +354,8 @@ Example macro files are available in `samples/`:
 
 To run a sample:
 - Copy the files to the SD card root
-- Enter file-number mode with code `5550`
-- Type the 4-digit file number (e.g., `0092`) and hold to start
+- Boot to **Storage Mode** or **Macro / Text** from the boot menu
+- Scroll to the desired file and long-press to type
 
 ### Supported Keys (Legacy Reference)
 
@@ -385,21 +414,27 @@ PWDongle/
 
 ## Troubleshooting
 
-**BLE device not appearing in scan:**
-- Ensure code `0000` was entered
+**Bluetooth device not appearing in scan:**
+- Let countdown complete or select Bluetooth from boot menu
 - Check phone's Location permission (required for BLE on Android)
 - Try moving phone closer to device
 - Use "nRF Connect" app for most reliable scanning
 
 **TYPE/KEY commands not working:**
-- Verify device shows "BLE ACTIVE" screen after entering `0000`
+- Verify device shows "BLE ACTIVE" screen
 - Ensure PC recognizes device as USB keyboard
-- Check serial monitor for debug output
+- Check that both Bluetooth AND USB are connected
 
-**SD files not appearing in list:**
+**SD files not appearing in menu:**
 - Ensure the SD card is inserted and formatted (FAT32 recommended)
-- Use 4-digit filenames with `.txt` extension in the SD root (e.g., `0001.txt`)
-- Up to 15 files are listed; additional files won’t appear but can still be typed by number if present
+- Place `.txt` files in the SD card root directory
+- Up to 15 files are displayed
+- Verify files have `.txt` extension
+
+**Boot menu not appearing:**
+- Press BOOT button **during** the 3-second countdown (not before/after)
+- Hold button briefly until boot menu appears
+- Try shorter press if menu doesn't appear
 
 **Passwords not persisting:**
 - Use `ABOUT` command to verify persistence status
