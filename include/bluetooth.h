@@ -20,6 +20,13 @@ String getBLEDeviceName();
 void relayTypeToPC(const String& text);
 void relayKeyToPC(const String& keyName);
 
+// Macro recording
+extern bool isRecording;
+extern String recordingFilename;
+void startMacroRecording(const String& filename);
+void stopMacroRecording();
+void recordAction(const String& action);
+
 // External state
 extern int currentBLEMode;
 extern int dualModeActive;

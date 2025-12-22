@@ -15,13 +15,14 @@ Secure ESP32-S3 hardware password manager and advanced scripting device with TFT
 - **3.3" TFT Display** - Visual UI for PIN entry and menu navigation
 - **Persistent Configuration** - Login codes and passwords survive reboots
 
-### Advanced Scripting (v0.4)
+### Advanced Scripting (v0.4+)
 - **Variables & Expressions** - Integer and string variables with arithmetic operations
 - **Conditionals** - IF/ELSE/ENDIF logic with comparison operators
 - **Loops** - LOOP/ENDLOOP and FOR/NEXT constructs with nesting support
 - **Three Script Formats** - Auto-detects Advanced Scripting, DuckyScript, or Macro format
 - **GPC Syntax** - Game Profile Compiler compatibility for gaming automation
 - **SD Card Execution** - Run scripts from microSD with automatic format detection
+- **Macro Recording** - Record live keyboard/mouse input from smartphone (OTG) to SD card
 
 ## Hardware
 
@@ -49,7 +50,8 @@ Button:
 ### Option 1: Flash Pre-compiled Binary (Recommended)
 
 Download the latest release from the [releases folder](releases/):
-- **v0.4** `PWDongle-v0.4-esp32s3.bin` (1.12MB) - **Latest with Advanced Scripting**
+- **v0.5** `PWDongle-v0.5-esp32s3.bin` (1.13MB) - **Latest with Macro Recording**
+- v0.4 `PWDongle-v0.4-esp32s3.bin` (1.12MB) - Advanced Scripting
 - v0.3.1 `PWDongle-v0.3.1-esp32s3.bin` (1.11MB) - DuckyScript support
 - v0.3 `PWDongle-v0.3-esp32s3.bin` (1.1MB) - Boot menu and file browser
 
@@ -59,7 +61,7 @@ Download the latest release from the [releases folder](releases/):
 pip install esptool
 
 # Flash to ESP32-S3 (replace /dev/ttyUSB0 with your port)
-esptool.py --chip esp32s3 --port /dev/ttyUSB0 --baud 460800 write_flash 0x0 PWDongle-v0.3-esp32s3.bin
+esptool.py --chip esp32s3 --port /dev/ttyUSB0 --baud 460800 write_flash 0x0 PWDongle-v0.5-esp32s3.bin
 ```
 
 #### Using ESP Flash Download Tool (Windows)
@@ -186,7 +188,9 @@ Example keystroke relay:
 > KEY:enter
 < OK: Key sent to PC
 ```
-cloudfront.net
+
+**See `BLE_USAGE.md` for complete Bluetooth documentation including macro recording feature.**
+
 ### SD Card File Typing (Storage & Macro / Text Modes)
 
 **New**: Browse and type text files from SD card using a scrollable menu instead of entering file numbers.
@@ -503,6 +507,114 @@ To run a sample:
 
 ## Advanced Scripting Reference
 
+### Macro Recording (NEW in v0.5)
+
+**Record live keyboard/mouse input from smartphone with OTG adapters to create macros automatically.**
+
+#### Why Recording?
+- **No coding required** - Just perform actions naturally
+- **Perfect timing** - Automatic delay capture between actions
+- **Live editing** - See your macro being written in real-time
+- **Universal input** - Any USB keyboard/mouse works via OTG
+
+#### Hardware Setup
+1. **Smartphone** with OTG support (most Android/iOS devices)
+2. **USB OTG adapter** (USB-C or Lightning to USB-A)
+3. **USB keyboard** and/or **USB mouse**
+4. **PWDongle** connected to computer via USB
+5. **BLE connection** between smartphone and PWDongle
+
+#### Recording Workflow
+
+**Step 1: Start BLE Connection**
+- Power on PWDongle (let countdown complete for automatic BLE mode)
+- Open BLE UART app on smartphone (e.g., "Serial Bluetooth Terminal")
+- Connect to "PWDongle"
+
+**Step 2: Begin Recording**
+```
+> RECORD:my_macro
+< OK: Recording started to my_macro.txt
+```
+PWDongle display shows "RECORDING" screen with filename.
+
+**Step 3: Perform Actions on OTG Keyboard/Mouse**
+- Connect keyboard/mouse to smartphone via OTG adapter
+- Type text, press keys, move mouse - PWDongle records all actions
+- Send commands via BLE app:
+  - `KEY:keyname` - Records key press
+  - `MOUSE:action` - Records mouse movement/click
+  - `TYPE:text` - Records text typing
+  - `GAMEPAD:action` - Records gamepad input
+
+**Step 4: Stop Recording**
+```
+> STOPRECORD
+< OK: Recording saved to my_macro.txt (5s)
+```
+Display shows "RECORDING COMPLETE" with duration.
+
+**Step 5: Playback**
+- Power cycle PWDongle
+- Press BOOT during countdown → Select **Macro / Text**
+- Scroll to `my_macro.txt` and long-press to execute
+
+#### Recording Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `RECORD:filename` | Start recording to SD card | `RECORD:login_sequence` |
+| `STOPRECORD` | Stop and save recording | `STOPRECORD` |
+| `KEY:keyname` | Record key press | `KEY:enter`, `KEY:ctrl+c` |
+| `MOUSE:action` | Record mouse action | `MOUSE:MOVE 100 50`, `MOUSE:CLICK left` |
+| `TYPE:text` | Record text typing | `TYPE:username@example.com` |
+| `GAMEPAD:action` | Record gamepad input | `GAMEPAD:PRESS a` |
+
+**Note:** Delays between actions are automatically recorded (>50ms threshold).
+
+#### Example Recording Session
+
+**Scenario:** Record a login sequence
+
+```
+> RECORD:auto_login
+< OK: Recording started to auto_login.txt
+
+> KEY:win+r
+< (Recorded: {{KEY:win+r}} with timestamp)
+
+> TYPE:chrome
+< (Recorded: chrome with 300ms delay)
+
+> KEY:enter
+< (Recorded: {{KEY:enter}} with 200ms delay)
+
+> STOPRECORD
+< OK: Recording saved to auto_login.txt (2s)
+```
+
+**Generated file (`/auto_login.txt`):**
+```
+// Recorded macro
+// Format: PWDongle Macro
+
+{{KEY:win+r}}
+{{DELAY:300}}
+chrome
+{{DELAY:200}}
+{{KEY:enter}}
+
+// End of recording
+```
+
+#### Tips for Recording
+
+- **Use descriptive filenames** - `login_macro`, `game_combo`, `text_template`
+- **Test in pieces** - Record short sequences, test, then combine
+- **Clean up files** - Delete failed recordings to keep SD organized
+- **Check timing** - Some apps need longer delays; edit file to adjust
+- **Combine recordings** - Manually merge multiple recordings into one file
+
 ### Script Format Detection
 
 PWDongle automatically detects three script formats in priority order:
@@ -769,7 +881,7 @@ PWDongle/
 ├── lib/
 │   └── TFT_eSPI/
 │       └── User_Setup.h # Display driver config
-├── samples/             # Example scripts (NEW)
+├── samples/             # Example scripts
 │   ├── 0092.txt         # Audio control demo
 │   ├── 0093.txt         # Gamepad demo
 │   ├── 0094.txt         # Key combo demo
@@ -777,9 +889,11 @@ PWDongle/
 │   ├── ducky_notepad.txt # DuckyScript notepad
 │   ├── advanced_calc.txt # Variables & conditionals
 │   ├── gpc_example.txt  # GPC syntax demo
-│   └── nested_loops.txt # Nested loop example
+│   ├── nested_loops.txt # Nested loop example
+│   └── recorded_example.txt # Macro recording example (NEW v0.5)
 ├── releases/            # Pre-compiled binaries
-│   ├── PWDongle-v0.4-esp32s3.bin     # Latest (1.12MB)
+│   ├── PWDongle-v0.5-esp32s3.bin     # Latest (1.13MB)
+│   ├── PWDongle-v0.4-esp32s3.bin     # Advanced Scripting
 │   ├── PWDongle-v0.3.1-esp32s3.bin   # DuckyScript
 │   └── PWDongle-v0.3-esp32s3.bin     # Boot menu
 ├── boards/
@@ -794,7 +908,7 @@ PWDongle/
 ### Storage (NVS)
 - **Namespace "devstore"**: Up to 10 device/password pairs
 - **Namespace "CDC"**: CDC boot flag
-- **Namespace "BLE"**: BLE boot flagUSB OTG
+- **Namespace "BLE"**: BLE boot flag
 - **Namespace "SEC"**: Persisted login code
 
 ### BLE Service
@@ -851,7 +965,15 @@ PWDongle/
 
 ## Version History
 
-### v0.4 (Current) - Advanced Scripting
+### v0.5 (Current) - Macro Recording
+- **Live Recording**: Record keyboard/mouse input from smartphone OTG to SD card
+- **BLE Commands**: RECORD:filename, STOPRECORD with automatic delay capture
+- **Recording UI**: "RECORDING" screen with filename, "RECORDING COMPLETE" with duration
+- **File Format**: PWDongle macro syntax with automatic {{DELAY:ms}} timing (>50ms threshold)
+- **Sample File**: recorded_example.txt demonstrates recorded macro format
+- Flash: 1.13MB (33.7%), RAM: 58KB (17.9%)
+
+### v0.4 - Advanced Scripting
 - **Variables**: Integer and string variable support
 - **Conditionals**: IF/ELSE/ENDIF with comparison operators
 - **Loops**: LOOP/ENDLOOP and FOR/NEXT constructs

@@ -377,3 +377,78 @@ void drawFileMenu(int selectedIndex, String fileList[], int fileCount) {
   tft.setCursor(10, 265);
   tft.println("Long: type file");
 }
+
+void showRecordingScreen(const String& filename) {
+  tft.setRotation(0); // Portrait
+  tft.fillScreen(TFT_BLACK);
+  
+  tft.setTextSize(2);
+  tft.setTextColor(TFT_RED, TFT_BLACK);
+  tft.setCursor(10, 40);
+  tft.println("RECORDING");
+  
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.setCursor(10, 80);
+  tft.println("File:");
+  tft.setTextColor(TFT_CYAN, TFT_BLACK);
+  tft.setCursor(10, 95);
+  tft.println(filename);
+  
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+  tft.setCursor(10, 130);
+  tft.println("Send from phone:");
+  tft.setCursor(10, 145);
+  tft.println("KEY:keyname");
+  tft.setCursor(10, 160);
+  tft.println("MOUSE:action");
+  tft.setCursor(10, 175);
+  tft.println("TYPE:text");
+  tft.setCursor(10, 190);
+  tft.println("GAMEPAD:action");
+  
+  tft.setCursor(10, 220);
+  tft.setTextColor(TFT_GREEN, TFT_BLACK);
+  tft.println("STOPRECORD to end");
+}
+
+void showRecordingStatus(const String& status) {
+  // Update status area without full redraw
+  tft.fillRect(0, 250, 172, 20, TFT_BLACK);
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_GREEN, TFT_BLACK);
+  tft.setCursor(10, 250);
+  tft.print("Last: ");
+  tft.println(status);
+}
+
+void showRecordingStopped(const String& filename, unsigned long durationSeconds) {
+  tft.setRotation(0); // Portrait
+  tft.fillScreen(TFT_BLACK);
+  
+  tft.setTextSize(2);
+  tft.setTextColor(TFT_GREEN, TFT_BLACK);
+  tft.setCursor(10, 80);
+  tft.println("RECORDING");
+  tft.println("COMPLETE");
+  
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.setCursor(10, 140);
+  tft.println("Saved to:");
+  tft.setTextColor(TFT_CYAN, TFT_BLACK);
+  tft.setCursor(10, 155);
+  tft.println(filename);
+  
+  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+  tft.setCursor(10, 180);
+  tft.print("Duration: ");
+  tft.print(durationSeconds);
+  tft.println(" seconds");
+  
+  tft.setCursor(10, 210);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.println("File ready to play");
+  tft.println("from Storage mode");
+}

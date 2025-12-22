@@ -55,7 +55,72 @@ PWDongle supports BLE connectivity for smartphone control using the Nordic UART 
 - **RETRIEVEPW** - Get stored passwords (requires auth)
 - **CHANGELOGIN** - Change 4-digit login code
 
-### Macro Input (NEW!)
+### Macro Recording (NEW in v0.5!)
+
+**Record live keyboard/mouse input from smartphone with OTG adapters to create macros automatically.**
+
+#### Hardware Setup
+- **Smartphone** with OTG support (Android/iOS)
+- **USB OTG adapter** (USB-C or Lightning to USB-A)
+- **USB keyboard/mouse** connected to smartphone via OTG
+- **PWDongle** connected to PC via USB
+- **BLE connection** between smartphone and PWDongle
+
+#### Recording Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `RECORD:filename` | Start recording to SD card (`.txt` added automatically) | `RECORD:login_macro` |
+| `STOPRECORD` | Stop and save recording with duration | `STOPRECORD` |
+| `KEY:keyname` | Record key press with automatic delay | `KEY:enter`, `KEY:ctrl+c` |
+| `MOUSE:action` | Record mouse movement/click | `MOUSE:MOVE 100 50`, `MOUSE:CLICK left` |
+| `TYPE:text` | Record text typing (preserves spaces) | `TYPE:username@example.com` |
+| `GAMEPAD:action` | Record gamepad input | `GAMEPAD:PRESS a` |
+
+**Note:** Delays between actions are automatically recorded (>50ms threshold).
+
+#### Recording Workflow
+
+**Step 1: Connect**
+- Let PWDongle boot to BLE mode (default)
+- Connect smartphone to "PWDongle" via BLE UART app
+
+**Step 2: Start Recording**
+```
+> RECORD:auto_login
+< OK: Recording started to auto_login.txt
+```
+Display shows "RECORDING" screen with filename and command hints.
+
+**Step 3: Perform Actions**
+- Connect keyboard/mouse to smartphone via OTG
+- Send commands via BLE app:
+```
+> KEY:win+r
+> TYPE:chrome
+> KEY:enter
+```
+
+**Step 4: Stop Recording**
+```
+> STOPRECORD
+< OK: Recording saved to auto_login.txt (3s)
+```
+Display shows "RECORDING COMPLETE" with duration.
+
+**Step 5: Playback**
+- Power cycle PWDongle
+- Press BOOT during countdown → **Macro / Text** mode
+- Select recorded file and long-press to execute
+
+#### Recording Tips
+- **Descriptive names**: `login_macro`, `game_combo`, `text_template`
+- **Test in pieces**: Record short sequences, verify, then combine
+- **Clean SD card**: Delete failed recordings to stay organized
+- **Adjust timing**: Edit `.txt` file to modify delays if needed
+- **Combine files**: Manually merge multiple recordings into one
+
+### Macro Input
 
 BLE now supports **full macro syntax** - identical to SD text files. Any text you send is typed via USB HID with embedded token support:
 

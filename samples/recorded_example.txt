@@ -1,0 +1,22 @@
+// Recorded macro
+// Format: PWDongle Macro
+// This is an example of a macro created via BLE recording
+// Recording session: Open calculator, perform basic math
+
+{{KEY:win+r}}
+{{DELAY:250}}
+calc
+{{DELAY:100}}
+{{KEY:enter}}
+{{DELAY:500}}
+{{KEY:5}}
+{{DELAY:150}}
+{{KEY:numpad_multiply}}
+{{DELAY:100}}
+{{KEY:9}}
+{{DELAY:120}}
+{{KEY:equals}}
+{{DELAY:300}}
+{{KEY:alt+f4}}
+
+// End of recording

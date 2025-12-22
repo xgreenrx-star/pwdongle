@@ -25,7 +25,7 @@ extern USBHIDGamepad Gamepad;
 int currentUSBMode = MODE_HID;
 static USBMSC MSC;
 static sdmmc_card_t* sdCard = nullptr;
-static bool sdUseMMC = false;
+bool sdUseMMC = false;  // Non-static to allow extern access from bluetooth.cpp
 static bool sdReady = false;
 static SPIClass sdSPI(HSPI);
 
@@ -95,6 +95,11 @@ void processBLELine(const String& rawLine) {
       sendBLEResponse("  PWUPDATE - update passwords (requires login auth)");
       sendBLEResponse("  RETRIEVEPW - retrieve stored passwords (requires login auth)");
       sendBLEResponse("  CHANGELOGIN - change the 4-digit login code");
+      sendBLEResponse("  RECORD:filename - start macro recording");
+      sendBLEResponse("  STOPRECORD - stop macro recording");
+      sendBLEResponse("  KEY:keyname - record key press");
+      sendBLEResponse("  MOUSE:action - record mouse action");
+      sendBLEResponse("  TYPE:text - record text typing");
       sendBLEResponse("Macro syntax: {{KEY:name}}, {{DELAY:ms}}, {{MOUSE:...}}, {{GAMEPAD:...}}, {{AUDIO:...}}");
       sendBLEResponse("Any text without command prefix is typed via USB HID");
       sendBLEResponse("Usage: send command, then follow prompts from device");
@@ -103,7 +108,7 @@ void processBLELine(const String& rawLine) {
     }
     if (line.equalsIgnoreCase("ABOUT")) {
       char buf[128];
-      snprintf(buf, sizeof(buf), "OK: PWDongle firmware v0.3 - built %s %s", __DATE__, __TIME__);
+      snprintf(buf, sizeof(buf), "OK: PWDongle firmware v0.5 - built %s %s", __DATE__, __TIME__);
       sendBLEResponse(buf);
       sendBLEResponse("Board: ESP32-S3");
       sendBLEResponse("Library: TFT_eSPI + BLE");
@@ -111,8 +116,69 @@ void processBLELine(const String& rawLine) {
       sendBLEResponse("Login code: **** (masked)");
       bool persisted = isLoginCodePersisted();
       sendBLEResponse(persisted ? "Persisted: Yes" : "Persisted: No");
+      if (isRecording) {
+        sendBLEResponse("Recording: " + recordingFilename);
+      }
       return;
     }
+    
+    // Macro recording commands
+    if (line.startsWith("RECORD:") || line.startsWith("record:")) {
+      String filename = line.substring(7);
+      filename.trim();
+      if (filename.length() == 0) {
+        sendBLEResponse("ERROR: Filename required. Usage: RECORD:filename");
+        return;
+      }
+      startMacroRecording(filename);
+      return;
+    }
+    
+    if (line.equalsIgnoreCase("STOPRECORD") || line.equalsIgnoreCase("STOP")) {
+      stopMacroRecording();
+      return;
+    }
+    
+    // Recording mode: capture KEY, MOUSE, TYPE commands
+    if (isRecording) {
+      if (line.startsWith("KEY:") || line.startsWith("key:")) {
+        String keyName = line.substring(4);
+        keyName.trim();
+        recordAction("{{KEY:" + keyName + "}}");
+        sendBLEResponse("OK: Recorded key");
+        return;
+      }
+      
+      if (line.startsWith("MOUSE:") || line.startsWith("mouse:")) {
+        String mouseAction = line.substring(6);
+        mouseAction.trim();
+        recordAction("{{MOUSE:" + mouseAction + "}}");
+        sendBLEResponse("OK: Recorded mouse");
+        return;
+      }
+      
+      if (line.startsWith("TYPE:") || line.startsWith("type:")) {
+        String text = line.substring(5);
+        // Don't trim - preserve spaces
+        recordAction(text);
+        sendBLEResponse("OK: Recorded text");
+        return;
+      }
+      
+      if (line.startsWith("GAMEPAD:") || line.startsWith("gamepad:")) {
+        String gamepadAction = line.substring(8);
+        gamepadAction.trim();
+        recordAction("{{GAMEPAD:" + gamepadAction + "}}");
+        sendBLEResponse("OK: Recorded gamepad");
+        return;
+      }
+      
+      // In recording mode, treat any other text as literal typing
+      recordAction(line);
+      sendBLEResponse("OK: Recorded");
+      return;
+    }
+    
     if (line.equalsIgnoreCase("PWUPDATE")) {
       sendBLEResponse("OK: Enter the login code to authorize PW update");
       serialState = CMD_PWUPDATE_WAIT_CODE;
@@ -222,7 +288,7 @@ void processSerialLine(const String& rawLine) {
     }
     if (line.equalsIgnoreCase("ABOUT")) {
       char buf[128];
-      snprintf(buf, sizeof(buf), "OK: PWDongle firmware v0.3 - built %s %s", __DATE__, __TIME__);
+      snprintf(buf, sizeof(buf), "OK: PWDongle firmware v0.5 - built %s %s", __DATE__, __TIME__);
       sendSerialResponse(buf);
       sendSerialResponse("Board: ESP32-S3");
       sendSerialResponse("Library: TFT_eSPI");
@@ -330,7 +396,7 @@ void startUSBMode(int mode) {
     // HID Keyboard mode
     USB.manufacturerName("Narcean Technologies");
     USB.serialNumber("SN-0000001");
-    USB.productName("PWDongle v0.3 HID");
+    USB.productName("PWDongle v0.5 HID");
     Keyboard.begin();
     Mouse.begin();
     Gamepad.begin();
@@ -341,7 +407,7 @@ void startUSBMode(int mode) {
     // CDC Serial mode
     USB.manufacturerName("Narcean Technologies");
     USB.serialNumber("SN-0000001");
-    USB.productName("PWDongle v0.3 CDC");
+    USB.productName("PWDongle v0.5 CDC");
    
     Serial.begin(115200);
     Serial.setRxBufferSize(BUF_SIZE);

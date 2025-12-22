@@ -4,6 +4,9 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <USBHIDKeyboard.h>
+#include <SD.h>
+#include <SD_MMC.h>
+#include "display.h"
 
 // Nordic UART Service (NUS) UUIDs - widely supported by BLE terminal apps
 #define SERVICE_UUID           "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
@@ -12,6 +15,10 @@
 
 // External reference to Keyboard object
 extern USBHIDKeyboard Keyboard;
+
+// External SD card status
+extern bool sdUseMMC;
+extern bool sdReady;
 
 static BLEServer *pServer = nullptr;
 static BLECharacteristic *pTxCharacteristic = nullptr;
@@ -305,4 +312,100 @@ void relayKeyToPC(const String& keyName) {
   } else {
     Serial.println("dualModeActive is 0, skipping");
   }
+}
+
+// Macro recording functionality
+bool isRecording = false;
+String recordingFilename = "";
+File recordingFile;
+unsigned long recordingStartTime = 0;
+unsigned long lastActionTime = 0;
+
+void startMacroRecording(const String& filename) {
+  if (isRecording) {
+    stopMacroRecording();
+  }
+  
+  recordingFilename = filename;
+  
+  // Ensure filename has .txt extension
+  if (!recordingFilename.endsWith(".txt")) {
+    recordingFilename += ".txt";
+  }
+  
+  // Open file for writing
+  String filepath = "/" + recordingFilename;
+  
+  if (sdUseMMC) {
+    recordingFile = SD_MMC.open(filepath.c_str(), FILE_WRITE);
+  } else {
+    recordingFile = SD.open(filepath.c_str(), FILE_WRITE);
+  }
+  
+  if (!recordingFile) {
+    sendBLEResponse("ERROR: Cannot create file on SD card");
+    Serial.println("Failed to create recording file");
+    return;
+  }
+  
+  isRecording = true;
+  recordingStartTime = millis();
+  lastActionTime = recordingStartTime;
+  
+  // Write header comment
+  recordingFile.println("// Recorded macro");
+  recordingFile.println("// Format: PWDongle Macro");
+  recordingFile.println();
+  
+  // Display recording screen
+  showRecordingScreen(recordingFilename);
+  
+  sendBLEResponse("OK: Recording started to " + recordingFilename);
+  Serial.println("Macro recording started: " + recordingFilename);
+}
+
+void stopMacroRecording() {
+  if (!isRecording) {
+    sendBLEResponse("ERROR: Not currently recording");
+    return;
+  }
+  
+  if (recordingFile) {
+    recordingFile.println();
+    recordingFile.println("// End of recording");
+    recordingFile.close();
+  }
+  
+  isRecording = false;
+  unsigned long duration = (millis() - recordingStartTime) / 1000;
+  
+  // Display completion screen
+  showRecordingStopped(recordingFilename, duration);
+  
+  sendBLEResponse("OK: Recording saved to " + recordingFilename + " (" + String(duration) + "s)");
+  Serial.println("Macro recording stopped. Duration: " + String(duration) + "s");
+  
+  recordingFilename = "";
+}
+
+void recordAction(const String& action) {
+  if (!isRecording || !recordingFile) {
+    return;
+  }
+  
+  // Calculate delay since last action
+  unsigned long currentTime = millis();
+  unsigned long delaySinceLastAction = currentTime - lastActionTime;
+  
+  // Write delay if significant (>50ms)
+  if (delaySinceLastAction > 50) {
+    recordingFile.println("{{DELAY:" + String(delaySinceLastAction) + "}}");
+  }
+  
+  // Write the action
+  recordingFile.println(action);
+  
+  lastActionTime = currentTime;
+  
+  Serial.println("Recorded: " + action);
 }

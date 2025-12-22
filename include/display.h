@@ -47,4 +47,9 @@ void drawBootMenu(int selectedIndex);
 // File selection menu
 void drawFileMenu(int selectedIndex, String fileList[], int fileCount);
 
+// Macro recording display
+void showRecordingScreen(const String& filename);
+void showRecordingStatus(const String& status);
+void showRecordingStopped(const String& filename, unsigned long durationSeconds);
+
 #endif
