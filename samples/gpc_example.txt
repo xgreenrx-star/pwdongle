@@ -1,0 +1,35 @@
+// GPC-Style Script Example
+// Demonstrates Game Profile Compiler syntax
+
+// Initialize variables
+VAR button_pressed = 0
+VAR delay_time = 100
+
+// GPC wait function
+wait(500)
+
+// Open notepad for demo
+{{KEY:win+r}}
+wait(200)
+STRING notepad{{KEY:enter}}
+wait(500)
+
+// Type GPC-style message
+STRING GPC Script Running{{KEY:enter}}
+wait(300)
+
+// Loop with GPC syntax
+VAR i = 0
+FOR i = 1 TO 5
+    STRING Iteration: 
+    wait(delay_time)
+    {{KEY:enter}}
+NEXT i
+
+wait(200)
+STRING Script Complete{{KEY:enter}}
+
+// GPC gamepad example (commented out)
+// set_val(XB1_A, 100)
+// wait(50)
+// set_val(XB1_A, 0)

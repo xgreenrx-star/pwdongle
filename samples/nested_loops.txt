@@ -1,0 +1,31 @@
+// Advanced Script: Nested Loops and Math
+// Demonstrates complex control flow
+
+VAR outer = 0
+VAR inner = 0
+VAR total = 0
+
+// Open notepad
+{{DELAY:500}}
+{{KEY:win+r}}
+{{DELAY:200}}
+STRING notepad{{KEY:enter}}
+{{DELAY:500}}
+
+STRING Multiplication Table{{KEY:enter}}
+STRING ====================={{KEY:enter}}
+{{DELAY:300}}
+
+// Nested loop structure
+FOR outer = 1 TO 3
+    FOR inner = 1 TO 3
+        total = outer * inner
+        // In a full implementation, would print: outer x inner = total
+        STRING Row {{DELAY:100}}
+        {{KEY:enter}}
+    NEXT inner
+    {{DELAY:200}}
+NEXT outer
+
+{{DELAY:300}}
+STRING Calculation complete!{{KEY:enter}}

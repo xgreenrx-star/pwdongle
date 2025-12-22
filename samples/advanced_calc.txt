@@ -1,0 +1,27 @@
+// Advanced Script: Variables and Conditionals
+// Opens calculator and performs conditional logic
+
+VAR x = 10
+VAR y = 5
+
+// Open calculator
+{{DELAY:500}}
+{{KEY:win+r}}
+{{DELAY:200}}
+STRING calc{{KEY:enter}}
+{{DELAY:500}}
+
+// Conditional example
+IF x > y
+    STRING X is greater{{KEY:enter}}
+ELSE
+    STRING Y is greater{{KEY:enter}}
+ENDIF
+
+// Loop example
+VAR counter = 0
+LOOP 3
+    counter = counter + 1
+    {{DELAY:500}}
+    STRING Loop {{DELAY:100}}
+ENDLOOP

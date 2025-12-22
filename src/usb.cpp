@@ -14,6 +14,7 @@
 #include "security.h"
 #include "display.h"
 #include "duckyscript.h"
+#include "scriptengine.h"
 
 // External references (defined in main.cpp)
 extern USBHIDKeyboard Keyboard;
@@ -1432,10 +1433,41 @@ void processTextFileAuto(const String& baseName) {
   }
   f.close();
 
-  // Detect if it's DuckyScript
-  bool isDucky = isDuckyScriptFile(sample);
+  // Detect format: Advanced > DuckyScript > Macro
+  bool isAdvanced = isAdvancedScript(sample);
+  bool isDucky = !isAdvanced && isDuckyScriptFile(sample);
 
-  if (isDucky) {
+  if (isAdvanced) {
+    showStartupMessage("Advanced script");
+    delay(300);
+    
+    // Re-open and read entire file
+    if (sdUseMMC) {
+      f = SD_MMC.open(filename.c_str(), FILE_READ);
+    } else {
+      f = SD.open(filename.c_str(), FILE_READ);
+    }
+    
+    if (!f) {
+      showStartupMessage("File read error");
+      delay(800);
+      return;
+    }
+    
+    String content = "";
+    while (f.available()) {
+      content += (char)f.read();
+    }
+    f.close();
+    
+    showStartupMessage("Executing...");
+    delay(200);
+    
+    executeAdvancedScript(content);
+    
+    showStartupMessage("Script complete");
+    delay(600);
+  } else if (isDucky) {
     showStartupMessage("DuckyScript detected");
     delay(300);
     

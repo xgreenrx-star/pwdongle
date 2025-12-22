@@ -205,9 +205,72 @@ cloudfront.net
 
 #### Supported Formats
 
-PWDongle automatically detects and processes two script formats:
+PWDongle automatically detects and processes three script formats:
 
-**1. DuckyScript (RubberDucky Compatible)**
+**1. Advanced Scripting (Variables, Loops, Conditionals)**
+
+Full-featured scripting language with programming constructs. Automatically detected when file contains variables, loops, or conditionals.
+
+**Variables:**
+```
+VAR counter = 0
+VAR name = "test"
+x = 10
+y = x + 5
+```
+
+**Conditionals:**
+```
+IF x > 5
+    STRING X is greater than 5{{KEY:enter}}
+ELSE
+    STRING X is 5 or less{{KEY:enter}}
+ENDIF
+```
+
+**Loops:**
+```
+LOOP 5
+    STRING Hello{{KEY:enter}}
+    {{DELAY:200}}
+ENDLOOP
+
+FOR i = 1 TO 10
+    STRING Iteration{{KEY:enter}}
+NEXT i
+```
+
+**Expressions:**
+- Arithmetic: `+`, `-`, `*`, `/`, `%`
+- Comparisons: `==`, `!=`, `<`, `>`, `<=`, `>=`
+- Logical: `&&`, `||`
+- Parentheses for grouping
+
+**GPC (Game Profile Compiler) Syntax:**
+```
+wait(500)              // Delay in milliseconds
+set_val(XB1_A, 100)   // Set gamepad button/axis
+```
+
+**Example Advanced Script:**
+```
+VAR x = 10
+{{KEY:win+r}}
+{{DELAY:200}}
+STRING notepad{{KEY:enter}}
+{{DELAY:500}}
+
+IF x > 5
+    STRING X is greater!{{KEY:enter}}
+ENDIF
+
+FOR i = 1 TO 3
+    STRING Loop iteration{{KEY:enter}}
+    wait(300)
+NEXT i
+```
+
+**2. DuckyScript (RubberDucky Compatible)**
 
 Classic BadUSB script format. Automatically detected when file contains DuckyScript keywords.
 
@@ -232,7 +295,7 @@ STRING calc
 ENTER
 ```
 
-**2. PWDongle Macro Format**
+**3. PWDongle Macro Format**
 
 Advanced macro language with `{{TOKEN}}` syntax. See [Macro Syntax](#macro-syntax) below for full reference.
 
@@ -452,7 +515,7 @@ PWDongle/
 ### Storage (NVS)
 - **Namespace "devstore"**: Up to 10 device/password pairs
 - **Namespace "CDC"**: CDC boot flag
-- **Namespace "BLE"**: BLE boot flag
+- **Namespace "BLE"**: BLE boot flagUSB OTG
 - **Namespace "SEC"**: Persisted login code
 
 ### BLE Service
