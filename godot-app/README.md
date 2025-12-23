@@ -165,7 +165,7 @@ See [BLE_PLUGIN_RESEARCH.md](BLE_PLUGIN_RESEARCH.md) for implementation guide.
 
 ## License
 
-This companion app follows the same license as the main PWDongle project.
+This companion app is licensed under the **GNU General Public License v3.0 (or later)**, consistent with the main PWDongle project. See the root `LICENSE` file for the full text.
 
 ## Related Documentation
 

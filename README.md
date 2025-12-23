@@ -1038,7 +1038,11 @@ A **cross-platform mobile companion app** built with **Godot 4.3** is available 
 
 ## License
 
-This project is open source. See repository for details.
+This project is licensed under the **GNU General Public License v3.0 (or later)**.
+
+- Full license text: see `LICENSE`
+- You may redistribute and/or modify under the terms of GPLv3 or (at your option) any later version
+- This software is provided **without any warranty**; see the license for details
 
 ## Contributing
 
