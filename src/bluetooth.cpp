@@ -333,6 +333,15 @@ void startMacroRecording(const String& filename) {
     recordingFilename += ".txt";
   }
   
+  // Ensure SD card is initialized before recording
+  // This is defined in usb.cpp but we need extern access
+  extern bool ensureSDReadyForRecording();
+  if (!ensureSDReadyForRecording()) {
+    sendBLEResponse("ERROR: SD card not available");
+    Serial.println("SD card initialization failed");
+    return;
+  }
+  
   // Open file for writing
   String filepath = "/" + recordingFilename;
   
@@ -352,11 +361,6 @@ void startMacroRecording(const String& filename) {
   recordingStartTime = millis();
   lastActionTime = recordingStartTime;
   
-  // Write header comment
-  recordingFile.println("// Recorded macro");
-  recordingFile.println("// Format: PWDongle Macro");
-  recordingFile.println();
-  
   // Display recording screen
   showRecordingScreen(recordingFilename);
   
@@ -371,8 +375,6 @@ void stopMacroRecording() {
   }
   
   if (recordingFile) {
-    recordingFile.println();
-    recordingFile.println("// End of recording");
     recordingFile.close();
   }
   
@@ -397,8 +399,9 @@ void recordAction(const String& action) {
   unsigned long currentTime = millis();
   unsigned long delaySinceLastAction = currentTime - lastActionTime;
   
-  // Write delay if significant (>50ms)
-  if (delaySinceLastAction > 50) {
+  // Always write delay for accurate timing reproduction (even short delays)
+  // This captures typing speed, pauses between keystrokes, etc.
+  if (delaySinceLastAction > 0) {
     recordingFile.println("{{DELAY:" + String(delaySinceLastAction) + "}}");
   }
   
@@ -407,5 +410,5 @@ void recordAction(const String& action) {
   
   lastActionTime = currentTime;
   
-  Serial.println("Recorded: " + action);
+  Serial.println("Recorded: " + action + " (delay: " + String(delaySinceLastAction) + "ms)");
 }

@@ -186,11 +186,24 @@ void setup() {
       showDigitScreen();
       
     } else if (bootMenuSelection == 3) {
-      // Storage Mode - show file selection menu
-      inFileMenu = true;
-      listSDTextFiles(fileList, fileCount);
-      fileMenuSelection = 0;
-      drawFileMenu(fileMenuSelection, fileList, fileCount);
+      // Storage Mode - mount SD as USB mass storage (MSC)
+      tft.fillScreen(TFT_CYAN);
+      tft.setTextColor(TFT_BLACK, TFT_CYAN);
+      tft.setTextSize(2);
+      tft.setCursor(10, 40);
+      tft.println("STORAGE MODE");
+      tft.setTextSize(1);
+      tft.setCursor(10, 80);
+      tft.println("SD card is now mounted");
+      tft.setCursor(10, 100);
+      tft.println("as a USB drive.");
+      tft.setCursor(10, 120);
+      tft.println("Eject before unplugging!");
+      startUSBMode(MODE_MSC);
+      // Remain here until reboot or mode switch
+      while (true) {
+        delay(1000);
+      }
       
     } else if (bootMenuSelection == 4) {
       // Macro / Text Mode - show file selection menu

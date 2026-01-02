@@ -29,6 +29,12 @@ bool sdUseMMC = false;  // Non-static to allow extern access from bluetooth.cpp
 static bool sdReady = false;
 static SPIClass sdSPI(HSPI);
 
+// Mouse position tracking for absolute positioning
+static int mouseX = 0;
+static int mouseY = 0;
+static const int SCREEN_WIDTH = 1920;  // Default screen resolution
+static const int SCREEN_HEIGHT = 1080;
+
 // Command processing state
 enum SerialCmdState {
   CMD_IDLE = 0,
@@ -97,9 +103,18 @@ void processBLELine(const String& rawLine) {
       sendBLEResponse("  CHANGELOGIN - change the 4-digit login code");
       sendBLEResponse("  RECORD:filename - start macro recording");
       sendBLEResponse("  STOPRECORD - stop macro recording");
+      sendBLEResponse("  PLAY:filename - play/execute a macro file");
+      sendBLEResponse("  LIST - list macro files on SD card");
       sendBLEResponse("  KEY:keyname - record key press");
       sendBLEResponse("  MOUSE:action - record mouse action");
       sendBLEResponse("  TYPE:text - record text typing");
+      sendBLEResponse("Mouse commands:");
+      sendBLEResponse("  MOUSE:RESET - move to (0,0)");
+      sendBLEResponse("  MOUSE:MOVE:x,y - absolute position");
+      sendBLEResponse("  MOUSE:MOVE_REL:dx,dy - relative move");
+      sendBLEResponse("  MOUSE:CLICK:left/right/middle");
+      sendBLEResponse("  MOUSE:DOWN:button / MOUSE:UP:button");
+      sendBLEResponse("  MOUSE:SCROLL:amount");
       sendBLEResponse("Macro syntax: {{KEY:name}}, {{DELAY:ms}}, {{MOUSE:...}}, {{GAMEPAD:...}}, {{AUDIO:...}}");
       sendBLEResponse("Any text without command prefix is typed via USB HID");
       sendBLEResponse("Usage: send command, then follow prompts from device");
@@ -139,13 +154,52 @@ void processBLELine(const String& rawLine) {
       return;
     }
     
-    // Recording mode: capture KEY, MOUSE, TYPE commands
+    // Macro playback commands
+    if (line.startsWith("PLAY:") || line.startsWith("play:")) {
+      String filename = line.substring(5);
+      filename.trim();
+      if (filename.length() == 0) {
+        sendBLEResponse("ERROR: Filename required. Usage: PLAY:filename");
+        return;
+      }
+      // Remove .txt extension if present (processTextFileAuto adds it)
+      if (filename.endsWith(".txt")) {
+        filename = filename.substring(0, filename.length() - 4);
+      }
+      sendBLEResponse("OK: Playing " + filename);
+      processTextFileAuto(filename);
+      sendBLEResponse("OK: Playback complete");
+      return;
+    }
+    
+    if (line.equalsIgnoreCase("LIST")) {
+      if (!ensureSDReadyForRecording()) {
+        sendBLEResponse("ERROR: SD card not available");
+        return;
+      }
+      sendBLEResponse("OK: Listing macro files:");
+      String fileList[15];
+      int fileCount = 0;
+      listSDTextFiles(fileList, fileCount);
+      if (fileCount == 0) {
+        sendBLEResponse("  (no files found)");
+      } else {
+        for (int i = 0; i < fileCount; i++) {
+          sendBLEResponse("  " + String(i+1) + ". " + fileList[i]);
+        }
+      }
+      return;
+    }
+    
+    // Recording mode: capture KEY, MOUSE, TYPE commands AND execute them in real-time
     if (isRecording) {
       if (line.startsWith("KEY:") || line.startsWith("key:")) {
         String keyName = line.substring(4);
         keyName.trim();
         recordAction("{{KEY:" + keyName + "}}");
-        sendBLEResponse("OK: Recorded key");
+        // Execute in real-time for passthrough
+        processMacroText("{{KEY:" + keyName + "}}");
+        sendBLEResponse("OK: Recorded & executed key");
         return;
       }
       
@@ -153,7 +207,9 @@ void processBLELine(const String& rawLine) {
         String mouseAction = line.substring(6);
         mouseAction.trim();
         recordAction("{{MOUSE:" + mouseAction + "}}");
-        sendBLEResponse("OK: Recorded mouse");
+        // Execute in real-time for passthrough
+        processMacroText("{{MOUSE:" + mouseAction + "}}");
+        sendBLEResponse("OK: Recorded & executed mouse");
         return;
       }
       
@@ -161,7 +217,9 @@ void processBLELine(const String& rawLine) {
         String text = line.substring(5);
         // Don't trim - preserve spaces
         recordAction(text);
-        sendBLEResponse("OK: Recorded text");
+        // Execute in real-time for passthrough
+        processMacroText(text);
+        sendBLEResponse("OK: Recorded & executed text");
         return;
       }
       
@@ -169,13 +227,17 @@ void processBLELine(const String& rawLine) {
         String gamepadAction = line.substring(8);
         gamepadAction.trim();
         recordAction("{{GAMEPAD:" + gamepadAction + "}}");
-        sendBLEResponse("OK: Recorded gamepad");
+        // Execute in real-time for passthrough
+        processMacroText("{{GAMEPAD:" + gamepadAction + "}}");
+        sendBLEResponse("OK: Recorded & executed gamepad");
         return;
       }
       
       // In recording mode, treat any other text as literal typing
       recordAction(line);
-      sendBLEResponse("OK: Recorded");
+      // Execute in real-time for passthrough
+      processMacroText(line);
+      sendBLEResponse("OK: Recorded & executed");
       return;
     }
     
@@ -194,7 +256,41 @@ void processBLELine(const String& rawLine) {
       serialState = CMD_CHANGELOGIN_WAIT_OLD;
       return;
     }
-    // Not a system command - treat as macro text to type via USB HID
+    
+    // Non-recording mode: execute KEY, MOUSE, TYPE, GAMEPAD commands in real-time
+    if (line.startsWith("KEY:") || line.startsWith("key:")) {
+      String keyName = line.substring(4);
+      keyName.trim();
+      processMacroText("{{KEY:" + keyName + "}}");
+      sendBLEResponse("OK: Key sent");
+      return;
+    }
+    
+    if (line.startsWith("MOUSE:") || line.startsWith("mouse:")) {
+      String mouseAction = line.substring(6);
+      mouseAction.trim();
+      processMacroText("{{MOUSE:" + mouseAction + "}}");
+      sendBLEResponse("OK: Mouse action sent");
+      return;
+    }
+    
+    if (line.startsWith("TYPE:") || line.startsWith("type:")) {
+      String text = line.substring(5);
+      // Don't trim - preserve spaces
+      processMacroText(text);
+      sendBLEResponse("OK: Text sent");
+      return;
+    }
+    
+    if (line.startsWith("GAMEPAD:") || line.startsWith("gamepad:")) {
+      String gamepadAction = line.substring(8);
+      gamepadAction.trim();
+      processMacroText("{{GAMEPAD:" + gamepadAction + "}}");
+      sendBLEResponse("OK: Gamepad action sent");
+      return;
+    }
+    
+    // Not a recognized command - treat as literal text to type via USB HID (dual-mode)
     if (dualModeActive) {
       Serial.print("Processing as macro text: ");
       Serial.println(line);
@@ -530,6 +626,11 @@ static bool ensureSDReady() {
   return false;
 }
 
+// Public wrapper for BLE macro recording
+bool ensureSDReadyForRecording() {
+  return ensureSDReady();
+}
+
 static int32_t mscRead(uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) {
   if (!sdReady || !sdCard) return -1;
   if (offset != 0) return -1; // offset within sector not supported
@@ -568,6 +669,7 @@ void processMacroText(const String& text) {
     else if (key == "backspace") { Keyboard.press(KEY_BACKSPACE); delay(50); Keyboard.release(KEY_BACKSPACE); }
     else if (key == "delete") { Keyboard.press(KEY_DELETE); delay(50); Keyboard.release(KEY_DELETE); }
     else if (key == "tab") { Keyboard.press(KEY_TAB); delay(50); Keyboard.release(KEY_TAB); }
+    else if (key == "space") { Keyboard.press(' '); delay(50); Keyboard.release(' '); }
     else if (key == "escape" || key == "esc") { Keyboard.press(KEY_ESC); delay(50); Keyboard.release(KEY_ESC); }
     else if (key == "up") { Keyboard.press(KEY_UP_ARROW); delay(50); Keyboard.release(KEY_UP_ARROW); }
     else if (key == "down") { Keyboard.press(KEY_DOWN_ARROW); delay(50); Keyboard.release(KEY_DOWN_ARROW); }
@@ -788,20 +890,80 @@ void processMacroText(const String& text) {
           }
         } else if (body.startsWith("MOUSE:")) {
           String cmd = body.substring(6); cmd.trim();
-          if (cmd.startsWith("MOVE ")) {
-            String rest = cmd.substring(5);
-            int spaceIdx = rest.indexOf(' ');
-            if (spaceIdx > 0) {
-              int dx = rest.substring(0, spaceIdx).toInt();
-              int dy = rest.substring(spaceIdx+1).toInt();
-              Mouse.move(dx, dy);
+          if (cmd.equalsIgnoreCase("RESET")) {
+            // Move mouse to (0,0) - top-left corner
+            // Calculate delta from current position to origin
+            int dx = -mouseX;
+            int dy = -mouseY;
+            // Move in chunks to handle large distances
+            while (dx != 0 || dy != 0) {
+              int stepX = (dx > 127) ? 127 : ((dx < -127) ? -127 : dx);
+              int stepY = (dy > 127) ? 127 : ((dy < -127) ? -127 : dy);
+              Mouse.move(stepX, stepY);
+              dx -= stepX;
+              dy -= stepY;
+              delay(1);
             }
-          } else if (cmd.startsWith("CLICK ")) {
+            mouseX = 0;
+            mouseY = 0;
+          } else if (cmd.startsWith("MOVE:")) {
+            // Absolute positioning: MOVE:x,y
+            String coords = cmd.substring(5);
+            int commaIdx = coords.indexOf(',');
+            if (commaIdx > 0) {
+              int targetX = coords.substring(0, commaIdx).toInt();
+              int targetY = coords.substring(commaIdx+1).toInt();
+              // Calculate delta from current to target
+              int dx = targetX - mouseX;
+              int dy = targetY - mouseY;
+              // Move in chunks (USB HID mouse reports are limited to -127 to 127)
+              while (dx != 0 || dy != 0) {
+                int stepX = (dx > 127) ? 127 : ((dx < -127) ? -127 : dx);
+                int stepY = (dy > 127) ? 127 : ((dy < -127) ? -127 : dy);
+                Mouse.move(stepX, stepY);
+                dx -= stepX;
+                dy -= stepY;
+                delay(1);
+              }
+              mouseX = targetX;
+              mouseY = targetY;
+            }
+          } else if (cmd.startsWith("MOVE_REL:") || cmd.startsWith("MOVE ")) {
+            // Relative movement: MOVE_REL:dx,dy or MOVE dx dy (legacy)
+            String rest = cmd.startsWith("MOVE_REL:") ? cmd.substring(9) : cmd.substring(5);
+            int sepIdx = rest.indexOf(',');
+            if (sepIdx < 0) sepIdx = rest.indexOf(' ');
+            if (sepIdx > 0) {
+              int dx = rest.substring(0, sepIdx).toInt();
+              int dy = rest.substring(sepIdx+1).toInt();
+              // Move in chunks for large distances
+              while (dx != 0 || dy != 0) {
+                int stepX = (dx > 127) ? 127 : ((dx < -127) ? -127 : dx);
+                int stepY = (dy > 127) ? 127 : ((dy < -127) ? -127 : dy);
+                Mouse.move(stepX, stepY);
+                dx -= stepX;
+                dy -= stepY;
+                mouseX += stepX;
+                mouseY += stepY;
+                delay(1);
+              }
+            }
+          } else if (cmd.startsWith("DOWN:")) {
+            String btn = cmd.substring(5); btn.trim(); btn.toLowerCase();
+            if (btn == "left") { Mouse.press(MOUSE_LEFT); }
+            else if (btn == "right") { Mouse.press(MOUSE_RIGHT); }
+            else if (btn == "middle") { Mouse.press(MOUSE_MIDDLE); }
+          } else if (cmd.startsWith("UP:")) {
+            String btn = cmd.substring(3); btn.trim(); btn.toLowerCase();
+            if (btn == "left") { Mouse.release(MOUSE_LEFT); }
+            else if (btn == "right") { Mouse.release(MOUSE_RIGHT); }
+            else if (btn == "middle") { Mouse.release(MOUSE_MIDDLE); }
+          } else if (cmd.startsWith("CLICK:") || cmd.startsWith("CLICK ")) {
             String btn = cmd.substring(6); btn.trim(); btn.toLowerCase();
             if (btn == "left") { Mouse.click(MOUSE_LEFT); }
             else if (btn == "right") { Mouse.click(MOUSE_RIGHT); }
             else if (btn == "middle") { Mouse.click(MOUSE_MIDDLE); }
-          } else if (cmd.startsWith("SCROLL ")) {
+          } else if (cmd.startsWith("SCROLL:") || cmd.startsWith("SCROLL ")) {
             int n = cmd.substring(7).toInt();
             if (n > 0) { for (int j = 0; j < n; ++j) { Mouse.move(0, 0, 1); delay(10); } }
             else if (n < 0) { for (int j = 0; j < -n; ++j) { Mouse.move(0, 0, -1); delay(10); } }
@@ -925,6 +1087,8 @@ void processMacroText(const String& text) {
 
     if (!sawFirstBrace) {
       if (c == '{') { sawFirstBrace = true; continue; }
+      // Skip newline characters to avoid typing Enter between tokens
+      if (c == '\n' || c == '\r') continue;
       Keyboard.write((uint8_t)c);
       if (speedMs > 0) delay(speedMs);
     } else {
@@ -991,6 +1155,7 @@ bool typeTextFileFromSD(const String& baseName) {
     else if (key == "backspace") { Keyboard.press(KEY_BACKSPACE); delay(50); Keyboard.release(KEY_BACKSPACE); }
     else if (key == "delete") { Keyboard.press(KEY_DELETE); delay(50); Keyboard.release(KEY_DELETE); }
     else if (key == "tab") { Keyboard.press(KEY_TAB); delay(50); Keyboard.release(KEY_TAB); }
+    else if (key == "space") { Keyboard.press(' '); delay(50); Keyboard.release(' '); }
     else if (key == "escape" || key == "esc") { Keyboard.press(KEY_ESC); delay(50); Keyboard.release(KEY_ESC); }
     else if (key == "up") { Keyboard.press(KEY_UP_ARROW); delay(50); Keyboard.release(KEY_UP_ARROW); }
     else if (key == "down") { Keyboard.press(KEY_DOWN_ARROW); delay(50); Keyboard.release(KEY_DOWN_ARROW); }
@@ -1235,24 +1400,76 @@ bool typeTextFileFromSD(const String& baseName) {
             }
           } else if (body.startsWith("MOUSE:")) {
             String cmd = body.substring(6); cmd.trim();
-            if (cmd.startsWith("MOVE ")) {
-              // Parse "MOVE dx dy" (space-separated signed integers)
-              String rest = cmd.substring(5);
-              int spaceIdx = rest.indexOf(' ');
-              if (spaceIdx > 0) {
-                int dx = rest.substring(0, spaceIdx).toInt();
-                int dy = rest.substring(spaceIdx+1).toInt();
-                Mouse.move(dx, dy);
+            if (cmd.equalsIgnoreCase("RESET")) {
+              // Move mouse to (0,0) - top-left corner
+              int dx = -mouseX;
+              int dy = -mouseY;
+              while (dx != 0 || dy != 0) {
+                int stepX = (dx > 127) ? 127 : ((dx < -127) ? -127 : dx);
+                int stepY = (dy > 127) ? 127 : ((dy < -127) ? -127 : dy);
+                Mouse.move(stepX, stepY);
+                dx -= stepX;
+                dy -= stepY;
+                delay(1);
               }
-            } else if (cmd.startsWith("CLICK ")) {
+              mouseX = 0;
+              mouseY = 0;
+            } else if (cmd.startsWith("MOVE:")) {
+              // Absolute positioning: MOVE:x,y
+              String coords = cmd.substring(5);
+              int commaIdx = coords.indexOf(',');
+              if (commaIdx > 0) {
+                int targetX = coords.substring(0, commaIdx).toInt();
+                int targetY = coords.substring(commaIdx+1).toInt();
+                int dx = targetX - mouseX;
+                int dy = targetY - mouseY;
+                while (dx != 0 || dy != 0) {
+                  int stepX = (dx > 127) ? 127 : ((dx < -127) ? -127 : dx);
+                  int stepY = (dy > 127) ? 127 : ((dy < -127) ? -127 : dy);
+                  Mouse.move(stepX, stepY);
+                  dx -= stepX;
+                  dy -= stepY;
+                  delay(1);
+                }
+                mouseX = targetX;
+                mouseY = targetY;
+              }
+            } else if (cmd.startsWith("MOVE_REL:") || cmd.startsWith("MOVE ")) {
+              // Relative movement: MOVE_REL:dx,dy or MOVE dx dy
+              String rest = cmd.startsWith("MOVE_REL:") ? cmd.substring(9) : cmd.substring(5);
+              int sepIdx = rest.indexOf(',');
+              if (sepIdx < 0) sepIdx = rest.indexOf(' ');
+              if (sepIdx > 0) {
+                int dx = rest.substring(0, sepIdx).toInt();
+                int dy = rest.substring(sepIdx+1).toInt();
+                while (dx != 0 || dy != 0) {
+                  int stepX = (dx > 127) ? 127 : ((dx < -127) ? -127 : dx);
+                  int stepY = (dy > 127) ? 127 : ((dy < -127) ? -127 : dy);
+                  Mouse.move(stepX, stepY);
+                  dx -= stepX;
+                  dy -= stepY;
+                  mouseX += stepX;
+                  mouseY += stepY;
+                  delay(1);
+                }
+              }
+            } else if (cmd.startsWith("DOWN:")) {
+              String btn = cmd.substring(5); btn.trim(); btn.toLowerCase();
+              if (btn == "left") { Mouse.press(MOUSE_LEFT); }
+              else if (btn == "right") { Mouse.press(MOUSE_RIGHT); }
+              else if (btn == "middle") { Mouse.press(MOUSE_MIDDLE); }
+            } else if (cmd.startsWith("UP:")) {
+              String btn = cmd.substring(3); btn.trim(); btn.toLowerCase();
+              if (btn == "left") { Mouse.release(MOUSE_LEFT); }
+              else if (btn == "right") { Mouse.release(MOUSE_RIGHT); }
+              else if (btn == "middle") { Mouse.release(MOUSE_MIDDLE); }
+            } else if (cmd.startsWith("CLICK:") || cmd.startsWith("CLICK ")) {
               String btn = cmd.substring(6); btn.trim(); btn.toLowerCase();
               if (btn == "left") { Mouse.click(MOUSE_LEFT); }
               else if (btn == "right") { Mouse.click(MOUSE_RIGHT); }
               else if (btn == "middle") { Mouse.click(MOUSE_MIDDLE); }
-            } else if (cmd.startsWith("SCROLL ")) {
+            } else if (cmd.startsWith("SCROLL:") || cmd.startsWith("SCROLL ")) {
               int n = cmd.substring(7).toInt();
-              // Use the wheel parameter in move() for scrolling
-              // Positive n scrolls up (wheel > 0), negative n scrolls down (wheel < 0)
               if (n > 0) { for (int j = 0; j < n; ++j) { Mouse.move(0, 0, 1); delay(10); } }
               else if (n < 0) { for (int j = 0; j < -n; ++j) { Mouse.move(0, 0, -1); delay(10); } }
             }
@@ -1376,6 +1593,8 @@ bool typeTextFileFromSD(const String& baseName) {
 
       if (!sawFirstBrace) {
         if (c == '{') { sawFirstBrace = true; continue; }
+        // Skip newline characters to avoid typing Enter between tokens
+        if (c == '\n' || c == '\r') continue;
         Keyboard.write((uint8_t)c);
         if (speedMs > 0) delay(speedMs);
       } else {

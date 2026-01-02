@@ -46,6 +46,9 @@ void processSerialLine(const String& line);
 void processBLELine(const String& line);
 void resetSerialState();
 
+// SD card initialization helper
+bool ensureSDReadyForRecording();
+
 // Forward declarations (display.cpp)
 void showStartupMessage(const char* message);
 void showPasswordSentScreen(String password);

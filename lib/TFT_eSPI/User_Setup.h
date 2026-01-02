@@ -1,32 +1,33 @@
-// User_Setup.h for ESP32-S3-LCD-1.47 with ST7789 driver
-// Configured for standard pin mapping on this board
+// Support for 1.47" 320x172 Round Rectangle Color IPS TFT Display
+#define USER_SETUP_ID 71
 
-#define ST7789_DRIVER       // ST7789 controller
-#define TFT_WIDTH  172      // ST7789 pixel width (1.47" typical)
-#define TFT_HEIGHT 320      // ST7789 pixel height (1.47" typical)
-#define TFT_ROTATION 0      // Portrait mode
+#define ST7789_DRIVER  // Full configuration option, define additional parameters below for this display
 
-// SPI pins (HSPI on ESP32-S3)
-#define TFT_MOSI  45  // GPIO 45 (OSI / SDA on some boards)
-#define TFT_SCLK  40  // GPIO 40 (SCLK)
-#define TFT_CS    42  // GPIO 42 (Chip Select)
-#define TFT_DC    41  // GPIO 41 (Data/Command)
-#define TFT_RST   -1  // Reset not used (or define if your board has it)
+#define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
 
-// Optional backlight control
-#define TFT_BL    46  // GPIO 46 (backlight enable, if available)
-#define TFT_BACKLIGHT_ON HIGH
+#define TFT_WIDTH 172  // ST7789 172 x 320
+#define TFT_HEIGHT 320  // ST7789 240 x 320
 
-// SPI clock speed (MHz) - ST7789 typically supports up to 80 MHz
-#define SPI_FREQUENCY  40000000
+#define TFT_BL           48    // LED back-light control pin
+#define TFT_BACKLIGHT_ON HIGH  // Level to turn ON back-light (HIGH or LOW)
 
-// Disable touch for now (can add I2C touch later if needed)
-#define TOUCH_CS -1
+#define TFT_MOSI 45
+#define TFT_SCLK 40
+#define TFT_CS   42   // Chip select control pin
+#define TFT_DC   41  // Data Command control pin
+#define TFT_RST  39  // Reset pin (could connect to RST pin)
 
-// Use HSPI (SPI2) for display, leaving VSPI (SPI3) free if needed
+#define LOAD_GLCD   // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH
+#define LOAD_FONT2  // Font 2. Small 16 pixel high font, needs ~3534 bytes in FLASH, 96 characters
+#define LOAD_FONT4  // Font 4. Medium 26 pixel high font, needs ~5848 bytes in FLASH, 96 characters
+#define LOAD_FONT6  // Font 6. Large 48 pixel font, needs ~2666 bytes in FLASH, only characters 1234567890:-.apm
+#define LOAD_FONT7  // Font 7. 7 segment 48 pixel font, needs ~2438 bytes in FLASH, only characters 1234567890:-.
+#define LOAD_FONT8  // Font 8. Large 75 pixel font needs ~3256 bytes in FLASH, only characters 1234567890:-.
+//#define LOAD_FONT8N // Font 8. Alternative to Font 8 above, slightly narrower, so 3 digits fit a 160 pixel TFT
+#define LOAD_GFXFF  // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
+
+#define SMOOTH_FONT
+
+#define SPI_FREQUENCY 8000000
+
 #define USE_HSPI_PORT
-
-// Display color mode
-#define TFT_BL_ON HIGH
-
-// Minimal config - add other defines as needed
