@@ -42,10 +42,13 @@ enum SerialCmdState {
   CMD_PWUPDATE_WAIT_DATA,
   CMD_RETRIEVEPW_WAIT_CODE,
   CMD_CHANGELOGIN_WAIT_OLD,
-  CMD_CHANGELOGIN_WAIT_NEW
+  CMD_CHANGELOGIN_WAIT_NEW,
+  CMD_SAVE_MACRO
 };
 
 static SerialCmdState serialState = CMD_IDLE;
+static String saveMacroFilename = "";
+static File saveMacroFile;
 
 // Temp storage for operations
 static int candidateOldCode[4];
@@ -105,6 +108,7 @@ void processBLELine(const String& rawLine) {
       sendBLEResponse("  STOPRECORD - stop macro recording");
       sendBLEResponse("  PLAY:filename - play/execute a macro file");
       sendBLEResponse("  LIST - list macro files on SD card");
+      sendBLEResponse("  SAVE_MACRO:filename - save macro from BLE to SD card");
       sendBLEResponse("  KEY:keyname - record key press");
       sendBLEResponse("  MOUSE:action - record mouse action");
       sendBLEResponse("  TYPE:text - record text typing");
@@ -187,6 +191,58 @@ void processBLELine(const String& rawLine) {
         for (int i = 0; i < fileCount; i++) {
           sendBLEResponse("  " + String(i+1) + ". " + fileList[i]);
         }
+      }
+      return;
+    }
+    
+    // SAVE_MACRO: receive macro file from BLE and write to SD card
+    if (line.startsWith("SAVE_MACRO:") || line.startsWith("save_macro:")) {
+      String filename = line.substring(11);
+      filename.trim();
+      if (filename.length() == 0) {
+        sendBLEResponse("ERROR: Filename required. Usage: SAVE_MACRO:filename");
+        return;
+      }
+      // Ensure .txt extension
+      if (!filename.endsWith(".txt")) {
+        filename += ".txt";
+      }
+      if (!ensureSDReadyForRecording()) {
+        sendBLEResponse("ERROR: SD card not available");
+        return;
+      }
+      // Start receiving macro content
+      serialState = CMD_SAVE_MACRO;
+      saveMacroFilename = filename;
+      if (sdUseMMC) {
+        saveMacroFile = SD_MMC.open(filename.c_str(), FILE_WRITE);
+      } else {
+        saveMacroFile = SD.open(filename.c_str(), FILE_WRITE);
+      }
+      if (!saveMacroFile) {
+        sendBLEResponse("ERROR: Could not open file for writing");
+        serialState = CMD_IDLE;
+        return;
+      }
+      sendBLEResponse("OK: Ready to receive macro. Send content (end with blank line)");
+      return;
+    }
+    
+    // Handle SAVE_MACRO content reception
+    if (serialState == CMD_SAVE_MACRO) {
+      if (line.length() == 0) {
+        // Empty line = end of macro
+        if (saveMacroFile) {
+          saveMacroFile.close();
+        }
+        serialState = CMD_IDLE;
+        sendBLEResponse("OK: Macro saved as " + saveMacroFilename);
+        saveMacroFilename = "";
+        return;
+      }
+      // Append line to file
+      if (saveMacroFile) {
+        saveMacroFile.println(line);
       }
       return;
     }

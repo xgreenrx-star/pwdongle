@@ -35,152 +35,203 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer"]
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="TitleLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.8, 1, 1)
 theme_override_font_sizes/font_size = 32
 text = "PWDongle Controller"
 horizontal_alignment = 1
 
-[node name="StatusPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+[node name="StatusPanel" type="PanelContainer" parent="MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer/StatusPanel"]
+[node name="StatusLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/StatusPanel"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
 theme_override_font_sizes/font_size = 20
 text = "Not Connected"
 horizontal_alignment = 1
 
-[node name="ConnectionPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+[node name="ConnectionPanel" type="PanelContainer" parent="MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/ConnectionPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/ConnectionPanel"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/ConnectionPanel/VBoxContainer"]
+[node name="Label" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/ConnectionPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.8, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "Connection"
 
-[node name="DeviceList" type="ItemList" parent="MarginContainer/VBoxContainer/ConnectionPanel"]
+[node name="DeviceList" type="ItemList" parent="MarginContainer/ScrollContainer/VBoxContainer/ConnectionPanel"]
 custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 
-[node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ConnectionPanel/VBoxContainer"]
+[node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/ConnectionPanel/VBoxContainer"]
 layout_mode = 2
 
-[node name="ScanButton" type="Button" parent="MarginContainer/VBoxContainer/ConnectionPanel"]
+[node name="ScanButton" type="Button" parent="MarginContainer/ScrollContainer/VBoxContainer/ConnectionPanel"]
 layout_mode = 2
 text = "Scan for Devices"
 
-[node name="ConnectButton" type="Button" parent="MarginContainer/VBoxContainer/ConnectionPanel"]
+[node name="ConnectButton" type="Button" parent="MarginContainer/ScrollContainer/VBoxContainer/ConnectionPanel"]
 layout_mode = 2
 text = "Connect"
 
-[node name="DisconnectButton" type="Button" parent="MarginContainer/VBoxContainer/ConnectionPanel"]
+[node name="DisconnectButton" type="Button" parent="MarginContainer/ScrollContainer/VBoxContainer/ConnectionPanel"]
 visible = false
 layout_mode = 2
 text = "Disconnect"
 
-[node name="RecordingPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+[node name="RecordingPanel" type="PanelContainer" parent="MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/RecordingPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/RecordingPanel"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/RecordingPanel/VBoxContainer"]
+[node name="Label" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/RecordingPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.8, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "Macro Recording"
 
-[node name="FilenameInput" type="LineEdit" parent="MarginContainer/VBoxContainer/RecordingPanel"]
+[node name="FilenameInput" type="LineEdit" parent="MarginContainer/ScrollContainer/VBoxContainer/RecordingPanel"]
 layout_mode = 2
 placeholder_text = "Enter filename (e.g. my_macro.txt)"
 
-[node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/RecordingPanel/VBoxContainer"]
+[node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/RecordingPanel/VBoxContainer"]
 layout_mode = 2
 
-[node name="RecordButton" type="Button" parent="MarginContainer/VBoxContainer/RecordingPanel"]
+[node name="RecordButton" type="Button" parent="MarginContainer/ScrollContainer/VBoxContainer/RecordingPanel"]
 layout_mode = 2
 text = "Start Recording"
 
-[node name="StopRecordButton" type="Button" parent="MarginContainer/VBoxContainer/RecordingPanel"]
+[node name="StopRecordButton" type="Button" parent="MarginContainer/ScrollContainer/VBoxContainer/RecordingPanel"]
 visible = false
 layout_mode = 2
 text = "Stop Recording"
 theme_override_colors/font_color = Color(1, 0, 0, 1)
 
-[node name="RecordingStatus" type="Label" parent="MarginContainer/VBoxContainer/RecordingPanel"]
+[node name="RecordingStatus" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/RecordingPanel"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = ""
 horizontal_alignment = 1
 
-[node name="QuickActionsPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+[node name="QuickActionsPanel" type="PanelContainer" parent="MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/QuickActionsPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/QuickActionsPanel"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/QuickActionsPanel/VBoxContainer"]
+[node name="Label" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/QuickActionsPanel/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.8, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "Quick Keys"
 
-[node name="GridContainer" type="GridContainer" parent="MarginContainer/VBoxContainer/QuickActionsPanel"]
+[node name="GridContainer" type="GridContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/QuickActionsPanel"]
 layout_mode = 2
 columns = 4
 
-[node name="TypePanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+[node name="TypePanel" type="PanelContainer" parent="MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TypePanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/TypePanel"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/TypePanel/VBoxContainer"]
+[node name="Label" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/TypePanel/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.8, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "Type Text"
 
-[node name="TextInput" type="TextEdit" parent="MarginContainer/VBoxContainer/TypePanel"]
+[node name="TextInput" type="TextEdit" parent="MarginContainer/ScrollContainer/VBoxContainer/TypePanel"]
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 placeholder_text = "Enter text to type..."
 
-[node name="SendButton" type="Button" parent="MarginContainer/VBoxContainer/TypePanel"]
+[node name="SendButton" type="Button" parent="MarginContainer/ScrollContainer/VBoxContainer/TypePanel"]
 layout_mode = 2
 text = "Send Text"
 
-[node name="ConsolePanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+[node name="KeyboardPanel" type="PanelContainer" parent="MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/ConsolePanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/KeyboardPanel"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/ConsolePanel/VBoxContainer"]
+[node name="Label" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/KeyboardPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "On-Screen Keyboard"
+
+[node name="KeyboardGrid" type="GridContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/KeyboardPanel"]
+layout_mode = 2
+columns = 10
+
+[node name="TouchpadPanel" type="PanelContainer" parent="MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/TouchpadPanel"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/TouchpadPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Touchpad"
+
+[node name="TouchpadArea" type="Panel" parent="MarginContainer/ScrollContainer/VBoxContainer/TouchpadPanel"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+
+[node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/TouchpadPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="LeftClickButton" type="Button" parent="MarginContainer/ScrollContainer/VBoxContainer/TouchpadPanel/ButtonContainer"]
+layout_mode = 2
+text = "Left Click"
+
+[node name="RightClickButton" type="Button" parent="MarginContainer/ScrollContainer/VBoxContainer/TouchpadPanel/ButtonContainer"]
+layout_mode = 2
+text = "Right Click"
+
+[node name="ConsolePanel" type="PanelContainer" parent="MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/ConsolePanel"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/ConsolePanel/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0.8, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "Console"
 
-[node name="ConsoleOutput" type="TextEdit" parent="MarginContainer/VBoxContainer/ConsolePanel"]
+[node name="ConsoleOutput" type="TextEdit" parent="MarginContainer/ScrollContainer/VBoxContainer/ConsolePanel"]
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 editable = false
 wrap_mode = 1
 
-[connection signal="pressed" from="MarginContainer/VBoxContainer/ConnectionPanel/ScanButton" to="." method="_on_scan_button_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/ConnectionPanel/ConnectButton" to="." method="_on_connect_button_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/ConnectionPanel/DisconnectButton" to="." method="_on_disconnect_button_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/RecordingPanel/RecordButton" to="." method="_on_record_button_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/RecordingPanel/StopRecordButton" to="." method="_on_stop_record_button_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/TypePanel/SendButton" to="." method="_on_send_text_button_pressed"]
+[connection signal="pressed" from="MarginContainer/ScrollContainer/VBoxContainer/ConnectionPanel/ScanButton" to="." method="_on_scan_button_pressed"]
+[connection signal="pressed" from="MarginContainer/ScrollContainer/VBoxContainer/ConnectionPanel/ConnectButton" to="." method="_on_connect_button_pressed"]
+[connection signal="pressed" from="MarginContainer/ScrollContainer/VBoxContainer/ConnectionPanel/DisconnectButton" to="." method="_on_disconnect_button_pressed"]
+[connection signal="pressed" from="MarginContainer/ScrollContainer/VBoxContainer/RecordingPanel/RecordButton" to="." method="_on_record_button_pressed"]
+[connection signal="pressed" from="MarginContainer/ScrollContainer/VBoxContainer/RecordingPanel/StopRecordButton" to="." method="_on_stop_record_button_pressed"]
+[connection signal="pressed" from="MarginContainer/ScrollContainer/VBoxContainer/TypePanel/SendButton" to="." method="_on_send_text_button_pressed"]
+[connection signal="gui_input" from="MarginContainer/ScrollContainer/VBoxContainer/TouchpadPanel/TouchpadArea" to="." method="_on_touchpad_gui_input"]
+[connection signal="pressed" from="MarginContainer/ScrollContainer/VBoxContainer/TouchpadPanel/ButtonContainer/LeftClickButton" to="." method="_on_left_click_button_pressed"]
+[connection signal="pressed" from="MarginContainer/ScrollContainer/VBoxContainer/TouchpadPanel/ButtonContainer/RightClickButton" to="." method="_on_right_click_button_pressed"]

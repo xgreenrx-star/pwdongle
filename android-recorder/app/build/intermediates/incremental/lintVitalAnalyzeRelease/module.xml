@@ -1,0 +1,29 @@
+<lint-module
+    format="1"
+    dir="/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app"
+    name=":app"
+    type="APP"
+    maven="PWDongle Recorder:app:"
+    agpVersion="8.1.2"
+    buildFolder="build"
+    bootClassPath="/home/Commodore/Android/Sdk/platforms/android-34/android.jar:/home/Commodore/Android/Sdk/build-tools/33.0.1/core-lambda-stubs.jar"
+    javaSourceLevel="11"
+    compileTarget="android-34"
+    neverShrinking="true">
+  <lintOptions
+      disable="MissingPermission,AppCompatResource"
+      abortOnError="true"
+      absolutePaths="true"
+      checkReleaseBuilds="true"
+      explainIssues="true">
+    <severities>
+      <severity
+        id="AppCompatResource"
+        severity="IGNORE" />
+      <severity
+        id="MissingPermission"
+        severity="IGNORE" />
+    </severities>
+  </lintOptions>
+  <variant name="release"/>
+</lint-module>

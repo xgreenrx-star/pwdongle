@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@android:color/white">
+    
+    <TextView
+        android:id="@+id/titleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Settings"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+    
+    <!-- Auto-Connect Settings -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:background="#F5F5F5"
+        android:layout_marginBottom="16dp">
+        
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Auto-Connect to PWDongle"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+            
+            <Switch
+                android:id="@+id/autoConnectSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="When enabled, the app will automatically search for and connect to PWDongle on startup. Disable to manually select from available devices."
+            android:textSize="12sp"
+            android:layout_marginTop="8dp"
+            android:textColor="#666666" />
+    </LinearLayout>
+    
+    <Button
+        android:id="@+id/scanButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Scan for Devices"
+        android:layout_marginBottom="16dp" />
+    
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Status: Ready"
+        android:textSize="14sp"
+        android:padding="8dp"
+        android:background="#E0E0E0"
+        android:layout_marginBottom="16dp" />
+    
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Available Devices:"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+    
+    <ListView
+        android:id="@+id/devicesList"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_marginBottom="16dp" />
+    
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recording Settings:"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="16dp">
+        
+        <TextView
+            android:id="@+id/delayThresholdText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delay Threshold: 50ms"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+        
+        <SeekBar
+            android:id="@+id/delayThresholdSlider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:min="10"
+            android:max="200"
+            android:progress="50" />
+    </LinearLayout>
+    
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="About PWDongle Recorder v2.0"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Full-featured macro recorder with:\n• Hardware USB OTG support\n• On-screen keyboard\n• On-screen touchpad\n• Macro file management\n• Playback with speed control\n• Persistent storage\n• Auto-connect to PWDongle"
+                android:textSize="11sp"
+                android:lineSpacingExtra="2dp" />
+        </LinearLayout>
+    </ScrollView>
+    
+</LinearLayout>

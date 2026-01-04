@@ -1,0 +1,38 @@
+[
+    {
+        "merged": "com.pwdongle.recorder.app-mergeReleaseResources-50:/layout/dialog_touchpad.xml",
+        "source": "com.pwdongle.recorder.app-main-52:/layout/dialog_touchpad.xml"
+    },
+    {
+        "merged": "com.pwdongle.recorder.app-mergeReleaseResources-50:/layout/fragment_settings.xml",
+        "source": "com.pwdongle.recorder.app-main-52:/layout/fragment_settings.xml"
+    },
+    {
+        "merged": "com.pwdongle.recorder.app-mergeReleaseResources-50:/layout/fragment_input.xml",
+        "source": "com.pwdongle.recorder.app-main-52:/layout/fragment_input.xml"
+    },
+    {
+        "merged": "com.pwdongle.recorder.app-mergeReleaseResources-50:/layout/fragment_recorder.xml",
+        "source": "com.pwdongle.recorder.app-main-52:/layout/fragment_recorder.xml"
+    },
+    {
+        "merged": "com.pwdongle.recorder.app-mergeReleaseResources-50:/layout/activity_main.xml",
+        "source": "com.pwdongle.recorder.app-main-52:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.pwdongle.recorder.app-mergeReleaseResources-50:/layout/dialog_keyboard.xml",
+        "source": "com.pwdongle.recorder.app-main-52:/layout/dialog_keyboard.xml"
+    },
+    {
+        "merged": "com.pwdongle.recorder.app-mergeReleaseResources-50:/layout/fragment_playback.xml",
+        "source": "com.pwdongle.recorder.app-main-52:/layout/fragment_playback.xml"
+    },
+    {
+        "merged": "com.pwdongle.recorder.app-mergeReleaseResources-50:/layout/item_macro_file.xml",
+        "source": "com.pwdongle.recorder.app-main-52:/layout/item_macro_file.xml"
+    },
+    {
+        "merged": "com.pwdongle.recorder.app-mergeReleaseResources-50:/layout/fragment_file_manager.xml",
+        "source": "com.pwdongle.recorder.app-main-52:/layout/fragment_file_manager.xml"
+    }
+]

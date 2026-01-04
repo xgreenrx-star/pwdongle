@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Simple shield/lockmark foreground icon -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,12 L84,24 L84,52 C84,69 71,84 54,90 C37,84 24,69 24,52 L24,24 Z"/>
+    <path
+        android:fillColor="#121212"
+        android:pathData="M54,30 C61.7,30 68,36.3 68,44 L68,50 L40,50 L40,44 C40,36.3 46.3,30 54,30 Z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,44 L60,44 L60,52 C60,56.4 57.5,60.3 54,61.6 C50.5,60.3 48,56.4 48,52 Z"/>
+</vector>

@@ -3,28 +3,38 @@ extends Control
 ## Main UI Controller for PWDongle app
 
 @onready var ble_manager = $BLEManager
-@onready var status_label = $MarginContainer/VBoxContainer/StatusPanel/StatusLabel
-@onready var scan_button = $MarginContainer/VBoxContainer/ConnectionPanel/ScanButton
-@onready var connect_button = $MarginContainer/VBoxContainer/ConnectionPanel/ConnectButton
-@onready var disconnect_button = $MarginContainer/VBoxContainer/ConnectionPanel/DisconnectButton
-@onready var device_list = $MarginContainer/VBoxContainer/ConnectionPanel/DeviceList
+@onready var status_label = $MarginContainer/ScrollContainer/VBoxContainer/StatusPanel/StatusLabel
+@onready var scan_button = $MarginContainer/ScrollContainer/VBoxContainer/ConnectionPanel/ScanButton
+@onready var connect_button = $MarginContainer/ScrollContainer/VBoxContainer/ConnectionPanel/ConnectButton
+@onready var disconnect_button = $MarginContainer/ScrollContainer/VBoxContainer/ConnectionPanel/DisconnectButton
+@onready var device_list = $MarginContainer/ScrollContainer/VBoxContainer/ConnectionPanel/DeviceList
 
 # Recording controls
-@onready var filename_input = $MarginContainer/VBoxContainer/RecordingPanel/FilenameInput
-@onready var record_button = $MarginContainer/VBoxContainer/RecordingPanel/RecordButton
-@onready var stop_record_button = $MarginContainer/VBoxContainer/RecordingPanel/StopRecordButton
-@onready var recording_status = $MarginContainer/VBoxContainer/RecordingPanel/RecordingStatus
+@onready var filename_input = $MarginContainer/ScrollContainer/VBoxContainer/RecordingPanel/FilenameInput
+@onready var record_button = $MarginContainer/ScrollContainer/VBoxContainer/RecordingPanel/RecordButton
+@onready var stop_record_button = $MarginContainer/ScrollContainer/VBoxContainer/RecordingPanel/StopRecordButton
+@onready var recording_status = $MarginContainer/ScrollContainer/VBoxContainer/RecordingPanel/RecordingStatus
 
 # Quick actions
-@onready var quick_actions = $MarginContainer/VBoxContainer/QuickActionsPanel/GridContainer
-@onready var text_input = $MarginContainer/VBoxContainer/TypePanel/TextInput
-@onready var send_text_button = $MarginContainer/VBoxContainer/TypePanel/SendButton
+@onready var quick_actions = $MarginContainer/ScrollContainer/VBoxContainer/QuickActionsPanel/GridContainer
+@onready var text_input = $MarginContainer/ScrollContainer/VBoxContainer/TypePanel/TextInput
+@onready var send_text_button = $MarginContainer/ScrollContainer/VBoxContainer/TypePanel/SendButton
+
+# On-screen keyboard
+@onready var keyboard_grid = $MarginContainer/ScrollContainer/VBoxContainer/KeyboardPanel/KeyboardGrid
+
+# Touchpad
+@onready var touchpad_area = $MarginContainer/ScrollContainer/VBoxContainer/TouchpadPanel/TouchpadArea
+@onready var left_click_button = $MarginContainer/ScrollContainer/VBoxContainer/TouchpadPanel/ButtonContainer/LeftClickButton
+@onready var right_click_button = $MarginContainer/ScrollContainer/VBoxContainer/TouchpadPanel/ButtonContainer/RightClickButton
 
 # Console
-@onready var console_output = $MarginContainer/VBoxContainer/ConsolePanel/ConsoleOutput
+@onready var console_output = $MarginContainer/ScrollContainer/VBoxContainer/ConsolePanel/ConsoleOutput
 
 var discovered_devices = {}
 var is_recording = false
+var is_connected = false
+var last_touch_pos: Vector2 = Vector2.ZERO
 
 func _ready():
 	# Connect BLE manager signals
@@ -40,6 +50,7 @@ func _ready():
 	
 	# Setup quick action buttons
 	_setup_quick_actions()
+	_setup_keyboard()
 
 func _setup_quick_actions():
 	# Add common key buttons
@@ -126,6 +137,7 @@ func _on_device_found(device_name: String, device_address: String):
 
 func _on_connection_changed(connected: bool):
 	_update_ui_state(connected)
+	is_connected = connected
 	
 	if connected:
 		status_label.text = "Connected to PWDongle"
@@ -161,6 +173,18 @@ func _update_ui_state(connected: bool):
 	for button in quick_actions.get_children():
 		button.disabled = not connected
 	
+	# On-screen keyboard
+	for button in keyboard_grid.get_children():
+		if button is Button:
+			button.disabled = not connected
+
+	# Touchpad click buttons
+	left_click_button.disabled = not connected
+	right_click_button.disabled = not connected
+
+	# Touchpad area blocking
+	touchpad_area.mouse_filter = Control.MOUSE_FILTER_STOP if connected else Control.MOUSE_FILTER_IGNORE
+	
 	# Text input
 	text_input.editable = connected
 	send_text_button.disabled = not connected
@@ -172,3 +196,72 @@ func _log_console(message: String):
 	# Auto-scroll to bottom
 	await get_tree().process_frame
 	console_output.scroll_vertical = console_output.get_line_count()
+
+func _setup_keyboard():
+	# QWERTY + utility keys
+	var rows = [
+		["q","w","e","r","t","y","u","i","o","p"],
+		["a","s","d","f","g","h","j","k","l"],
+		["z","x","c","v","b","n","m"],
+		["SPACE","BACKSPACE","ENTER","ESC"]
+	]
+	for row in rows:
+		for key in row:
+			var button = Button.new()
+			button.text = key.to_upper()
+			button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			button.pressed.connect(_on_keyboard_key_pressed.bind(key))
+			keyboard_grid.add_child(button)
+
+func _on_keyboard_key_pressed(key: String):
+	if not is_connected:
+		return
+	match key:
+		"SPACE":
+			ble_manager.send_type(" ")
+		"BACKSPACE":
+			ble_manager.send_key("backspace")
+		"ENTER":
+			ble_manager.send_key("enter")
+		"ESC":
+			ble_manager.send_key("escape")
+		_:
+			if key.length() == 1:
+				ble_manager.send_type(key)
+			else:
+				ble_manager.send_key(key)
+
+func _on_touchpad_gui_input(event):
+	if not is_connected:
+		return
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			last_touch_pos = event.position
+		else:
+			last_touch_pos = Vector2.ZERO
+	elif event is InputEventScreenDrag:
+		if last_touch_pos == Vector2.ZERO:
+			last_touch_pos = event.position
+			return
+		var delta = event.position - last_touch_pos
+		last_touch_pos = event.position
+		if delta.length() < 1:
+			return
+		var dx = int(delta.x)
+		var dy = int(delta.y)
+		ble_manager.send_mouse("move:" + str(dx) + "," + str(dy))
+	elif event is InputEventMouseMotion:
+		var delta_mouse = event.relative
+		if delta_mouse.length() < 1:
+			return
+		var dxm = int(delta_mouse.x)
+		var dym = int(delta_mouse.y)
+		ble_manager.send_mouse("move:" + str(dxm) + "," + str(dym))
+
+func _on_left_click_button_pressed():
+	if is_connected:
+		ble_manager.send_mouse("leftclick")
+
+func _on_right_click_button_pressed():
+	if is_connected:
+		ble_manager.send_mouse("rightclick")

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_recorder">
+    
+    <!-- Main Activity Navigation -->
+    <fragment
+        android:id="@+id/nav_recorder"
+        android:name="com.pwdongle.recorder.RecorderFragment"
+        android:label="Recorder">
+    </fragment>
+    
+    <fragment
+        android:id="@+id/nav_file_manager"
+        android:name="com.pwdongle.recorder.FileManagerFragment"
+        android:label="File Manager">
+    </fragment>
+    
+    <fragment
+        android:id="@+id/nav_playback"
+        android:name="com.pwdongle.recorder.PlaybackFragment"
+        android:label="Playback">
+    </fragment>
+    
+    <fragment
+        android:id="@+id/nav_input"
+        android:name="com.pwdongle.recorder.InputFragment"
+        android:label="Input Devices">
+    </fragment>
+    
+    <fragment
+        android:id="@+id/nav_settings"
+        android:name="com.pwdongle.recorder.SettingsFragment"
+        android:label="Settings">
+    </fragment>
+    
+</navigation>

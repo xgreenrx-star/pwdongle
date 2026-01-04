@@ -1,0 +1,203 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.pwdongle.recorder"
+4    android:versionCode="2"
+5    android:versionName="2.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="23"
+9        android:targetSdkVersion="34" />
+10
+11    <!-- Bluetooth permissions -->
+12    <uses-permission android:name="android.permission.BLUETOOTH" />
+12-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:5:5-68
+12-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:5:22-65
+13    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+13-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:6:5-74
+13-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:6:22-71
+14
+15    <!-- Android 12+ (API 31+) Bluetooth permissions -->
+16    <uses-permission
+16-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:9:5-10:58
+17        android:name="android.permission.BLUETOOTH_SCAN"
+17-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:9:22-70
+18        android:usesPermissionFlags="neverForLocation" />
+18-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:10:9-55
+19    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+19-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:11:5-76
+19-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:11:22-73
+20
+21    <!-- Location permission (required for BLE scanning on Android 10+) -->
+22    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+22-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:14:5-79
+22-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:14:22-76
+23    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+23-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:15:5-81
+23-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:15:22-78
+24
+25    <!-- Storage permissions removed: app uses scoped external files (no legacy storage needed) -->
+26
+27
+28    <!-- USB OTG permissions -->
+29    <uses-permission android:name="android.permission.USB_PERMISSION" />
+29-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:20:5-73
+29-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:20:22-70
+30
+31    <!-- Hardware features -->
+32    <uses-feature
+32-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:23:5-89
+33        android:name="android.hardware.bluetooth_le"
+33-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:23:19-63
+34        android:required="true" />
+34-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:23:64-87
+35    <uses-feature
+35-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:24:5-86
+36        android:name="android.hardware.usb.host"
+36-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:24:19-59
+37        android:required="false" />
+37-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:24:60-84
+38
+39    <permission
+39-->[androidx.core:core:1.12.0] /home/Commodore/.gradle/caches/transforms-3/c3074531d01ac9ab8cfdf2481696a09e/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+40        android:name="com.pwdongle.recorder.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+40-->[androidx.core:core:1.12.0] /home/Commodore/.gradle/caches/transforms-3/c3074531d01ac9ab8cfdf2481696a09e/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+41        android:protectionLevel="signature" />
+41-->[androidx.core:core:1.12.0] /home/Commodore/.gradle/caches/transforms-3/c3074531d01ac9ab8cfdf2481696a09e/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
+42
+43    <uses-permission android:name="com.pwdongle.recorder.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+43-->[androidx.core:core:1.12.0] /home/Commodore/.gradle/caches/transforms-3/c3074531d01ac9ab8cfdf2481696a09e/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+43-->[androidx.core:core:1.12.0] /home/Commodore/.gradle/caches/transforms-3/c3074531d01ac9ab8cfdf2481696a09e/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+44
+45    <application
+45-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:26:5-53:19
+46        android:allowBackup="true"
+46-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:27:9-35
+47        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+47-->[androidx.core:core:1.12.0] /home/Commodore/.gradle/caches/transforms-3/c3074531d01ac9ab8cfdf2481696a09e/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
+48        android:extractNativeLibs="false"
+49        android:icon="@mipmap/ic_launcher"
+49-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:28:9-43
+50        android:label="@string/app_name"
+50-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:29:9-41
+51        android:roundIcon="@mipmap/ic_launcher_round"
+51-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:30:9-54
+52        android:supportsRtl="true"
+52-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:31:9-35
+53        android:theme="@style/Theme.AppCompat.Light.DarkActionBar" >
+53-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:32:9-67
+54        <activity
+54-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:34:9-41:20
+55            android:name="com.pwdongle.recorder.MainActivity"
+55-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:35:13-41
+56            android:exported="true" >
+56-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:36:13-36
+57            <intent-filter>
+57-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:37:13-40:29
+58                <action android:name="android.intent.action.MAIN" />
+58-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:38:17-69
+58-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:38:25-66
+59
+60                <category android:name="android.intent.category.LAUNCHER" />
+60-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:39:17-77
+60-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:39:27-74
+61            </intent-filter>
+62        </activity>
+63
+64        <!-- File provider for sharing macros -->
+65        <provider
+66            android:name="androidx.core.content.FileProvider"
+66-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:45:13-62
+67            android:authorities="com.pwdongle.recorder.fileprovider"
+67-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:46:13-64
+68            android:exported="false"
+68-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:47:13-37
+69            android:grantUriPermissions="true" >
+69-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:48:13-47
+70            <meta-data
+70-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:49:13-51:54
+71                android:name="android.support.FILE_PROVIDER_PATHS"
+71-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:50:17-67
+72                android:resource="@xml/file_paths" />
+72-->/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/AndroidManifest.xml:51:17-51
+73        </provider>
+74        <provider
+74-->[androidx.emoji2:emoji2:1.2.0] /home/Commodore/.gradle/caches/transforms-3/09f2a64d14e76ce226e936273dcfe3d4/transformed/emoji2-1.2.0/AndroidManifest.xml:24:9-32:20
+75            android:name="androidx.startup.InitializationProvider"
+75-->[androidx.emoji2:emoji2:1.2.0] /home/Commodore/.gradle/caches/transforms-3/09f2a64d14e76ce226e936273dcfe3d4/transformed/emoji2-1.2.0/AndroidManifest.xml:25:13-67
+76            android:authorities="com.pwdongle.recorder.androidx-startup"
+76-->[androidx.emoji2:emoji2:1.2.0] /home/Commodore/.gradle/caches/transforms-3/09f2a64d14e76ce226e936273dcfe3d4/transformed/emoji2-1.2.0/AndroidManifest.xml:26:13-68
+77            android:exported="false" >
+77-->[androidx.emoji2:emoji2:1.2.0] /home/Commodore/.gradle/caches/transforms-3/09f2a64d14e76ce226e936273dcfe3d4/transformed/emoji2-1.2.0/AndroidManifest.xml:27:13-37
+78            <meta-data
+78-->[androidx.emoji2:emoji2:1.2.0] /home/Commodore/.gradle/caches/transforms-3/09f2a64d14e76ce226e936273dcfe3d4/transformed/emoji2-1.2.0/AndroidManifest.xml:29:13-31:52
+79                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+79-->[androidx.emoji2:emoji2:1.2.0] /home/Commodore/.gradle/caches/transforms-3/09f2a64d14e76ce226e936273dcfe3d4/transformed/emoji2-1.2.0/AndroidManifest.xml:30:17-75
+80                android:value="androidx.startup" />
+80-->[androidx.emoji2:emoji2:1.2.0] /home/Commodore/.gradle/caches/transforms-3/09f2a64d14e76ce226e936273dcfe3d4/transformed/emoji2-1.2.0/AndroidManifest.xml:31:17-49
+81            <meta-data
+81-->[androidx.lifecycle:lifecycle-process:2.6.1] /home/Commodore/.gradle/caches/transforms-3/ddef8098f9e756644c9e01e67f0cf5a1/transformed/lifecycle-process-2.6.1/AndroidManifest.xml:29:13-31:52
+82                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+82-->[androidx.lifecycle:lifecycle-process:2.6.1] /home/Commodore/.gradle/caches/transforms-3/ddef8098f9e756644c9e01e67f0cf5a1/transformed/lifecycle-process-2.6.1/AndroidManifest.xml:30:17-78
+83                android:value="androidx.startup" />
+83-->[androidx.lifecycle:lifecycle-process:2.6.1] /home/Commodore/.gradle/caches/transforms-3/ddef8098f9e756644c9e01e67f0cf5a1/transformed/lifecycle-process-2.6.1/AndroidManifest.xml:31:17-49
+84            <meta-data
+84-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:29:13-31:52
+85                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+85-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:30:17-85
+86                android:value="androidx.startup" />
+86-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:31:17-49
+87        </provider>
+88
+89        <uses-library
+89-->[androidx.window:window:1.0.0] /home/Commodore/.gradle/caches/transforms-3/140f08fe58bd2f164f0212cd939fdd40/transformed/window-1.0.0/AndroidManifest.xml:25:9-27:40
+90            android:name="androidx.window.extensions"
+90-->[androidx.window:window:1.0.0] /home/Commodore/.gradle/caches/transforms-3/140f08fe58bd2f164f0212cd939fdd40/transformed/window-1.0.0/AndroidManifest.xml:26:13-54
+91            android:required="false" />
+91-->[androidx.window:window:1.0.0] /home/Commodore/.gradle/caches/transforms-3/140f08fe58bd2f164f0212cd939fdd40/transformed/window-1.0.0/AndroidManifest.xml:27:13-37
+92        <uses-library
+92-->[androidx.window:window:1.0.0] /home/Commodore/.gradle/caches/transforms-3/140f08fe58bd2f164f0212cd939fdd40/transformed/window-1.0.0/AndroidManifest.xml:28:9-30:40
+93            android:name="androidx.window.sidecar"
+93-->[androidx.window:window:1.0.0] /home/Commodore/.gradle/caches/transforms-3/140f08fe58bd2f164f0212cd939fdd40/transformed/window-1.0.0/AndroidManifest.xml:29:13-51
+94            android:required="false" />
+94-->[androidx.window:window:1.0.0] /home/Commodore/.gradle/caches/transforms-3/140f08fe58bd2f164f0212cd939fdd40/transformed/window-1.0.0/AndroidManifest.xml:30:13-37
+95
+96        <receiver
+96-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:34:9-52:20
+97            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+97-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:35:13-76
+98            android:directBootAware="false"
+98-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:36:13-44
+99            android:enabled="true"
+99-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:37:13-35
+100            android:exported="true"
+100-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:38:13-36
+101            android:permission="android.permission.DUMP" >
+101-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:39:13-57
+102            <intent-filter>
+102-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:40:13-42:29
+103                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+103-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:41:17-91
+103-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:41:25-88
+104            </intent-filter>
+105            <intent-filter>
+105-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:43:13-45:29
+106                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+106-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:44:17-85
+106-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:44:25-82
+107            </intent-filter>
+108            <intent-filter>
+108-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:46:13-48:29
+109                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+109-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:47:17-88
+109-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:47:25-85
+110            </intent-filter>
+111            <intent-filter>
+111-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:49:13-51:29
+112                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+112-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:50:17-95
+112-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/Commodore/.gradle/caches/transforms-3/c8331a785c786946de5850f47b315052/transformed/profileinstaller-1.3.0/AndroidManifest.xml:50:25-92
+113            </intent-filter>
+114        </receiver>
+115    </application>
+116
+117</manifest>
