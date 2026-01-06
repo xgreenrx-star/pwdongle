@@ -34,5 +34,11 @@
         android:name="com.pwdongle.recorder.SettingsFragment"
         android:label="Settings">
     </fragment>
+
+    <fragment
+        android:id="@+id/nav_passwords"
+        android:name="com.pwdongle.recorder.PasswordsFragment"
+        android:label="Passwords">
+    </fragment>
     
 </navigation>

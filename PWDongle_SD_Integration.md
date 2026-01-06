@@ -1,203 +1,44 @@
 # PWDongle SD Card Integration Summary
 
 ## Overview
-Successfully implemented bidirectional macro synchronization between android-recorder app and PWDongle device SD card storage.
+PWDongle stores macro files on the microSD card. Files can be recorded over BLE using the Android app or typed from SD using the device’s built‑in file browser.
 
-## Firmware Changes (v0.5.1)
+## Firmware (v0.5)
 
-### New BLE Command: `SAVE_MACRO`
-**Location**: [src/usb.cpp](src/usb.cpp#L195-L240)
+### Macro Recording via BLE
+- `RECORD:filename` → opens `/filename.txt` on SD and begins recording
+- `KEY:…`, `TYPE:…`, `MOUSE:…`, `GAMEPAD:…` → actions are time‑stamped and written
+- `STOPRECORD` → closes the file and reports duration
+- Automatic delay capture when gaps exceed 50ms
 
-Added support for receiving macros from BLE and writing them to PWDongle SD card.
+### File Browser (Device Modes)
+- Boot Menu → Storage or Macro/Text lists up to 15 `.txt` files
+- Short press scrolls, long press executes selected file
+- Auto‑detects Advanced Scripting, DuckyScript, or Macro format
 
-**Command Format**:
-```
-SAVE_MACRO:filename.txt
-<macro content line 1>
-<macro content line 2>
-...
-<empty line to signal end>
-```
+## Android App (android‑recorder)
 
-**Implementation**:
-- New state `CMD_SAVE_MACRO` in SerialCmdState enum (line 45)
-- Global variables: `saveMacroFilename` and `saveMacroFile` for tracking (lines 51-52)
-- Handler in `processBLELine()` (lines 195-240):
-  - Validates filename, ensures `.txt` extension
-  - Opens file on SD card for writing
-  - Accepts content lines and writes them
-  - Closes file on empty line signal
-  - Returns success/error via BLE response
-
-**Help Text Updated** (line 110):
-- Added `SAVE_MACRO:filename - save macro from BLE to SD card` to HELP command output
-
-**Status**: ✅ Compiled successfully, flash: 33.9% (1133061 bytes)
-
----
-
-## Android App Changes (android-recorder)
-
-### FileManagerFragment Enhancements
-**Location**: [android-recorder/app/src/main/kotlin/com/pwdongle/recorder/FileManagerFragment.kt](android-recorder/app/src/main/kotlin/com/pwdongle/recorder/FileManagerFragment.kt)
-
-**New Features**:
-1. **Tab Toggle for File Sources**
-   - Radio button toggle: "Phone" vs "Device (SD)"
-   - Dynamically switch between local and device file views
-   - Device tab disabled when not connected
-
-2. **Device File Listing** (`loadDeviceFiles()`)
-   - Sends `LIST` command to PWDongle
-   - Parses numbered file list response
-   - Displays device files in RecyclerView
-
-3. **Play on Device** (`playOnDevice()`)
-   - Sends `PLAY:filename` command to execute macro on device
-   - Shows status feedback
-
-4. **Save to Device** (`saveToDevice()`)
-   - Dialog to confirm saving local macro to device
-   - Sends `SAVE_MACRO:filename` command
-   - Uploads macro content line-by-line
-   - Signals completion with empty line
-
-5. **Device File UI Differentiation**
-   - Device files show: "On Device" metadata
-   - Hide delete/share buttons for device files
-   - "Play on Device" button for device files
-   - Standard play/delete/share buttons for local files
-
-### BLEManager Enhancements
-**Location**: [android-recorder/app/src/main/kotlin/com/pwdongle/recorder/BLEManager.kt](android-recorder/app/src/main/kotlin/com/pwdongle/recorder/BLEManager.kt)
-
-**New Features**:
-1. **Command Response Callback System**
-   - Added `currentResponseCallback` and `currentResponseBuffer` (lines 70-71)
-   - New method: `sendCommandWithResponse(command: String, onResponse: (String) -> Unit)` (lines 434-439)
-   - Updated `onCharacteristicChanged()` to route responses to callbacks (lines 197-220)
-   - Supports multi-line responses with newline detection
-
-2. **Request-Response Pattern**
-   - FileManagerFragment uses `sendCommandWithResponse()` for commands needing responses
-   - LIST, PLAY, SAVE_MACRO all use callback pattern
-   - Cleaner async handling compared to fire-and-forget
-
-### Layout Updates
-**Location**: [android-recorder/app/src/main/res/layout/fragment_file_manager.xml](android-recorder/app/src/main/res/layout/fragment_file_manager.xml)
-
-Added RadioGroup for tab toggle:
-```xml
-<RadioGroup
-    android:id="@+id/tabToggle"
-    android:orientation="horizontal">
-    <RadioButton android:id="@+id/localFilesRadio" ... android:text="Phone" android:checked="true" />
-    <RadioButton android:id="@+id/deviceFilesRadio" ... android:text="Device (SD)" />
-</RadioGroup>
-```
-
-### Build Configuration
-**Location**: [android-recorder/app/build.gradle](android-recorder/app/build.gradle#L38-L40)
-
-Added lint rule disables for clean builds:
-```groovy
-lint {
-    disable 'MissingPermission', 'AppCompatResource'
-}
-```
-
-**Build Status**: ✅ BUILD SUCCESSFUL (85 tasks)
-
----
+- Provides Recorder screen with direct access to on‑screen keyboard and touchpad
+- Supports USB OTG input for external keyboard/mouse
+- Sends BLE commands to start/stop recording; files saved to device SD
+- Spacebar reliability: on‑screen keyboard emits space via `KEY:space`
+- PIN input is digit‑only; password entries disallow commas and allow other special characters
 
 ## Usage Workflow
 
-### Saving a Recorded Macro to Device:
-1. User records macro on phone via on-screen keyboard/BLE
-2. Macro saved locally to phone's app storage
-3. Navigate to Files tab in app
-4. Switch to "Device (SD)" radio button
-5. Tap "Save to Device" button on a local macro
-6. Confirm dialog
-7. App sends `SAVE_MACRO:filename.txt` command
-8. App uploads macro content line-by-line
-9. Device confirms save on SD card
-10. Local app refreshes device file list
-
-### Playing Device Macros:
-1. Switch to "Device (SD)" in Files tab
-2. App sends `LIST` command to PWDongle
-3. Receive numbered file list
-4. Display files in RecyclerView
-5. Tap "Play on Device" button
-6. App sends `PLAY:filename` command
-7. PWDongle executes macro via USB HID
-
-### File Organization:
-- **Phone**: `/data/data/com.pwdongle.recorder/files/` (managed by app)
-- **Device**: `/sdcard/` root directory (via `SD_MMC` or `SD` library, accessed via USB)
-
----
+1. Let device boot to BLE (default) and connect from the app
+2. From Recorder screen, enter a filename and tap Start → `RECORD:<name>`
+3. Perform actions (TYPE/KEY/MOUSE/GAMEPAD) using on‑screen or OTG inputs
+4. Tap Stop → `STOPRECORD`; verify file present in device SD
+5. Use Boot Menu → Storage or Macro/Text to browse and execute the file
 
 ## Testing Checklist
 
-- [ ] Build PWDongle firmware (`pio run`)
-- [ ] Flash to ESP32-S3 (`pio run --target upload`)
-- [ ] Build android-recorder (`./gradlew build`)
-- [ ] Deploy APK to phone (`./gradlew installDebug`)
-- [ ] Test BLE connection
-- [ ] Record macro on phone
-- [ ] Save macro to device (verify `SAVE_MACRO` command)
-- [ ] Switch to Device tab
-- [ ] See device file list (`LIST` command)
-- [ ] Play macro on device (`PLAY` command)
-- [ ] Verify macro executes on USB HID output
-
----
-
-## Future Enhancements
-
-1. **Delete Device Macro**: Add `DELETE:filename` BLE command to firmware
-2. **Macro Edit**: Allow editing device macros directly in app
-3. **Sync Indicator**: Show sync status when uploading/downloading
-4. **Batch Operations**: Upload/download multiple macros at once
-5. **Device Storage Info**: Query device free space via BLE
-6. **Macro Versioning**: Track modification times for sync conflicts
-
----
-
-## Integration Points
-
-### Firmware ↔ BLE Protocol:
-- `LIST` → returns numbered file list
-- `PLAY:filename` → executes macro via processTextFileAuto()
-- `SAVE_MACRO:filename` → opens file, waits for content, closes on empty line
-- Responses: "OK:" or "ERROR:" prefix
-
-### App ↔ BLE Manager:
-- `sendCommand(cmd)` → fire-and-forget, updates status
-- `sendCommandWithResponse(cmd, callback)` → waits for response, invokes callback
-
-### App ↔ File System:
-- LocalMacros: Android app sandbox (MacroFileManager)
-- DeviceMacros: PWDongle SD card (BLE command driven)
-
----
-
-## Code Quality
-
-✅ Modular design - FileManagerFragment, BLEManager, MacroFileManager cleanly separated
-✅ Kotlin best practices - data classes, scoped functions, lifecycle-aware
-✅ Error handling - try/catch, onFailure callbacks, user feedback dialogs
-✅ UI feedback - status messages, loading states, confirmation dialogs
-✅ Memory efficient - streaming file upload/download, no large buffers
-
----
-
-## Files Modified
-
-### PWDongle Firmware:
-- `src/usb.cpp` - Added SAVE_MACRO handler, updated HELP, new enum state
+- [ ] Build and flash firmware
+- [ ] Build and install Android app
+- [ ] Connect over BLE and record a short macro
+- [ ] Browse SD files from device mode and execute macro
+- [ ] Confirm timing and actions (keyboard/mouse/gamepad) match expectations
 
 ### Android App:
 - `app/src/main/kotlin/com/pwdongle/recorder/FileManagerFragment.kt` - Complete rewrite

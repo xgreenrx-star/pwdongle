@@ -1,11 +1,11 @@
-# PWDongle v0.5.1 & android-recorder Testing Guide
+# PWDongle v0.5 Testing Guide
 
 ## Pre-Testing Setup
 
 ### ✅ Firmware Status
-- **Built & Flashed**: PWDongle v0.5.1 (33.9% flash, 17.9% RAM)
-- **New Features**: SAVE_MACRO command, enhanced HELP, SD card file management
-- **APK Ready**: `app/build/outputs/apk/debug/app-debug.apk` (6.4 MB)
+- **Built & Flashed**: PWDongle v0.5 (Macro Recording)
+- **Key Features**: Macro recording via BLE, file browser, advanced scripting & DuckyScript auto‑detection
+- **APK Ready**: `android-recorder/app/build/outputs/apk/debug/app-debug.apk`
 
 ### Installation Steps
 
@@ -58,61 +58,30 @@ adb install /home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recor
 - [ ] Type on connected computer should type via USB HID
 
 **Test 2.2: Macro Recording**
-- [ ] Tap "Record Macro" button (status: "Start Recording")
-- [ ] Choose input method (keyboard/touchpad)
-- [ ] Perform actions (type, click, etc.)
-- [ ] Tap "Stop Recording"
-- [ ] File should appear in Files → Phone tab
+- [ ] In Recorder screen, enter a filename
+- [ ] Tap "Start Recording" (BLE sends `RECORD:<name>`) 
+- [ ] Perform actions using on‑screen keyboard/touchpad or USB OTG devices
+- [ ] Tap "Stop Recording" (BLE sends `STOPRECORD`) 
+- [ ] Verify file is saved on the device SD card
 
-### Phase 3: Local File Management (Phone)
+### Phase 3: SD Card File Browser (Device)
 
 **Test 3.1: File Listing**
-- [ ] Navigate to "Files" tab
-- [ ] Verify "Phone" radio is selected
-- [ ] Should list recorded macros
-- [ ] Status shows macro count
+- [ ] Use Boot Menu → Storage or Macro/Text mode
+- [ ] Verify up to 15 `.txt` files are listed
+- [ ] Scroll with short press, long press to select
 
-**Test 3.2: File Operations**
-- [ ] Tap macro → "Play" button (playback preview on phone)
-- [ ] Tap macro → "Share" button (opens share chooser)
-- [ ] Tap macro → "Delete" button (confirmation dialog, removes file)
+**Test 3.2: File Execution**
+- [ ] Select a macro file
+- [ ] Long press to execute via USB HID
+- [ ] Verify typing/mouse/gamepad actions occur on the connected PC
 
-### Phase 4: Device SD Card Integration ⭐ (NEW)
+### Phase 4: BLE Responses
 
-**Test 4.1: Device File Listing**
-- [ ] Tap "Device (SD)" radio button
-- [ ] Status should show "Loading device files..."
-- [ ] Verify BLE sends `LIST` command to PWDongle
-- [ ] Device files should appear (or "No macros on device")
-- [ ] Status shows device file count
-
-**Test 4.2: Save Macro to Device**
-- [ ] Switch back to "Phone" tab
-- [ ] Select a recorded macro
-- [ ] Long-press or context menu option "Save to Device"
-- [ ] Confirmation dialog appears
-- [ ] Status shows "Uploading filename to device..."
-- [ ] Monitor upload progress
-- [ ] Once complete, notification: "Macro saved to device!"
-- [ ] Switch to "Device (SD)" tab
-- [ ] New macro should appear in device list
-
-**Test 4.3: Play Device Macro**
-- [ ] Switch to "Device (SD)" tab
-- [ ] Select a device macro
-- [ ] Tap "Play on Device" button
-- [ ] Status shows "Playing filename on device"
-- [ ] Macro executes on PWDongle:
-  - [ ] USB HID keyboard types text
-  - [ ] Mouse moves/clicks if applicable
-  - [ ] Keys press/release
-  - [ ] Gamepad inputs if present
-
-**Test 4.4: Response Handling**
+**Test 4.1: Response Handling**
 - [ ] Watch BLE for response messages
-- [ ] "OK: " prefix for success
-- [ ] "ERROR: " prefix for failures
-- [ ] App updates status text with responses
+- [ ] `OK:` prefix for success, `ERROR:` for failures
+- [ ] App updates status text appropriately
 
 ### Phase 5: Firmware Commands (via BLE Terminal or App)
 
@@ -132,44 +101,7 @@ Expected Response:
   ...
 ```
 
-**Test 5.2: LIST Command** ✅
-```
-Send: LIST
-Expected Response:
-  OK: Listing macro files:
-  1. macro1.txt
-  2. macro2.txt
-  3. newmacro.txt
-  (or "(no files found)" if empty)
-```
-
-**Test 5.3: PLAY Command** ✅
-```
-Send: PLAY:macro1.txt
-Expected Response:
-  OK: Playing macro1.txt
-  OK: Playback complete
-Macro executes with USB HID output
-```
-
-**Test 5.4: SAVE_MACRO Command** (NEW) 🌟
-```
-Send: SAVE_MACRO:test_macro.txt
-Expected Response:
-  OK: Ready to receive macro. Send content (end with blank line)
-
-Send: {{KEY:enter}}
-Wait for response (immediate, or batched)
-
-Send: {{DELAY:1000}}
-Wait for response
-
-Send: <empty line>
-Expected Response:
-  OK: Macro saved as test_macro.txt
-
-Then verify file appears in LIST output
-```
+Note: Use `RECORD:<name>` and `STOPRECORD` for creating macros; playback is selected from the SD file browser in device modes.
 
 ### Phase 6: Error Handling
 
@@ -197,7 +129,7 @@ Then verify file appears in LIST output
 
 **Test 7.2: Special Characters**
 - [ ] Macro with spaces, symbols, special keys
-- [ ] Upload and play back
+- [ ] Record and play back
 - [ ] Verify exact reproduction
 
 **Test 7.3: Empty Macro**

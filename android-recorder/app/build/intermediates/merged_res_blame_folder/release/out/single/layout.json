@@ -24,6 +24,14 @@
         "source": "com.pwdongle.recorder.app-main-52:/layout/dialog_keyboard.xml"
     },
     {
+        "merged": "com.pwdongle.recorder.app-mergeReleaseResources-50:/layout/fragment_passwords.xml",
+        "source": "com.pwdongle.recorder.app-main-52:/layout/fragment_passwords.xml"
+    },
+    {
+        "merged": "com.pwdongle.recorder.app-mergeReleaseResources-50:/layout/item_password_entry.xml",
+        "source": "com.pwdongle.recorder.app-main-52:/layout/item_password_entry.xml"
+    },
+    {
         "merged": "com.pwdongle.recorder.app-mergeReleaseResources-50:/layout/fragment_playback.xml",
         "source": "com.pwdongle.recorder.app-main-52:/layout/fragment_playback.xml"
     },

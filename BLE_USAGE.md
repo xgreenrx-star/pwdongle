@@ -79,6 +79,11 @@ PWDongle supports BLE connectivity for smartphone control using the Nordic UART 
 
 **Note:** Delays between actions are automatically recorded (>50ms threshold).
 
+Input validation notes (Android app):
+- PIN entry is strictly digits (4‑digit code)
+- Password inputs disallow commas to protect CSV parsing, other special characters are allowed
+- On‑screen keyboard transmits characters via `TYPE:` and space via `KEY:space` for reliability
+
 #### Recording Workflow
 
 **Step 1: Connect**

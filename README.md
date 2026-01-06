@@ -119,6 +119,72 @@ When you interrupt the countdown, a menu with 5 boot options appears:
 #### Why Bluetooth is Default?
 Bluetooth mode provides smartphone control with keystroke relay, making it the most versatile mode for everyday use. All other modes are instantly accessible via the boot menu.
 
+## Macro Recording (v0.5)
+
+Record keyboard and mouse actions from a smartphone and save as macros on the SD card. Timing between actions is automatically captured when the gap exceeds 50ms.
+
+- Start: Send `RECORD:filename` via BLE (creates `/filename.txt`)
+- Actions: `KEY:…`, `TYPE:…`, `MOUSE:…`, `GAMEPAD:…` are intercepted and written with delays
+- Stop: Send `STOPRECORD` to finalize the file and show duration
+- Playback: Use Boot Menu → Macro/Text or Storage mode to select and run files from SD
+
+Macro files use PWDongle macro syntax and may contain tokens like `{{DELAY:ms}}`, `{{KEY:name}}`, `{{TEXT:…}}`, `{{MOUSE:…}}`, `{{GAMEPAD:…}}`, `{{AUDIO:…}}`. Plain text without tokens is typed directly.
+
+## Android Recorder App
+
+The Android app provides:
+- Auto-connect option and manual device selection (BLE NUS)
+- On-screen keyboard and virtual touchpad dialogs accessible directly from the Recorder screen
+- USB OTG input capture (external keyboard/mouse) for live relaying and recording
+- Macro recording to SD using `RECORD`/`STOPRECORD`
+
+Behavior details:
+- PIN entry in the app is digit‑only (enforced by numeric input type and `DigitsKeyListener`)
+- New password entries disallow commas to protect CSV parsing, other special characters are allowed
+- On-screen keyboard sends characters via `TYPE:` and space via `KEY:space` for reliability
+
+Build the app in `android-recorder/`:
+```bash
+cd android-recorder
+./gradlew assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+## Changelog (v0.5)
+
+- Macro Recording: `RECORD:<name>` / `STOPRECORD` with automatic delay capture (>50ms)
+- SD File Browser: Lists up to 15 `.txt` files, long‑press to execute; auto‑detects Advanced/Ducky/Macro formats
+- Android Recorder UI: Recorder screen now includes on‑screen keyboard and touchpad buttons
+- Input Validation: App PIN entry is digit‑only; password inputs disallow commas, allow other special characters
+- Spacebar Reliability: On‑screen keyboard sends space via `KEY:space` to avoid whitespace filtering
+- Documentation: Updated BLE usage, testing guide, and SD integration to match v0.5
+
+## Screenshots
+
+Recorder Screen (Android):
+
+![Recorder Screen](docs/recorder-screen.png)
+
+On-Screen Keyboard Dialog:
+
+![Keyboard Dialog](docs/keyboard-dialog.png)
+
+Touchpad Dialog:
+
+![Touchpad Dialog](docs/touchpad-dialog.png)
+
+PIN Entry Dialog (Android):
+
+![PIN Dialog](docs/pin-dialog.png)
+
+Boot Menu (Device):
+
+![Boot Menu](docs/boot-menu.png)
+
+File Selection Menu (Storage/Macro Mode):
+
+![File Menu UI](docs/file-menu-ui.png)
+
 ### Access Codes (Legacy PIN Entry)
 
 These codes are only used in **Password Mode** selected from the boot menu:

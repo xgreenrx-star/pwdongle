@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.launch
 
 /**
@@ -18,6 +19,7 @@ class PlaybackFragment : Fragment() {
     private lateinit var statusText: TextView
     private lateinit var playButton: Button
     private lateinit var stopButton: Button
+    private lateinit var backButton: Button
     private lateinit var speedSpinner: Spinner
     private lateinit var macroContentView: ScrollView
     private lateinit var contentText: TextView
@@ -57,12 +59,14 @@ class PlaybackFragment : Fragment() {
         statusText = view.findViewById(R.id.statusText)
         playButton = view.findViewById(R.id.playButton)
         stopButton = view.findViewById(R.id.stopButton)
+        backButton = view.findViewById(R.id.backButton)
         speedSpinner = view.findViewById(R.id.speedSpinner)
         macroContentView = view.findViewById(R.id.macroContentView)
         contentText = view.findViewById(R.id.contentText)
         
+        // Use singleton BLE manager (shared instance)
         try {
-            bleManager = BLEManager(requireContext()) { status ->
+            bleManager = BLEManager.getInstance(requireContext()) { status ->
                 try {
                     requireActivity().runOnUiThread {
                         statusText.text = status
@@ -84,6 +88,7 @@ class PlaybackFragment : Fragment() {
     private fun setupListeners() {
         playButton.setOnClickListener { playMacro() }
         stopButton.setOnClickListener { stopPlayback() }
+        backButton.setOnClickListener { findNavController().popBackStack() }
     }
     
     private fun playMacro() {
@@ -131,6 +136,17 @@ class PlaybackFragment : Fragment() {
             playButton.isEnabled = true
             stopButton.isEnabled = false
             statusText.text = "Playback complete"
+            
+            // Auto-navigate back to file manager after 1.5 seconds
+            kotlinx.coroutines.delay(1500)
+            try {
+                // Only navigate if the view is still attached
+                if (isAdded && view != null) {
+                    findNavController().popBackStack()
+                }
+            } catch (e: Exception) {
+                android.util.Log.w("PlaybackFragment", "Navigation failed: ${e.message}")
+            }
         }
     }
     

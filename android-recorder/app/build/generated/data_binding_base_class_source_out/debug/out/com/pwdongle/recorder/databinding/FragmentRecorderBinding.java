@@ -45,6 +45,9 @@ public final class FragmentRecorderBinding implements ViewBinding {
   public final Spinner inputMethodSpinner;
 
   @NonNull
+  public final Button keyboardButton;
+
+  @NonNull
   public final TextView mousePositionText;
 
   @NonNull
@@ -59,12 +62,16 @@ public final class FragmentRecorderBinding implements ViewBinding {
   @NonNull
   public final TextView titleText;
 
+  @NonNull
+  public final Button touchpadButton;
+
   private FragmentRecorderBinding(@NonNull FrameLayout rootView, @NonNull Button connectButton,
       @NonNull LinearLayout deviceSelector, @NonNull Spinner deviceSpinner,
       @NonNull TextView eventCountText, @NonNull EditText filenameInput,
       @NonNull Button filesButton, @NonNull Spinner inputMethodSpinner,
-      @NonNull TextView mousePositionText, @NonNull Button recordButton,
-      @NonNull Button settingsButton, @NonNull TextView statusText, @NonNull TextView titleText) {
+      @NonNull Button keyboardButton, @NonNull TextView mousePositionText,
+      @NonNull Button recordButton, @NonNull Button settingsButton, @NonNull TextView statusText,
+      @NonNull TextView titleText, @NonNull Button touchpadButton) {
     this.rootView = rootView;
     this.connectButton = connectButton;
     this.deviceSelector = deviceSelector;
@@ -73,11 +80,13 @@ public final class FragmentRecorderBinding implements ViewBinding {
     this.filenameInput = filenameInput;
     this.filesButton = filesButton;
     this.inputMethodSpinner = inputMethodSpinner;
+    this.keyboardButton = keyboardButton;
     this.mousePositionText = mousePositionText;
     this.recordButton = recordButton;
     this.settingsButton = settingsButton;
     this.statusText = statusText;
     this.titleText = titleText;
+    this.touchpadButton = touchpadButton;
   }
 
   @Override
@@ -149,6 +158,12 @@ public final class FragmentRecorderBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.keyboardButton;
+      Button keyboardButton = ViewBindings.findChildViewById(rootView, id);
+      if (keyboardButton == null) {
+        break missingId;
+      }
+
       id = R.id.mousePositionText;
       TextView mousePositionText = ViewBindings.findChildViewById(rootView, id);
       if (mousePositionText == null) {
@@ -179,9 +194,16 @@ public final class FragmentRecorderBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.touchpadButton;
+      Button touchpadButton = ViewBindings.findChildViewById(rootView, id);
+      if (touchpadButton == null) {
+        break missingId;
+      }
+
       return new FragmentRecorderBinding((FrameLayout) rootView, connectButton, deviceSelector,
           deviceSpinner, eventCountText, filenameInput, filesButton, inputMethodSpinner,
-          mousePositionText, recordButton, settingsButton, statusText, titleText);
+          keyboardButton, mousePositionText, recordButton, settingsButton, statusText, titleText,
+          touchpadButton);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

@@ -26,12 +26,15 @@
     <TextView
         android:id="@+id/statusText"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:text="Status: Ready"
         android:textSize="14sp"
         android:padding="8dp"
         android:background="#E0E0E0"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:gravity="center_vertical" />
     
     <LinearLayout
         android:layout_width="match_parent"
@@ -74,6 +77,15 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="⏹ Stop"
+            android:textSize="16sp"
+            android:layout_marginEnd="8dp" />
+        
+        <Button
+            android:id="@+id/backButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="← Back"
             android:textSize="16sp" />
     </LinearLayout>
     

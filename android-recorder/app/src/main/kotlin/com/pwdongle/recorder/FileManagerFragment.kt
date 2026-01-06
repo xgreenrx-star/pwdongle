@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
@@ -202,13 +203,16 @@ class FileManagerFragment : Fragment() {
     private fun playMacro(macro: MacroFile) {
         viewLifecycleOwner.lifecycleScope.launch {
             fileManager.loadMacro(macro.name).onSuccess { content ->
-                // Navigate to playback
+                // Navigate to playback fragment with macro data
                 val bundle = Bundle().apply {
                     putString("macro_name", macro.name)
                     putString("macro_content", content)
                 }
-                parentFragmentManager.setFragmentResult("play_macro", bundle)
-                parentFragmentManager.popBackStack()
+                try {
+                    findNavController().navigate(R.id.nav_playback, bundle)
+                } catch (e: Exception) {
+                    android.util.Log.e("FileManagerFragment", "Navigation failed", e)
+                }
             }
         }
     }

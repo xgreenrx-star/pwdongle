@@ -23,6 +23,9 @@ public final class FragmentPlaybackBinding implements ViewBinding {
   private final LinearLayout rootView;
 
   @NonNull
+  public final Button backButton;
+
+  @NonNull
   public final TextView contentText;
 
   @NonNull
@@ -46,11 +49,12 @@ public final class FragmentPlaybackBinding implements ViewBinding {
   @NonNull
   public final TextView titleText;
 
-  private FragmentPlaybackBinding(@NonNull LinearLayout rootView, @NonNull TextView contentText,
-      @NonNull ScrollView macroContentView, @NonNull TextView macroNameText,
-      @NonNull Button playButton, @NonNull Spinner speedSpinner, @NonNull TextView statusText,
-      @NonNull Button stopButton, @NonNull TextView titleText) {
+  private FragmentPlaybackBinding(@NonNull LinearLayout rootView, @NonNull Button backButton,
+      @NonNull TextView contentText, @NonNull ScrollView macroContentView,
+      @NonNull TextView macroNameText, @NonNull Button playButton, @NonNull Spinner speedSpinner,
+      @NonNull TextView statusText, @NonNull Button stopButton, @NonNull TextView titleText) {
     this.rootView = rootView;
+    this.backButton = backButton;
     this.contentText = contentText;
     this.macroContentView = macroContentView;
     this.macroNameText = macroNameText;
@@ -88,6 +92,12 @@ public final class FragmentPlaybackBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.backButton;
+      Button backButton = ViewBindings.findChildViewById(rootView, id);
+      if (backButton == null) {
+        break missingId;
+      }
+
       id = R.id.contentText;
       TextView contentText = ViewBindings.findChildViewById(rootView, id);
       if (contentText == null) {
@@ -136,8 +146,9 @@ public final class FragmentPlaybackBinding implements ViewBinding {
         break missingId;
       }
 
-      return new FragmentPlaybackBinding((LinearLayout) rootView, contentText, macroContentView,
-          macroNameText, playButton, speedSpinner, statusText, stopButton, titleText);
+      return new FragmentPlaybackBinding((LinearLayout) rootView, backButton, contentText,
+          macroContentView, macroNameText, playButton, speedSpinner, statusText, stopButton,
+          titleText);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

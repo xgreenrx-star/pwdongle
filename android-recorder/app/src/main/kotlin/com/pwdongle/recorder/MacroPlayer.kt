@@ -39,7 +39,7 @@ class MacroPlayer(
                 eventCount++
             }
             
-            onStatusChange("Playback complete! Executed $eventCount commands.")
+            onStatusChange("Complete: $eventCount cmds")
         } catch (e: Exception) {
             Log.e(TAG, "Playback error: ${e.message}")
             onStatusChange("Playback error: ${e.message}")
@@ -65,25 +65,28 @@ class MacroPlayer(
                 val rawMs = args.toLongOrNull() ?: 100L
                 val scaledMs = (rawMs / speedMultiplier).toLong().coerceAtLeast(0)
                 kotlinx.coroutines.delay(scaledMs)
-                onStatusChange("Delay: ${scaledMs}ms (x${speedMultiplier})")
+                onStatusChange("Wait ${scaledMs}ms")
             }
             "KEY" -> {
                 onKeyCommand(args)
+                kotlinx.coroutines.delay(50) // Brief delay to allow BLE send
                 onStatusChange("Key: $args")
             }
             "MOUSE" -> {
                 onMouseCommand(args)
+                kotlinx.coroutines.delay(50)
                 onStatusChange("Mouse: $args")
             }
             "TYPE", "TEXT" -> {
                 onTypeCommand(args)
+                kotlinx.coroutines.delay(50)
                 onStatusChange("Type: $args")
             }
             "GAMEPAD" -> {
-                onStatusChange("Gamepad: $args (not supported)")
+                onStatusChange("Gamepad (no support)")
             }
             "AUDIO" -> {
-                onStatusChange("Audio: $args (not supported)")
+                onStatusChange("Audio (no support)")
             }
             else -> {
                 Log.w(TAG, "Unknown token: $token")

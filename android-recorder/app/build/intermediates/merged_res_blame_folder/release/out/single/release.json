@@ -4,12 +4,20 @@
         "source": "com.pwdongle.recorder.app-main-52:/layout/fragment_file_manager.xml"
     },
     {
+        "merged": "com.pwdongle.recorder.app-merged_res-51:/layout_fragment_passwords.xml.flat",
+        "source": "com.pwdongle.recorder.app-main-52:/layout/fragment_passwords.xml"
+    },
+    {
         "merged": "com.pwdongle.recorder.app-merged_res-51:/layout_dialog_touchpad.xml.flat",
         "source": "com.pwdongle.recorder.app-main-52:/layout/dialog_touchpad.xml"
     },
     {
         "merged": "com.pwdongle.recorder.app-merged_res-51:/mipmap-anydpi-v26_ic_launcher.xml.flat",
         "source": "com.pwdongle.recorder.app-main-52:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "com.pwdongle.recorder.app-merged_res-51:/layout_item_password_entry.xml.flat",
+        "source": "com.pwdongle.recorder.app-main-52:/layout/item_password_entry.xml"
     },
     {
         "merged": "com.pwdongle.recorder.app-merged_res-51:/layout_fragment_settings.xml.flat",
