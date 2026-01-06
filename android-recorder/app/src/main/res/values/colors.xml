@@ -1,7 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Light mode colors -->
     <color name="primaryColor">#0277BD</color>
     <color name="primaryDarkColor">#01579B</color>
     <color name="accentColor">#FF5722</color>
     <color name="launcher_background">#121212</color>
+    
+    <!-- Text colors for light theme -->
+    <color name="textPrimary">#212121</color>
+    <color name="textSecondary">#757575</color>
+    <color name="textHint">#bdbdbd</color>
+    
+    <!-- Background and surface colors -->
+    <color name="backgroundColor">#ffffff</color>
+    <color name="surfaceColor">#f5f5f5</color>
+    <color name="cardBackground">#ffffff</color>
+    
+    <!-- Status and states -->
+    <color name="successGreen">#4caf50</color>
+    <color name="errorRed">#f44336</color>
+    <color name="warningOrange">#ff9800</color>
+    <color name="infoBlue">#2196f3</color>
 </resources>

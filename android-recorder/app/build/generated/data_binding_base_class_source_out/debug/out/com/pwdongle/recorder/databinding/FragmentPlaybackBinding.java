@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -38,6 +39,12 @@ public final class FragmentPlaybackBinding implements ViewBinding {
   public final Button playButton;
 
   @NonNull
+  public final ProgressBar progressBar;
+
+  @NonNull
+  public final TextView progressText;
+
+  @NonNull
   public final Spinner speedSpinner;
 
   @NonNull
@@ -51,14 +58,17 @@ public final class FragmentPlaybackBinding implements ViewBinding {
 
   private FragmentPlaybackBinding(@NonNull LinearLayout rootView, @NonNull Button backButton,
       @NonNull TextView contentText, @NonNull ScrollView macroContentView,
-      @NonNull TextView macroNameText, @NonNull Button playButton, @NonNull Spinner speedSpinner,
-      @NonNull TextView statusText, @NonNull Button stopButton, @NonNull TextView titleText) {
+      @NonNull TextView macroNameText, @NonNull Button playButton, @NonNull ProgressBar progressBar,
+      @NonNull TextView progressText, @NonNull Spinner speedSpinner, @NonNull TextView statusText,
+      @NonNull Button stopButton, @NonNull TextView titleText) {
     this.rootView = rootView;
     this.backButton = backButton;
     this.contentText = contentText;
     this.macroContentView = macroContentView;
     this.macroNameText = macroNameText;
     this.playButton = playButton;
+    this.progressBar = progressBar;
+    this.progressText = progressText;
     this.speedSpinner = speedSpinner;
     this.statusText = statusText;
     this.stopButton = stopButton;
@@ -122,6 +132,18 @@ public final class FragmentPlaybackBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.progressBar;
+      ProgressBar progressBar = ViewBindings.findChildViewById(rootView, id);
+      if (progressBar == null) {
+        break missingId;
+      }
+
+      id = R.id.progressText;
+      TextView progressText = ViewBindings.findChildViewById(rootView, id);
+      if (progressText == null) {
+        break missingId;
+      }
+
       id = R.id.speedSpinner;
       Spinner speedSpinner = ViewBindings.findChildViewById(rootView, id);
       if (speedSpinner == null) {
@@ -147,8 +169,8 @@ public final class FragmentPlaybackBinding implements ViewBinding {
       }
 
       return new FragmentPlaybackBinding((LinearLayout) rootView, backButton, contentText,
-          macroContentView, macroNameText, playButton, speedSpinner, statusText, stopButton,
-          titleText);
+          macroContentView, macroNameText, playButton, progressBar, progressText, speedSpinner,
+          statusText, stopButton, titleText);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

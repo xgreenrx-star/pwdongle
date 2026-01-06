@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark mode colors -->
+    <color name="primaryColor">#1e1e2e</color>
+    <color name="primaryDarkColor">#0f1419</color>
+    <color name="accentColor">#00bcd4</color>
+    
+    <!-- Text colors for dark theme -->
+    <color name="textPrimary">#ffffff</color>
+    <color name="textSecondary">#b0b0b0</color>
+    <color name="textHint">#808080</color>
+    
+    <!-- Background and surface colors -->
+    <color name="backgroundColor">#121212</color>
+    <color name="surfaceColor">#1e1e2e</color>
+    <color name="cardBackground">#2d2d3d</color>
+    
+    <!-- Status and states -->
+    <color name="successGreen">#4caf50</color>
+    <color name="errorRed">#f44336</color>
+    <color name="warningOrange">#ff9800</color>
+    <color name="infoBlue">#2196f3</color>
+</resources>

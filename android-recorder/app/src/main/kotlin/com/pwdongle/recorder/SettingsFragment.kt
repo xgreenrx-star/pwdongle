@@ -27,6 +27,7 @@ class SettingsFragment : Fragment() {
     
     private var bleManager: BLEManager? = null
     private lateinit var preferencesManager: PreferencesManager
+    private var hasInitializedTheme: Boolean = false
     
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -79,7 +80,9 @@ class SettingsFragment : Fragment() {
                     "dark" -> themeDarkRadio.isChecked = true
                     else -> themeSystemRadio.isChecked = true
                 }
-                applyTheme(mode)
+                // Apply theme on first load without recreating the activity
+                applyTheme(mode, triggerRecreate = false)
+                hasInitializedTheme = true
             }
         }
         
@@ -191,12 +194,13 @@ class SettingsFragment : Fragment() {
             }
             viewLifecycleOwner.lifecycleScope.launch {
                 preferencesManager.setThemeMode(mode)
-                applyTheme(mode)
+                // Only recreate when user actively changes selection
+                applyTheme(mode, triggerRecreate = hasInitializedTheme)
             }
         }
     }
 
-    private fun applyTheme(mode: String) {
+    private fun applyTheme(mode: String, triggerRecreate: Boolean) {
         when (mode) {
             "light" -> androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
                 androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
@@ -207,6 +211,15 @@ class SettingsFragment : Fragment() {
             else -> androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
                 androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
             )
+        }
+
+        if (triggerRecreate && isAdded) {
+            // Defer recreate slightly to avoid racing fragment lifecycle updates
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                try {
+                    requireActivity().recreate()
+                } catch (_: Exception) { /* ignore */ }
+            }
         }
     }
 }

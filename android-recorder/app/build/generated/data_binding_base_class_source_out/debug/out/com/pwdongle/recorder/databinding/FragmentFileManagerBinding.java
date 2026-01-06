@@ -4,6 +4,7 @@ package com.pwdongle.recorder.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -23,6 +24,15 @@ public final class FragmentFileManagerBinding implements ViewBinding {
   private final LinearLayout rootView;
 
   @NonNull
+  public final LinearLayout batchActionsLayout;
+
+  @NonNull
+  public final Button batchModeButton;
+
+  @NonNull
+  public final Button deleteSelectedButton;
+
+  @NonNull
   public final RadioButton deviceFilesRadio;
 
   @NonNull
@@ -35,6 +45,12 @@ public final class FragmentFileManagerBinding implements ViewBinding {
   public final RecyclerView macrosRecyclerView;
 
   @NonNull
+  public final Button playSelectedButton;
+
+  @NonNull
+  public final Button selectAllButton;
+
+  @NonNull
   public final TextView statusText;
 
   @NonNull
@@ -44,14 +60,22 @@ public final class FragmentFileManagerBinding implements ViewBinding {
   public final TextView titleText;
 
   private FragmentFileManagerBinding(@NonNull LinearLayout rootView,
-      @NonNull RadioButton deviceFilesRadio, @NonNull TextView emptyText,
-      @NonNull RadioButton localFilesRadio, @NonNull RecyclerView macrosRecyclerView,
-      @NonNull TextView statusText, @NonNull RadioGroup tabToggle, @NonNull TextView titleText) {
+      @NonNull LinearLayout batchActionsLayout, @NonNull Button batchModeButton,
+      @NonNull Button deleteSelectedButton, @NonNull RadioButton deviceFilesRadio,
+      @NonNull TextView emptyText, @NonNull RadioButton localFilesRadio,
+      @NonNull RecyclerView macrosRecyclerView, @NonNull Button playSelectedButton,
+      @NonNull Button selectAllButton, @NonNull TextView statusText, @NonNull RadioGroup tabToggle,
+      @NonNull TextView titleText) {
     this.rootView = rootView;
+    this.batchActionsLayout = batchActionsLayout;
+    this.batchModeButton = batchModeButton;
+    this.deleteSelectedButton = deleteSelectedButton;
     this.deviceFilesRadio = deviceFilesRadio;
     this.emptyText = emptyText;
     this.localFilesRadio = localFilesRadio;
     this.macrosRecyclerView = macrosRecyclerView;
+    this.playSelectedButton = playSelectedButton;
+    this.selectAllButton = selectAllButton;
     this.statusText = statusText;
     this.tabToggle = tabToggle;
     this.titleText = titleText;
@@ -84,6 +108,24 @@ public final class FragmentFileManagerBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.batchActionsLayout;
+      LinearLayout batchActionsLayout = ViewBindings.findChildViewById(rootView, id);
+      if (batchActionsLayout == null) {
+        break missingId;
+      }
+
+      id = R.id.batchModeButton;
+      Button batchModeButton = ViewBindings.findChildViewById(rootView, id);
+      if (batchModeButton == null) {
+        break missingId;
+      }
+
+      id = R.id.deleteSelectedButton;
+      Button deleteSelectedButton = ViewBindings.findChildViewById(rootView, id);
+      if (deleteSelectedButton == null) {
+        break missingId;
+      }
+
       id = R.id.deviceFilesRadio;
       RadioButton deviceFilesRadio = ViewBindings.findChildViewById(rootView, id);
       if (deviceFilesRadio == null) {
@@ -108,6 +150,18 @@ public final class FragmentFileManagerBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.playSelectedButton;
+      Button playSelectedButton = ViewBindings.findChildViewById(rootView, id);
+      if (playSelectedButton == null) {
+        break missingId;
+      }
+
+      id = R.id.selectAllButton;
+      Button selectAllButton = ViewBindings.findChildViewById(rootView, id);
+      if (selectAllButton == null) {
+        break missingId;
+      }
+
       id = R.id.statusText;
       TextView statusText = ViewBindings.findChildViewById(rootView, id);
       if (statusText == null) {
@@ -126,8 +180,10 @@ public final class FragmentFileManagerBinding implements ViewBinding {
         break missingId;
       }
 
-      return new FragmentFileManagerBinding((LinearLayout) rootView, deviceFilesRadio, emptyText,
-          localFilesRadio, macrosRecyclerView, statusText, tabToggle, titleText);
+      return new FragmentFileManagerBinding((LinearLayout) rootView, batchActionsLayout,
+          batchModeButton, deleteSelectedButton, deviceFilesRadio, emptyText, localFilesRadio,
+          macrosRecyclerView, playSelectedButton, selectAllButton, statusText, tabToggle,
+          titleText);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

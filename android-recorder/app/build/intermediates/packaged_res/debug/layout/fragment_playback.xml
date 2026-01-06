@@ -31,10 +31,30 @@
         android:textSize="14sp"
         android:padding="8dp"
         android:background="#E0E0E0"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:maxLines="2"
         android:ellipsize="end"
         android:gravity="center_vertical" />
+    
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:max="100"
+        android:progress="0"
+        android:layout_marginBottom="4dp"
+        android:visibility="gone" />
+    
+    <TextView
+        android:id="@+id/progressText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="12sp"
+        android:gravity="center"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone" />
     
     <LinearLayout
         android:layout_width="match_parent"

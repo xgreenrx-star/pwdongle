@@ -2,8 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:layout_height="match_parent">
     
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,7 +26,7 @@
             android:text="Status: Not connected"
             android:textSize="16sp"
             android:padding="12dp"
-            android:background="#E0E0E0"
+            android:backgroundTint="?attr/colorSecondary"
             android:layout_marginBottom="16dp" />
         
         <!-- Device Selection (shown when auto-connect is disabled) -->
@@ -37,7 +36,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="8dp"
-            android:background="#FFF3E0"
             android:layout_marginBottom="16dp"
             android:visibility="gone">
             

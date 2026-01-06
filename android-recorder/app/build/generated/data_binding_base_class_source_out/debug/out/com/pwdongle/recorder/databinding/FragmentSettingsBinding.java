@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -42,11 +44,25 @@ public final class FragmentSettingsBinding implements ViewBinding {
   public final TextView statusText;
 
   @NonNull
+  public final RadioButton themeDarkRadio;
+
+  @NonNull
+  public final RadioButton themeLightRadio;
+
+  @NonNull
+  public final RadioGroup themeRadioGroup;
+
+  @NonNull
+  public final RadioButton themeSystemRadio;
+
+  @NonNull
   public final TextView titleText;
 
   private FragmentSettingsBinding(@NonNull LinearLayout rootView, @NonNull Switch autoConnectSwitch,
       @NonNull SeekBar delayThresholdSlider, @NonNull TextView delayThresholdText,
       @NonNull ListView devicesList, @NonNull Button scanButton, @NonNull TextView statusText,
+      @NonNull RadioButton themeDarkRadio, @NonNull RadioButton themeLightRadio,
+      @NonNull RadioGroup themeRadioGroup, @NonNull RadioButton themeSystemRadio,
       @NonNull TextView titleText) {
     this.rootView = rootView;
     this.autoConnectSwitch = autoConnectSwitch;
@@ -55,6 +71,10 @@ public final class FragmentSettingsBinding implements ViewBinding {
     this.devicesList = devicesList;
     this.scanButton = scanButton;
     this.statusText = statusText;
+    this.themeDarkRadio = themeDarkRadio;
+    this.themeLightRadio = themeLightRadio;
+    this.themeRadioGroup = themeRadioGroup;
+    this.themeSystemRadio = themeSystemRadio;
     this.titleText = titleText;
   }
 
@@ -121,6 +141,30 @@ public final class FragmentSettingsBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.themeDarkRadio;
+      RadioButton themeDarkRadio = ViewBindings.findChildViewById(rootView, id);
+      if (themeDarkRadio == null) {
+        break missingId;
+      }
+
+      id = R.id.themeLightRadio;
+      RadioButton themeLightRadio = ViewBindings.findChildViewById(rootView, id);
+      if (themeLightRadio == null) {
+        break missingId;
+      }
+
+      id = R.id.themeRadioGroup;
+      RadioGroup themeRadioGroup = ViewBindings.findChildViewById(rootView, id);
+      if (themeRadioGroup == null) {
+        break missingId;
+      }
+
+      id = R.id.themeSystemRadio;
+      RadioButton themeSystemRadio = ViewBindings.findChildViewById(rootView, id);
+      if (themeSystemRadio == null) {
+        break missingId;
+      }
+
       id = R.id.titleText;
       TextView titleText = ViewBindings.findChildViewById(rootView, id);
       if (titleText == null) {
@@ -128,7 +172,8 @@ public final class FragmentSettingsBinding implements ViewBinding {
       }
 
       return new FragmentSettingsBinding((LinearLayout) rootView, autoConnectSwitch,
-          delayThresholdSlider, delayThresholdText, devicesList, scanButton, statusText, titleText);
+          delayThresholdSlider, delayThresholdText, devicesList, scanButton, statusText,
+          themeDarkRadio, themeLightRadio, themeRadioGroup, themeSystemRadio, titleText);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

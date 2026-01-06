@@ -316,7 +316,9 @@ class RecorderFragment : Fragment(), KeyboardEventListener, MouseEventListener {
             return
         }
         bleManager?.scanForDevices { devices ->
-            requireActivity().runOnUiThread {
+            // Post to main thread and guard against detached fragment
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                if (!isAdded) return@post
                 android.util.Log.d("RecorderFragment", "Auto-scan found ${devices.size} devices: $devices")
 
                 // Prefer exact name first
@@ -352,8 +354,8 @@ class RecorderFragment : Fragment(), KeyboardEventListener, MouseEventListener {
 
                     bleManager?.setAutoReconnect(true, 5)  // Enable auto-reconnect
                     bleManager?.connectToDevice(targetDevice) { result ->
-                        if (isAdded) {
-                            requireActivity().runOnUiThread {
+                        android.os.Handler(android.os.Looper.getMainLooper()).post {
+                            if (isAdded) {
                                 statusText.text = result
                                 android.util.Log.d("RecorderFragment", "Connection result: $result")
                             }
@@ -491,8 +493,10 @@ class RecorderFragment : Fragment(), KeyboardEventListener, MouseEventListener {
                 statusText.text = "Connecting to $macAddress..."
                 bleManager?.setAutoReconnect(true, 5)  // Enable auto-reconnect
                 bleManager?.connectToDeviceByMAC(macAddress) { result ->
-                    requireActivity().runOnUiThread {
-                        statusText.text = result
+                    android.os.Handler(android.os.Looper.getMainLooper()).post {
+                        if (isAdded) {
+                            statusText.text = result
+                        }
                     }
                 }
             } else {

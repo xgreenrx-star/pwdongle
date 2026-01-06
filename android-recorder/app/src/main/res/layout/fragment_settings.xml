@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="?android:colorBackground">
+    >
     
     <TextView
         android:id="@+id/titleText"
@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="8dp"
-        android:background="?attr/colorSurface"
+        android:background="@android:color/transparent"
         android:layout_marginBottom="16dp">
         
         <LinearLayout
@@ -50,7 +50,7 @@
             android:text="When enabled, the app will automatically search for and connect to PWDongle on startup. Disable to manually select from available devices."
             android:textSize="12sp"
             android:layout_marginTop="8dp"
-            android:textColor="?attr/colorOnSurface" />
+            />
 
     </LinearLayout>
 
@@ -60,7 +60,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="8dp"
-        android:background="?attr/colorSurface"
+        android:background="@android:color/transparent"
         android:layout_marginBottom="16dp">
 
         <TextView

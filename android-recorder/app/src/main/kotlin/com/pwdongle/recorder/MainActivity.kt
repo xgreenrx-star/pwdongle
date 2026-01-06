@@ -17,6 +17,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.runBlocking
 
 /**
  * Global interface for keyboard event handling
@@ -58,11 +59,28 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
+            // Apply persisted theme mode before inflating views
+            try {
+                val pm = PreferencesManager(this)
+                val mode = runBlocking { pm.getThemeMode() }
+                when (mode) {
+                    "light" -> androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
+                        androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+                    )
+                    "dark" -> androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
+                        androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+                    )
+                    else -> androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
+                        androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                    )
+                }
+            } catch (_: Exception) { /* ignore theme init errors */ }
+
             setContentView(R.layout.activity_main)
             
             bottomNav = findViewById(R.id.bottomNavigation)
             
-            // Theme is applied via Settings; default follows system at startup
+            // Theme initialized above; Settings can change and recreate activity
 
             // Check permissions
             checkPermissions()

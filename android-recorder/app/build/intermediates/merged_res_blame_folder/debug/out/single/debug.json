@@ -36,12 +36,12 @@
         "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/xml/file_paths.xml"
     },
     {
-        "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/layout_item_macro_file.xml.flat",
-        "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/layout/item_macro_file.xml"
+        "merged": "com.pwdongle.recorder.app-merged_res-51:/layout_activity_main.xml.flat",
+        "source": "com.pwdongle.recorder.app-main-53:/layout/activity_main.xml"
     },
     {
-        "merged": "com.pwdongle.recorder.app-merged_res-51:/layout_fragment_playback.xml.flat",
-        "source": "com.pwdongle.recorder.app-main-53:/layout/fragment_playback.xml"
+        "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/layout_item_macro_file.xml.flat",
+        "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/layout/item_macro_file.xml"
     },
     {
         "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
@@ -58,6 +58,10 @@
     {
         "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/layout_dialog_keyboard.xml.flat",
         "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/layout/dialog_keyboard.xml"
+    },
+    {
+        "merged": "com.pwdongle.recorder.app-merged_res-51:/layout_fragment_recorder.xml.flat",
+        "source": "com.pwdongle.recorder.app-main-53:/layout/fragment_recorder.xml"
     },
     {
         "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/menu_main_menu.xml.flat",

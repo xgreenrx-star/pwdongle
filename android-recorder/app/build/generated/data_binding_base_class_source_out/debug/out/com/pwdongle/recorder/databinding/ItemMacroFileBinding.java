@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -24,6 +25,9 @@ public final class ItemMacroFileBinding implements ViewBinding {
   public final Button deleteBtn;
 
   @NonNull
+  public final CheckBox fileCheckbox;
+
+  @NonNull
   public final TextView infoText;
 
   @NonNull
@@ -36,10 +40,11 @@ public final class ItemMacroFileBinding implements ViewBinding {
   public final Button shareBtn;
 
   private ItemMacroFileBinding(@NonNull LinearLayout rootView, @NonNull Button deleteBtn,
-      @NonNull TextView infoText, @NonNull TextView nameText, @NonNull Button playBtn,
-      @NonNull Button shareBtn) {
+      @NonNull CheckBox fileCheckbox, @NonNull TextView infoText, @NonNull TextView nameText,
+      @NonNull Button playBtn, @NonNull Button shareBtn) {
     this.rootView = rootView;
     this.deleteBtn = deleteBtn;
+    this.fileCheckbox = fileCheckbox;
     this.infoText = infoText;
     this.nameText = nameText;
     this.playBtn = playBtn;
@@ -79,6 +84,12 @@ public final class ItemMacroFileBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.fileCheckbox;
+      CheckBox fileCheckbox = ViewBindings.findChildViewById(rootView, id);
+      if (fileCheckbox == null) {
+        break missingId;
+      }
+
       id = R.id.infoText;
       TextView infoText = ViewBindings.findChildViewById(rootView, id);
       if (infoText == null) {
@@ -103,8 +114,8 @@ public final class ItemMacroFileBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ItemMacroFileBinding((LinearLayout) rootView, deleteBtn, infoText, nameText,
-          playBtn, shareBtn);
+      return new ItemMacroFileBinding((LinearLayout) rootView, deleteBtn, fileCheckbox, infoText,
+          nameText, playBtn, shareBtn);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

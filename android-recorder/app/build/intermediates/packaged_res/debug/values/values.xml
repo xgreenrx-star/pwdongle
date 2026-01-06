@@ -1,17 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="accentColor">#FF5722</color>
+    <color name="backgroundColor">#ffffff</color>
+    <color name="cardBackground">#ffffff</color>
+    <color name="errorRed">#f44336</color>
+    <color name="infoBlue">#2196f3</color>
     <color name="launcher_background">#121212</color>
     <color name="primaryColor">#0277BD</color>
     <color name="primaryDarkColor">#01579B</color>
+    <color name="successGreen">#4caf50</color>
+    <color name="surfaceColor">#f5f5f5</color>
+    <color name="textHint">#bdbdbd</color>
+    <color name="textPrimary">#212121</color>
+    <color name="textSecondary">#757575</color>
+    <color name="warningOrange">#ff9800</color>
     <string name="app_name">PWDongle Recorder</string>
     <string name="files">Files</string>
     <string name="input">Input</string>
     <string name="recorder">Recorder</string>
     <string name="settings">Settings</string>
-    <style name="Theme.PWDongleRecorder" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="Theme.PWDongleRecorder" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        
         <item name="colorPrimary">@color/primaryColor</item>
-        <item name="colorPrimaryDark">@color/primaryDarkColor</item>
-        <item name="colorAccent">@color/accentColor</item>
+        <item name="colorPrimaryVariant">@color/primaryDarkColor</item>
+        <item name="colorSecondary">@color/accentColor</item>
     </style>
 </resources>

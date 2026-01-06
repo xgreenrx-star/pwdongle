@@ -4,6 +4,58 @@
             "outputFile": "com.pwdongle.recorder.app-mergeDebugResources-49:/values-night-v8/values-night-v8.xml",
             "map": [
                 {
+                    "source": "/home/Commodore/Documents/PlatformIO/Projects/PWDongle/android-recorder/app/src/main/res/values-night/colors.xml",
+                    "from": {
+                        "startLines": "5,13,15,19,21,3,4,18,14,10,8,9,20",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "183,459,556,688,779,85,132,641,509,368,274,320,731",
+                        "endColumns": "45,49,48,42,42,46,50,46,46,42,45,47,47",
+                        "endOffsets": "224,504,600,726,817,127,178,683,551,406,315,363,774"
+                    },
+                    "to": {
+                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,101,151,200,243,286,333,384,431,478,521,567,615",
+                        "endColumns": "45,49,48,42,42,46,50,46,46,42,45,47,47",
+                        "endOffsets": "96,146,195,238,281,328,379,426,473,516,562,610,658"
+                    }
+                },
+                {
+                    "source": "/home/Commodore/.gradle/caches/transforms-3/7c6a6834abbfd4e3a8f7f46272ab8256/transformed/appcompat-1.6.1/res/values-night-v8/values-night-v8.xml",
+                    "from": {
+                        "startLines": "-1,-1,-1,-1,-1,-1,-1,-1",
+                        "startColumns": "-1,-1,-1,-1,-1,-1,-1,-1",
+                        "startOffsets": "-1,-1,-1,-1,-1,-1,-1,-1"
+                    },
+                    "to": {
+                        "startLines": "15,16,17,18,19,20,21,47",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "663,733,817,901,997,1099,1201,4056",
+                        "endColumns": "69,83,83,95,101,101,93,88",
+                        "endOffsets": "728,812,896,992,1094,1196,1290,4140"
+                    }
+                },
+                {
+                    "source": "/home/Commodore/.gradle/caches/transforms-3/96b22820b773b938f2e6c0f0267a2d76/transformed/material-1.11.0/res/values-night-v8/values-night-v8.xml",
+                    "from": {
+                        "startLines": "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1",
+                        "startColumns": "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1",
+                        "startOffsets": "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1"
+                    },
+                    "to": {
+                        "startLines": "22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,48,49,50,51,52,53,54,55",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "1295,1370,1481,1570,1671,1778,1885,1984,2091,2194,2282,2406,2508,2610,2726,2828,2942,3070,3186,3308,3444,3564,3698,3818,3930,4145,4262,4386,4516,4638,4776,4910,5026",
+                        "endColumns": "74,110,88,100,106,106,98,106,102,87,123,101,101,115,101,113,127,115,121,135,119,133,119,111,125,116,123,129,121,137,133,115,119",
+                        "endOffsets": "1365,1476,1565,1666,1773,1880,1979,2086,2189,2277,2401,2503,2605,2721,2823,2937,3065,3181,3303,3439,3559,3693,3813,3925,4051,4257,4381,4511,4633,4771,4905,5021,5141"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-mergeDebugResources-49:/values-night-v8/values-night-v8.xml",
+            "map": [
+                {
                     "source": "/home/Commodore/.gradle/caches/transforms-3/7c6a6834abbfd4e3a8f7f46272ab8256/transformed/appcompat-1.6.1/res/values-night-v8/values-night-v8.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
