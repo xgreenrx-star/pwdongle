@@ -20,6 +20,10 @@ class SettingsFragment : Fragment() {
     private lateinit var delayThresholdSlider: SeekBar
     private lateinit var delayThresholdText: TextView
     private lateinit var autoConnectSwitch: Switch
+    private lateinit var themeRadioGroup: RadioGroup
+    private lateinit var themeSystemRadio: RadioButton
+    private lateinit var themeLightRadio: RadioButton
+    private lateinit var themeDarkRadio: RadioButton
     
     private var bleManager: BLEManager? = null
     private lateinit var preferencesManager: PreferencesManager
@@ -41,6 +45,10 @@ class SettingsFragment : Fragment() {
         delayThresholdSlider = view.findViewById(R.id.delayThresholdSlider)
         delayThresholdText = view.findViewById(R.id.delayThresholdText)
         autoConnectSwitch = view.findViewById(R.id.autoConnectSwitch)
+        themeRadioGroup = view.findViewById(R.id.themeRadioGroup)
+        themeSystemRadio = view.findViewById(R.id.themeSystemRadio)
+        themeLightRadio = view.findViewById(R.id.themeLightRadio)
+        themeDarkRadio = view.findViewById(R.id.themeDarkRadio)
         
         preferencesManager = PreferencesManager(requireContext())
         
@@ -60,6 +68,18 @@ class SettingsFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             preferencesManager.autoConnectEnabledFlow.collect { enabled ->
                 autoConnectSwitch.isChecked = enabled
+            }
+        }
+
+        // Load theme mode preference
+        viewLifecycleOwner.lifecycleScope.launch {
+            preferencesManager.themeModeFlow.collect { mode ->
+                when (mode) {
+                    "light" -> themeLightRadio.isChecked = true
+                    "dark" -> themeDarkRadio.isChecked = true
+                    else -> themeSystemRadio.isChecked = true
+                }
+                applyTheme(mode)
             }
         }
         
@@ -161,5 +181,32 @@ class SettingsFragment : Fragment() {
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
             override fun onStopTrackingTouch(seekBar: SeekBar) {}
         })
+
+        // Theme selection listener
+        themeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+            val mode = when (checkedId) {
+                R.id.themeLightRadio -> "light"
+                R.id.themeDarkRadio -> "dark"
+                else -> "system"
+            }
+            viewLifecycleOwner.lifecycleScope.launch {
+                preferencesManager.setThemeMode(mode)
+                applyTheme(mode)
+            }
+        }
+    }
+
+    private fun applyTheme(mode: String) {
+        when (mode) {
+            "light" -> androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
+                androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+            )
+            "dark" -> androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
+                androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+            )
+            else -> androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
+                androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            )
+        }
     }
 }

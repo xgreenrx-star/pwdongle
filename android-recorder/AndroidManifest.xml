@@ -28,7 +28,7 @@
         android:label="PWDongle Recorder"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
+        android:theme="@style/Theme.PWDongleRecorder">
         
         <activity
             android:name=".MainActivity"

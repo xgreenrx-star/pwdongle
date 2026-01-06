@@ -62,6 +62,8 @@ class MainActivity : AppCompatActivity() {
             
             bottomNav = findViewById(R.id.bottomNavigation)
             
+            // Theme is applied via Settings; default follows system at startup
+
             // Check permissions
             checkPermissions()
             

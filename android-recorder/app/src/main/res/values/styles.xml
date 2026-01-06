@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.PWDongleRecorder" parent="Theme.AppCompat.Light.DarkActionBar">
+    <!-- Use Material DayNight theme to support dark mode automatically -->
+    <style name="Theme.PWDongleRecorder" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary colors -->
         <item name="colorPrimary">@color/primaryColor</item>
         <item name="colorPrimaryDark">@color/primaryDarkColor</item>
         <item name="colorAccent">@color/accentColor</item>
+
+        <!-- Material surface colors (optional overrides, rely on defaults if not set) -->
+        <!-- <item name="colorSurface">@color/primaryDarkColor</item> -->
+        <!-- <item name="colorOnSurface">@android:color/white</item> -->
     </style>
 </resources>
