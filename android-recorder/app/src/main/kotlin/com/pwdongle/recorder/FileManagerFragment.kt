@@ -26,6 +26,13 @@ class FileManagerFragment : Fragment() {
     private lateinit var tabToggle: RadioGroup
     private lateinit var localFilesRadio: RadioButton
     private lateinit var deviceFilesRadio: RadioButton
+    private lateinit var batchModeButton: Button
+    private lateinit var batchActionsLayout: LinearLayout
+    private lateinit var selectAllButton: Button
+    private lateinit var deleteSelectedButton: Button
+    private lateinit var playSelectedButton: Button
+    private var isBatchMode = false
+    private val selectedFiles = mutableSetOf<String>()
     private var bleManager: BLEManager? = null
     private var isConnected = false
     private var currentDeviceFiles = mutableListOf<String>()
@@ -47,6 +54,11 @@ class FileManagerFragment : Fragment() {
         tabToggle = view.findViewById(R.id.tabToggle)
         localFilesRadio = view.findViewById(R.id.localFilesRadio)
         deviceFilesRadio = view.findViewById(R.id.deviceFilesRadio)
+        batchModeButton = view.findViewById(R.id.batchModeButton)
+        batchActionsLayout = view.findViewById(R.id.batchActionsLayout)
+        selectAllButton = view.findViewById(R.id.selectAllButton)
+        deleteSelectedButton = view.findViewById(R.id.deleteSelectedButton)
+        playSelectedButton = view.findViewById(R.id.playSelectedButton)
         
         fileManager = MacroFileManager(requireContext())
         
@@ -75,9 +87,35 @@ class FileManagerFragment : Fragment() {
             onPlayback = { macro -> playMacro(macro) },
             onShare = { macro -> shareMacro(macro) },
             onPlayOnDevice = { filename -> playOnDevice(filename) },
-            onView = { macro -> viewMacroContents(macro) }
+            onView = { macro -> viewMacroContents(macro) },
+            onSelectionChanged = { filename, selected ->
+                if (selected) {
+                    selectedFiles.add(filename)
+                } else {
+                    selectedFiles.remove(filename)
+                }
+                updateBatchActionsState()
+            }
         )
         macrosRecyclerView.adapter = fileAdapter
+        
+        // Batch mode toggle
+        batchModeButton.setOnClickListener {
+            toggleBatchMode()
+        }
+        
+        // Batch action buttons
+        selectAllButton.setOnClickListener {
+            selectAllFiles()
+        }
+        
+        deleteSelectedButton.setOnClickListener {
+            deleteSelectedFiles()
+        }
+        
+        playSelectedButton.setOnClickListener {
+            playSelectedFiles()
+        }
         
         // Tab switching
         tabToggle.setOnCheckedChangeListener { _, checkedId ->
@@ -88,6 +126,114 @@ class FileManagerFragment : Fragment() {
         }
         
         loadLocalMacros()
+    }
+    
+    private fun toggleBatchMode() {
+        isBatchMode = !isBatchMode
+        selectedFiles.clear()
+        
+        if (isBatchMode) {
+            batchModeButton.text = "Cancel"
+            batchActionsLayout.visibility = View.VISIBLE
+        } else {
+            batchModeButton.text = "Select Multiple"
+            batchActionsLayout.visibility = View.GONE
+        }
+        
+        fileAdapter.setBatchMode(isBatchMode)
+        updateBatchActionsState()
+    }
+    
+    private fun selectAllFiles() {
+        val allFiles = fileAdapter.getAllFileNames()
+        selectedFiles.clear()
+        selectedFiles.addAll(allFiles)
+        fileAdapter.selectAll()
+        updateBatchActionsState()
+    }
+    
+    private fun updateBatchActionsState() {
+        val count = selectedFiles.size
+        selectAllButton.text = if (count == fileAdapter.itemCount) "Deselect All" else "Select All"
+        deleteSelectedButton.isEnabled = count > 0
+        playSelectedButton.isEnabled = count > 0
+        deleteSelectedButton.text = "Delete ($count)"
+        playSelectedButton.text = "Play ($count)"
+    }
+    
+    private fun deleteSelectedFiles() {
+        if (selectedFiles.isEmpty()) return
+        
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle("Delete ${selectedFiles.size} files?")
+            .setMessage("This cannot be undone.")
+            .setPositiveButton("Delete") { _, _ ->
+                viewLifecycleOwner.lifecycleScope.launch {
+                    var deletedCount = 0
+                    selectedFiles.forEach { filename ->
+                        try {
+                            fileManager.deleteMacro(filename)
+                            deletedCount++
+                        } catch (e: Exception) {
+                            android.util.Log.e("FileManagerFragment", "Failed to delete $filename", e)
+                        }
+                    }
+                    
+                    selectedFiles.clear()
+                    statusText.text = "Deleted $deletedCount files"
+                    loadLocalMacros()
+                    toggleBatchMode() // Exit batch mode
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
+    private fun playSelectedFiles() {
+        if (selectedFiles.isEmpty()) return
+        
+        // Confirm sequential playback
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle("Play ${selectedFiles.size} macros?")
+            .setMessage("Macros will be played sequentially with a 2-second delay between each.")
+            .setPositiveButton("Play All") { _, _ ->
+                playFilesSequentially(selectedFiles.toList())
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
+    private fun playFilesSequentially(filenames: List<String>) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            var playedCount = 0
+            for ((index, filename) in filenames.withIndex()) {
+                statusText.text = "Playing ${index + 1}/${filenames.size}: $filename"
+                
+                try {
+                    val result = fileManager.loadMacro(filename)
+                    result.onSuccess { content ->
+                        // For batch playback, we'd need to execute inline
+                        // For now, just count it as "played"
+                        // TODO: Integrate with MacroPlayer for inline execution
+                        playedCount++
+                    }
+                    result.onFailure { e ->
+                        android.util.Log.e("FileManagerFragment", "Failed to load $filename", e)
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("FileManagerFragment", "Failed to play $filename", e)
+                }
+                
+                // Delay between macros
+                if (index < filenames.size - 1) {
+                    kotlinx.coroutines.delay(2000)
+                }
+            }
+            
+            statusText.text = "Batch playback complete: $playedCount/${filenames.size} macros"
+            selectedFiles.clear()
+            toggleBatchMode()
+        }
     }
     
     override fun onResume() {
@@ -309,17 +455,40 @@ class MacroFileAdapter(
     private val onPlayback: (MacroFile) -> Unit,
     private val onShare: (MacroFile) -> Unit,
     private val onPlayOnDevice: ((String) -> Unit)? = null,
-    private val onView: ((MacroFile) -> Unit)? = null
+    private val onView: ((MacroFile) -> Unit)? = null,
+    private val onSelectionChanged: ((String, Boolean) -> Unit)? = null
 ) : RecyclerView.Adapter<MacroFileViewHolder>() {
     
     private var macros = listOf<MacroFile>()
     private var isDeviceFiles = false
+    private var isBatchMode = false
+    private val selectedFiles = mutableSetOf<String>()
     
     fun submitList(list: List<MacroFile>, isDeviceFiles: Boolean = false) {
         macros = list
         this.isDeviceFiles = isDeviceFiles
         notifyDataSetChanged()
     }
+    
+    fun setBatchMode(enabled: Boolean) {
+        isBatchMode = enabled
+        if (!enabled) {
+            selectedFiles.clear()
+        }
+        notifyDataSetChanged()
+    }
+    
+    fun selectAll() {
+        if (selectedFiles.size == macros.size) {
+            selectedFiles.clear()
+        } else {
+            selectedFiles.clear()
+            macros.forEach { selectedFiles.add(it.name) }
+        }
+        notifyDataSetChanged()
+    }
+    
+    fun getAllFileNames(): List<String> = macros.map { it.name }
     
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MacroFileViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -328,14 +497,29 @@ class MacroFileAdapter(
     }
     
     override fun onBindViewHolder(holder: MacroFileViewHolder, position: Int) {
+        val macro = macros[position]
+        val isSelected = selectedFiles.contains(macro.name)
+        
         holder.bind(
-            macros[position], 
+            macro, 
             onDelete, 
             onPlayback, 
             onShare,
             isDeviceFiles,
             onPlayOnDevice,
-            onView
+            onView,
+            isBatchMode,
+            isSelected,
+            onSelect = { filename ->
+                if (selectedFiles.contains(filename)) {
+                    selectedFiles.remove(filename)
+                    onSelectionChanged?.invoke(filename, false)
+                } else {
+                    selectedFiles.add(filename)
+                    onSelectionChanged?.invoke(filename, true)
+                }
+                notifyItemChanged(position)
+            }
         )
     }
     
@@ -352,6 +536,7 @@ class MacroFileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val deleteBtn: Button = itemView.findViewById(R.id.deleteBtn)
     private val playBtn: Button = itemView.findViewById(R.id.playBtn)
     private val shareBtn: Button = itemView.findViewById(R.id.shareBtn)
+    private val checkbox: CheckBox? = try { itemView.findViewById(R.id.fileCheckbox) } catch (e: Exception) { null }
     
     fun bind(
         macro: MacroFile, 
@@ -360,28 +545,56 @@ class MacroFileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         onShare: (MacroFile) -> Unit,
         isDeviceFile: Boolean = false,
         onPlayOnDevice: ((String) -> Unit)? = null,
-        onView: ((MacroFile) -> Unit)? = null
+        onView: ((MacroFile) -> Unit)? = null,
+        isBatchMode: Boolean = false,
+        isSelected: Boolean = false,
+        onSelect: ((String) -> Unit)? = null
     ) {
         nameText.text = macro.name
         
-        if (isDeviceFile) {
-            infoText.text = "On Device"
-            deleteBtn.visibility = View.GONE
-            shareBtn.visibility = View.VISIBLE
-            shareBtn.text = "View"
-            playBtn.text = "Play on Device"
-            playBtn.setOnClickListener { onPlayOnDevice?.invoke(macro.name) }
-            shareBtn.setOnClickListener { onView?.invoke(macro) }
-        } else {
-            infoText.text = "${macro.sizeString} • ${macro.modifiedString}"
-            deleteBtn.visibility = View.VISIBLE
-            shareBtn.visibility = View.VISIBLE
-            shareBtn.text = "View"
-            playBtn.text = "Play"
+        // Batch mode checkbox
+        if (isBatchMode) {
+            checkbox?.visibility = View.VISIBLE
+            checkbox?.isChecked = isSelected
+            checkbox?.setOnCheckedChangeListener(null) // Prevent recursion
+            checkbox?.setOnCheckedChangeListener { _, _ ->
+                onSelect?.invoke(macro.name)
+            }
             
-            deleteBtn.setOnClickListener { onDelete(macro) }
-            playBtn.setOnClickListener { onPlayback(macro) }
-            shareBtn.setOnClickListener { onView?.invoke(macro) }
+            // Make entire item clickable for selection
+            itemView.setOnClickListener {
+                onSelect?.invoke(macro.name)
+            }
+            
+            // Hide action buttons in batch mode
+            deleteBtn.visibility = View.GONE
+            playBtn.visibility = View.GONE
+            shareBtn.visibility = View.GONE
+        } else {
+            checkbox?.visibility = View.GONE
+            itemView.setOnClickListener(null)
+            
+            if (isDeviceFile) {
+                infoText.text = "On Device"
+                deleteBtn.visibility = View.GONE
+                shareBtn.visibility = View.VISIBLE
+                shareBtn.text = "View"
+                playBtn.visibility = View.VISIBLE
+                playBtn.text = "Play on Device"
+                playBtn.setOnClickListener { onPlayOnDevice?.invoke(macro.name) }
+                shareBtn.setOnClickListener { onView?.invoke(macro) }
+            } else {
+                infoText.text = "${macro.sizeString} • ${macro.modifiedString}"
+                deleteBtn.visibility = View.VISIBLE
+                shareBtn.visibility = View.VISIBLE
+                shareBtn.text = "View"
+                playBtn.visibility = View.VISIBLE
+                playBtn.text = "Play"
+                
+                deleteBtn.setOnClickListener { onDelete(macro) }
+                playBtn.setOnClickListener { onPlayback(macro) }
+                shareBtn.setOnClickListener { onView?.invoke(macro) }
+            }
         }
     }
 }

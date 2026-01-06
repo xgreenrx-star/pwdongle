@@ -73,6 +73,14 @@ class BLEManager(
     private val currentResponseBuffer = StringBuilder()
     private var responseTimeout: Handler? = null
 
+    // Auto-reconnection state
+    private var reconnectEnabled = false
+    private var reconnectAttempts = 0
+    private var maxReconnectAttempts = 5
+    private var lastConnectedDevice: BluetoothDevice? = null
+    private var lastConnectedDeviceName: String? = null
+    private var reconnectRunnable: Runnable? = null
+
     // Warm cache of last successful PIN and passwords
     var cachedPin: String? = null
         private set
@@ -153,6 +161,11 @@ class BLEManager(
                     Log.d(TAG, "Disconnect reason: $reason")
                     onStatusChange(reason)
                     cleanup()
+                    
+                    // Attempt auto-reconnection if enabled and not manually disconnected
+                    if (reconnectEnabled && status != 0 && lastConnectedDevice != null) {
+                        scheduleReconnect()
+                    }
                 }
             }
         }
@@ -197,6 +210,7 @@ class BLEManager(
                     }
                     
                     onStatusChange("Connected to PWDongle")
+                    reconnectAttempts = 0  // Reset reconnect counter on successful connection
                 } else {
                     Log.e(TAG, "Nordic UART Service not found")
                     onStatusChange("Error: NUS not found")
@@ -496,6 +510,8 @@ class BLEManager(
         try {
             Log.d(TAG, "Attempting to connect to device: $deviceName (${device.address})")
             bluetoothGatt = device.connectGatt(context, false, gattCallback)
+            lastConnectedDevice = device
+            lastConnectedDeviceName = deviceName
             onResult("Connecting to $deviceName...")
             Log.d(TAG, "connectGatt() called successfully")
         } catch (e: SecurityException) {
@@ -543,6 +559,8 @@ class BLEManager(
             
             Log.d(TAG, "Attempting to connect to MAC address: $macAddress (${device.name})")
             bluetoothGatt = device.connectGatt(context, false, gattCallback)
+            lastConnectedDevice = device
+            lastConnectedDeviceName = device.name ?: macAddress
             onResult("Connecting to ${device.name ?: macAddress}...")
             Log.d(TAG, "connectGatt() called successfully for MAC address")
         } catch (e: SecurityException) {
@@ -572,6 +590,8 @@ class BLEManager(
     }
     
     fun disconnect() {
+        reconnectEnabled = false  // Disable reconnection for manual disconnect
+        reconnectRunnable?.let { handler.removeCallbacks(it) }
         bluetoothGatt?.disconnect()
         cleanup()
     }
@@ -676,6 +696,79 @@ class BLEManager(
 
     fun setStatusListener(listener: (String) -> Unit) {
         onStatusChange = listener
+    }
+
+    /**
+     * Enable automatic reconnection on connection loss
+     * @param enabled Whether to enable auto-reconnect
+     * @param maxAttempts Maximum number of reconnection attempts (default 5)
+     */
+    fun setAutoReconnect(enabled: Boolean, maxAttempts: Int = 5) {
+        reconnectEnabled = enabled
+        maxReconnectAttempts = maxAttempts
+        if (!enabled) {
+            // Cancel any pending reconnect attempts
+            reconnectRunnable?.let { handler.removeCallbacks(it) }
+            reconnectAttempts = 0
+        }
+        Log.d(TAG, "Auto-reconnect ${if (enabled) "enabled" else "disabled"} (max attempts: $maxAttempts)")
+    }
+
+    /**
+     * Schedule a reconnection attempt with exponential backoff
+     */
+    private fun scheduleReconnect() {
+        if (reconnectAttempts >= maxReconnectAttempts) {
+            Log.w(TAG, "Max reconnection attempts ($maxReconnectAttempts) reached")
+            onStatusChange("Reconnection failed after $maxReconnectAttempts attempts")
+            return
+        }
+
+        // Cancel any existing reconnect task
+        reconnectRunnable?.let { handler.removeCallbacks(it) }
+
+        reconnectAttempts++
+        // Exponential backoff: 1s, 2s, 4s, 8s, 16s
+        val delayMs = (1000L * (1 shl (reconnectAttempts - 1))).coerceAtMost(16000L)
+        
+        Log.d(TAG, "Scheduling reconnect attempt $reconnectAttempts/$maxReconnectAttempts in ${delayMs}ms")
+        onStatusChange("Reconnecting in ${delayMs/1000}s (attempt $reconnectAttempts/$maxReconnectAttempts)")
+
+        reconnectRunnable = Runnable {
+            attemptReconnect()
+        }
+        
+        handler.postDelayed(reconnectRunnable!!, delayMs)
+    }
+
+    /**
+     * Attempt to reconnect to the last connected device
+     */
+    private fun attemptReconnect() {
+        val device = lastConnectedDevice
+        val deviceName = lastConnectedDeviceName
+        
+        if (device == null) {
+            Log.e(TAG, "Cannot reconnect: no last device stored")
+            onStatusChange("Reconnection failed: no device")
+            return
+        }
+
+        Log.d(TAG, "Attempting reconnection to $deviceName...")
+        onStatusChange("Reconnecting to $deviceName...")
+
+        try {
+            bluetoothGatt = device.connectGatt(context, false, gattCallback)
+            Log.d(TAG, "Reconnection attempt initiated")
+        } catch (e: Exception) {
+            Log.e(TAG, "Reconnection attempt failed: ${e.message}", e)
+            onStatusChange("Reconnection failed: ${e.message}")
+            
+            // Schedule another attempt if under max
+            if (reconnectAttempts < maxReconnectAttempts) {
+                scheduleReconnect()
+            }
+        }
     }
 
     fun isConnected(): Boolean = isConnected

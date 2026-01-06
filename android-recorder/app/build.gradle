@@ -16,10 +16,21 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     
+    signingConfigs {
+        release {
+            // Keystore path relative to app module
+            storeFile file("../keystore/pwdongle-release.keystore")
+            storePassword System.getenv("KEYSTORE_PASSWORD") ?: project.findProperty("keystorePassword")
+            keyAlias System.getenv("KEY_ALIAS") ?: project.findProperty("keyAlias")
+            keyPassword System.getenv("KEY_PASSWORD") ?: project.findProperty("keyPassword")
+        }
+    }
+    
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
     

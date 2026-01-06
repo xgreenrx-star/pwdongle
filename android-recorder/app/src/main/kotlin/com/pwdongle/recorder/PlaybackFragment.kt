@@ -17,6 +17,8 @@ class PlaybackFragment : Fragment() {
     
     private lateinit var macroNameText: TextView
     private lateinit var statusText: TextView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var progressText: TextView
     private lateinit var playButton: Button
     private lateinit var stopButton: Button
     private lateinit var backButton: Button
@@ -26,6 +28,7 @@ class PlaybackFragment : Fragment() {
     
     private var bleManager: BLEManager? = null
     private var macroPlayer: MacroPlayer? = null
+    private val macroValidator = MacroValidator()
     
     private var currentMacroName: String? = null
     private var currentMacroContent: String? = null
@@ -57,6 +60,8 @@ class PlaybackFragment : Fragment() {
     private fun initializeUI(view: View) {
         macroNameText = view.findViewById(R.id.macroNameText)
         statusText = view.findViewById(R.id.statusText)
+        progressBar = view.findViewById(R.id.progressBar)
+        progressText = view.findViewById(R.id.progressText)
         playButton = view.findViewById(R.id.playButton)
         stopButton = view.findViewById(R.id.stopButton)
         backButton = view.findViewById(R.id.backButton)
@@ -94,10 +99,63 @@ class PlaybackFragment : Fragment() {
     private fun playMacro() {
         if (currentMacroContent == null || isPlaying) return
         
+        // Validate macro before playback
+        val validationResult = macroValidator.validate(currentMacroContent!!)
+        
+        if (!validationResult.isValid) {
+            // Show validation errors
+            val errorMsg = "Validation failed:\n" + validationResult.errors.joinToString("\n")
+            statusText.text = errorMsg
+            
+            // Show dialog with option to play anyway
+            android.app.AlertDialog.Builder(requireContext())
+                .setTitle("Macro Validation Failed")
+                .setMessage(errorMsg + "\n\nPlay anyway?")
+                .setPositiveButton("Play Anyway") { _, _ -> startPlayback(validationResult) }
+                .setNegativeButton("Cancel", null)
+                .show()
+            return
+        }
+        
+        // Show validation summary with warnings
+        if (validationResult.warnings.isNotEmpty() || validationResult.hasLongDelays) {
+            val warningMsg = buildString {
+                append("Macro: ${validationResult.commandCount} commands\n")
+                append("Duration: ~${macroValidator.formatDuration(validationResult.estimatedDurationMs)}\n")
+                if (validationResult.warnings.isNotEmpty()) {
+                    append("\nWarnings:\n")
+                    append(validationResult.warnings.take(5).joinToString("\n"))
+                    if (validationResult.warnings.size > 5) {
+                        append("\n...and ${validationResult.warnings.size - 5} more")
+                    }
+                }
+            }
+            
+            android.app.AlertDialog.Builder(requireContext())
+                .setTitle("Ready to Play")
+                .setMessage(warningMsg)
+                .setPositiveButton("Play") { _, _ -> startPlayback(validationResult) }
+                .setNegativeButton("Cancel", null)
+                .show()
+        } else {
+            // No warnings, show brief confirmation
+            val infoMsg = "${validationResult.commandCount} commands, ~${macroValidator.formatDuration(validationResult.estimatedDurationMs)}"
+            Toast.makeText(requireContext(), infoMsg, Toast.LENGTH_SHORT).show()
+            startPlayback(validationResult)
+        }
+    }
+    
+    private fun startPlayback(validationResult: MacroValidator.ValidationResult) {
         isPlaying = true
         playButton.isEnabled = false
         stopButton.isEnabled = true
-        statusText.text = "Playing..."
+        statusText.text = "Playing ${validationResult.commandCount} commands..."
+        
+        // Show progress indicators
+        progressBar.visibility = View.VISIBLE
+        progressBar.progress = 0
+        progressText.visibility = View.VISIBLE
+        progressText.text = "Starting..."
         
         // Get speed multiplier
         val speedMultiplier = speedSpinner.selectedItem
@@ -127,6 +185,18 @@ class PlaybackFragment : Fragment() {
                     statusText.text = status
                 }
             },
+            onProgressUpdate = { current, total, elapsedMs, estimatedTotalMs ->
+                requireActivity().runOnUiThread {
+                    val percentage = (current * 100 / total)
+                    progressBar.progress = percentage
+                    
+                    val elapsedSec = elapsedMs / 1000
+                    val estimatedSec = estimatedTotalMs / 1000
+                    val remainingSec = estimatedSec - elapsedSec
+                    
+                    progressText.text = "$current/$total commands • ${elapsedSec}s / ${estimatedSec}s (~${remainingSec}s left)"
+                }
+            },
             speedMultiplier = speedMultiplier
         )
         
@@ -135,7 +205,10 @@ class PlaybackFragment : Fragment() {
             isPlaying = false
             playButton.isEnabled = true
             stopButton.isEnabled = false
-            statusText.text = "Playback complete"
+            
+            // Hide progress indicators
+            progressBar.visibility = View.GONE
+            progressText.visibility = View.GONE
             
             // Auto-navigate back to file manager after 1.5 seconds
             kotlinx.coroutines.delay(1500)
@@ -156,5 +229,7 @@ class PlaybackFragment : Fragment() {
         playButton.isEnabled = true
         stopButton.isEnabled = false
         statusText.text = "Playback stopped"
+        progressBar.visibility = View.GONE
+        progressText.visibility = View.GONE
     }
 }

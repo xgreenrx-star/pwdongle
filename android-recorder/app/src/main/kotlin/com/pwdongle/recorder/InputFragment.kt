@@ -105,6 +105,7 @@ class InputFragment : Fragment() {
                                         devicesList.setOnItemClickListener { _, _, position, _ ->
                                             val selectedDevice = scannedDevices[position]
                                             statusText.text = "Connecting to: $selectedDevice"
+                                            bleManager?.setAutoReconnect(true, 5)  // Enable auto-reconnect
                                             bleManager?.connectToDevice(selectedDevice) { result ->
                                                 try {
                                                     if (isAdded) {

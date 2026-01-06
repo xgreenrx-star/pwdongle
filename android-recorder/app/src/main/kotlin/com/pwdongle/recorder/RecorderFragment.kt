@@ -182,6 +182,7 @@ class RecorderFragment : Fragment(), KeyboardEventListener, MouseEventListener {
                     preferencesManager.addSavedDevice(selectedDevice)
                 }
                 
+                bleManager?.setAutoReconnect(true, 5)  // Enable auto-reconnect
                 bleManager?.connectToDevice(selectedDevice) { result ->
                     requireActivity().runOnUiThread {
                         statusText.text = result
@@ -349,6 +350,7 @@ class RecorderFragment : Fragment(), KeyboardEventListener, MouseEventListener {
                         }
                     }
 
+                    bleManager?.setAutoReconnect(true, 5)  // Enable auto-reconnect
                     bleManager?.connectToDevice(targetDevice) { result ->
                         if (isAdded) {
                             requireActivity().runOnUiThread {
@@ -487,6 +489,7 @@ class RecorderFragment : Fragment(), KeyboardEventListener, MouseEventListener {
             val macAddress = input.text.toString().trim().uppercase()
             if (macAddress.matches(Regex("[0-9A-F]{2}(:[0-9A-F]{2}){5}"))) {
                 statusText.text = "Connecting to $macAddress..."
+                bleManager?.setAutoReconnect(true, 5)  // Enable auto-reconnect
                 bleManager?.connectToDeviceByMAC(macAddress) { result ->
                     requireActivity().runOnUiThread {
                         statusText.text = result

@@ -46,7 +46,50 @@
         android:textSize="14sp"
         android:padding="8dp"
         android:background="#E0E0E0"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="8dp" />
+    
+    <Button
+        android:id="@+id/batchModeButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Select Multiple"
+        android:layout_marginBottom="8dp" />
+    
+    <LinearLayout
+        android:id="@+id/batchActionsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone">
+        
+        <Button
+            android:id="@+id/selectAllButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Select All"
+            android:layout_marginEnd="4dp" />
+        
+        <Button
+            android:id="@+id/deleteSelectedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Delete (0)"
+            android:enabled="false"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp" />
+        
+        <Button
+            android:id="@+id/playSelectedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Play (0)"
+            android:enabled="false"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
     
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/macrosRecyclerView"

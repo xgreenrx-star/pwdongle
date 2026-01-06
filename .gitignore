@@ -3,3 +3,10 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+
+# Android keystore and sensitive files
+android-recorder/keystore/*.keystore
+android-recorder/keystore/*.jks
+android-recorder/keystore/*.b64
+android-recorder/gradle.properties
+android-recorder/local.properties

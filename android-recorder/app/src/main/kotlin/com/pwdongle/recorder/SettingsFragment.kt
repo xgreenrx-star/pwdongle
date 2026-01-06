@@ -121,6 +121,7 @@ class SettingsFragment : Fragment() {
                                                 preferencesManager.addSavedDevice(selectedDevice)
                                             }
                                             
+                                            bleManager?.setAutoReconnect(true, 5)  // Enable auto-reconnect
                                             bleManager?.connectToDevice(selectedDevice) { result ->
                                                 try {
                                                     if (isAdded) {

@@ -13,21 +13,42 @@
         android:orientation="vertical"
         android:layout_marginBottom="8dp">
         
-        <TextView
-            android:id="@+id/nameText"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:text="Macro Name" />
-        
-        <TextView
-            android:id="@+id/infoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:textColor="#666666"
-            android:text="100 B • Jan 02, 12:34" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            
+            <CheckBox
+                android:id="@+id/fileCheckbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_marginEnd="8dp" />
+            
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                
+                <TextView
+                    android:id="@+id/nameText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:text="Macro Name" />
+                
+                <TextView
+                    android:id="@+id/infoText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="#666666"
+                    android:text="100 B • Jan 02, 12:34" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
     
     <LinearLayout
