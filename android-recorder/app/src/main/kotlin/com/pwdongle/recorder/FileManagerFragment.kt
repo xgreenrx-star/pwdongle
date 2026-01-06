@@ -73,7 +73,8 @@ class FileManagerFragment : Fragment() {
             onDelete = { macro -> deleteMacro(macro) },
             onPlayback = { macro -> playMacro(macro) },
             onShare = { macro -> shareMacro(macro) },
-            onPlayOnDevice = { filename -> playOnDevice(filename) }
+            onPlayOnDevice = { filename -> playOnDevice(filename) },
+            onView = { macro -> viewMacroContents(macro) }
         )
         macrosRecyclerView.adapter = fileAdapter
         
@@ -130,8 +131,13 @@ class FileManagerFragment : Fragment() {
                     
                     for (line in lines) {
                         val trimmed = line.trim()
-                        if (trimmed.matches(Regex("^\\d+\\.\\s+.*\\.txt$"))) {
-                            val filename = trimmed.substring(trimmed.indexOf(".") + 1).trim()
+                        // Match lines like "1. filename" or "1. filename.txt"
+                        if (trimmed.matches(Regex("^\\d+\\.\\s+.+$"))) {
+                            var filename = trimmed.substring(trimmed.indexOf(".") + 1).trim()
+                            // Add .txt extension if not present
+                            if (!filename.endsWith(".txt")) {
+                                filename += ".txt"
+                            }
                             currentDeviceFiles.add(filename)
                         }
                     }
@@ -224,6 +230,71 @@ class FileManagerFragment : Fragment() {
             }
         }
     }
+    
+    private fun viewMacroContents(macro: MacroFile) {
+        // Check if this is a device file (path contains "/device/")
+        if (macro.path.startsWith("/device/")) {
+            // Request macro content from device via BLE
+            statusText.text = "Loading ${macro.name} from device..."
+            bleManager?.sendCommandWithResponse("VIEW:${macro.name}") { response ->
+                requireActivity().runOnUiThread {
+                    if (response.contains("ERROR", ignoreCase = true)) {
+                        Toast.makeText(context, "Error loading macro from device: $response", Toast.LENGTH_SHORT).show()
+                        statusText.text = "Error: Could not load macro from device"
+                    } else {
+                        showMacroViewDialog(macro.name, response)
+                        statusText.text = "Ready"
+                    }
+                }
+            }
+        } else {
+            // Load local file
+            viewLifecycleOwner.lifecycleScope.launch {
+                fileManager.getMacroFile(macro.name).onSuccess { file ->
+                    try {
+                        val contents = file.readText()
+                        showMacroViewDialog(macro.name, contents)
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Error reading macro: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }.onFailure { error ->
+                    Toast.makeText(context, "Error loading macro: ${error.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+    
+    private fun showMacroViewDialog(filename: String, contents: String) {
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        dialog.setTitle("View Macro: $filename")
+        
+        val textView = TextView(requireContext()).apply {
+            text = contents
+            textSize = 12f
+            setTextIsSelectable(true)
+            setPadding(20, 20, 20, 20)
+            setBackgroundColor(android.graphics.Color.BLACK)
+            setTextColor(android.graphics.Color.WHITE)
+        }
+        
+        val scrollView = ScrollView(requireContext()).apply {
+            addView(textView)
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+        
+        dialog.setView(scrollView)
+        dialog.setPositiveButton("Close") { _, _ -> }
+        dialog.setNegativeButton("Copy") { _, _ ->
+            val clipboard = requireContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            val clip = android.content.ClipData.newPlainText("macro", contents)
+            clipboard.setPrimaryClip(clip)
+            Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+        }
+        dialog.show()
+    }
 }
 
 /**
@@ -233,7 +304,8 @@ class MacroFileAdapter(
     private val onDelete: (MacroFile) -> Unit,
     private val onPlayback: (MacroFile) -> Unit,
     private val onShare: (MacroFile) -> Unit,
-    private val onPlayOnDevice: ((String) -> Unit)? = null
+    private val onPlayOnDevice: ((String) -> Unit)? = null,
+    private val onView: ((MacroFile) -> Unit)? = null
 ) : RecyclerView.Adapter<MacroFileViewHolder>() {
     
     private var macros = listOf<MacroFile>()
@@ -258,7 +330,8 @@ class MacroFileAdapter(
             onPlayback, 
             onShare,
             isDeviceFiles,
-            onPlayOnDevice
+            onPlayOnDevice,
+            onView
         )
     }
     
@@ -282,25 +355,29 @@ class MacroFileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         onPlayback: (MacroFile) -> Unit, 
         onShare: (MacroFile) -> Unit,
         isDeviceFile: Boolean = false,
-        onPlayOnDevice: ((String) -> Unit)? = null
+        onPlayOnDevice: ((String) -> Unit)? = null,
+        onView: ((MacroFile) -> Unit)? = null
     ) {
         nameText.text = macro.name
         
         if (isDeviceFile) {
             infoText.text = "On Device"
             deleteBtn.visibility = View.GONE
-            shareBtn.visibility = View.GONE
+            shareBtn.visibility = View.VISIBLE
+            shareBtn.text = "View"
             playBtn.text = "Play on Device"
             playBtn.setOnClickListener { onPlayOnDevice?.invoke(macro.name) }
+            shareBtn.setOnClickListener { onView?.invoke(macro) }
         } else {
             infoText.text = "${macro.sizeString} • ${macro.modifiedString}"
             deleteBtn.visibility = View.VISIBLE
             shareBtn.visibility = View.VISIBLE
+            shareBtn.text = "View"
             playBtn.text = "Play"
             
             deleteBtn.setOnClickListener { onDelete(macro) }
             playBtn.setOnClickListener { onPlayback(macro) }
-            shareBtn.setOnClickListener { onShare(macro) }
+            shareBtn.setOnClickListener { onView?.invoke(macro) }
         }
     }
 }

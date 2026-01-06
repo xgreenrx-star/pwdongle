@@ -2,6 +2,49 @@
 
 This folder holds UI screenshots/photos for the README.
 
+## Android Recorder – Recorder Screen (v0.5)
+
+- Target file path: `docs/recorder-screen.png`
+- Description: Recorder screen showing status, filename, input method, Start/Stop, and new Keyboard/Touchpad buttons
+
+### How to Capture
+1. Build and install the Android app (see android-recorder README)
+2. Open the app → Recorder screen
+3. Ensure BLE status shows connected (optional)
+4. Capture the screen with both "⌨️ Keyboard" and "🖱️ Touchpad" buttons visible
+5. Save as `recorder-screen.png` in `docs/`
+
+## On-Screen Keyboard Dialog
+
+- Target file path: `docs/keyboard-dialog.png`
+- Description: Custom keyboard view; demonstrate typing a few characters
+
+### How to Capture
+1. On Recorder screen, tap "⌨️ Keyboard"
+2. Show the dialog with keys visible
+3. Optionally highlight Shift/Caps behavior
+4. Save as `keyboard-dialog.png` in `docs/`
+
+## Touchpad Dialog
+
+- Target file path: `docs/touchpad-dialog.png`
+- Description: Virtual touchpad view with move/click/scroll interactions
+
+### How to Capture
+1. On Recorder screen, tap "🖱️ Touchpad"
+2. Show the dialog with touchpad area visible
+3. Save as `touchpad-dialog.png` in `docs/`
+
+## PIN Entry Dialog (Android App)
+
+- Target file path: `docs/pin-dialog.png`
+- Description: 4-digit numeric PIN dialog (digit-only enforcement)
+
+### How to Capture
+1. Launch app; when prompted, show the PIN dialog
+2. Ensure numeric keypad is visible (if possible)
+3. Save as `pin-dialog.png` in `docs/`
+
 ## File Selection Menu (Storage/Macro Mode)
 
 - Target file path in README: `docs/file-menu-ui.png`

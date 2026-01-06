@@ -10,10 +10,10 @@ This is a native Android Kotlin application that provides:
 - **Macro Management**: Browse, delete, and share recorded macros
 - **Playback Engine**: Play back macros with adjustable speed (0.5x to 3x)
 - **Multiple Input Methods**:
-  - Hardware USB OTG (external keyboard/mouse)
-  - On-Screen Keyboard (40-key layout)
-  - Virtual Touchpad (drag, click, scroll)
-  - Mixed mode (combination of inputs)
+   - Hardware USB OTG (external keyboard/mouse)
+   - On‑Screen Keyboard (custom view)
+   - Virtual Touchpad (drag, click, scroll)
+   - Mixed mode (combination of inputs)
 - **Bluetooth Integration**: Communicates with PWDongle via BLE Nordic UART Service
 - **File Management**: Stores macros in app-scoped Documents directory with proper permissions handling
 - **Adaptive UI**: Material Design with adaptive launcher icons
@@ -125,6 +125,12 @@ com.pwdongle.recorder
 - Graceful handling of missing/unavailable services
 - Safe null-checking for optional components (BLE, etc.)
 
+## Recent Changes (v0.5)
+
+- Recorder screen now includes buttons to open on‑screen keyboard and touchpad directly
+- Spacebar reliability improved by emitting `KEY:space` from on‑screen keyboard when needed
+- PIN entry is digit‑only; commas are disallowed in password inputs while other special characters are allowed
+
 ## File Formats
 
 ### PWDongle Macro Format
@@ -137,7 +143,6 @@ Default format for recorded macros:
 // Duration: 5000ms (5.0s)
 // Events: 42
 
-{{MOUSE:RESET}}
 {{DELAY:100}}
 {{TYPE:Hello World}}
 {{DELAY:500}}
@@ -147,10 +152,7 @@ Default format for recorded macros:
 **Tokens:**
 - `{{DELAY:ms}}` - Wait N milliseconds
 - `{{KEY:keyname}}` - Press key (backspace, enter, tab, etc.)
-- `{{MOUSE:MOVE:x,y}}` - Move mouse to absolute position
-- `{{MOUSE:UP:button}}` - Release mouse button
-- `{{MOUSE:DOWN:button}}` - Press mouse button
-- `{{MOUSE:SCROLL:amount}}` - Scroll wheel
+- `{{MOUSE:MOVE dx dy}}` and related mouse actions (click, scroll)
 - `{{TYPE:text}}` - Type text string
 
 ## Error Handling

@@ -19,6 +19,20 @@ import androidx.navigation.ui.NavigationUI
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 /**
+ * Global interface for keyboard event handling
+ */
+interface KeyboardEventListener {
+    fun onKeyboardEvent(keyCode: Int, action: Int): Boolean
+}
+
+/**
+ * Global interface for mouse event handling
+ */
+interface MouseEventListener {
+    fun onMouseEvent(x: Int, y: Int, action: Int): Boolean
+}
+
+/**
  * Main Activity - handles navigation and BLE connection
  */
 class MainActivity : AppCompatActivity() {
@@ -26,9 +40,19 @@ class MainActivity : AppCompatActivity() {
     private var navController: NavController? = null
     private lateinit var bottomNav: BottomNavigationView
     private val originalTitles = mutableMapOf<Int, String>()
+    private var keyboardEventListener: KeyboardEventListener? = null
+    private var mouseEventListener: MouseEventListener? = null
     
     companion object {
         private const val REQUEST_PERMISSIONS = 1001
+    }
+    
+    fun setKeyboardEventListener(listener: KeyboardEventListener?) {
+        keyboardEventListener = listener
+    }
+    
+    fun setMouseEventListener(listener: MouseEventListener?) {
+        mouseEventListener = listener
     }
     
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -182,5 +206,163 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+    
+    /**
+     * Intercept keyboard events from USB OTG devices during recording
+     */
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        // Check if event is from external keyboard (not built-in)
+        val device = event.device
+        if (device != null && 
+            device.sources and android.view.InputDevice.SOURCE_KEYBOARD != 0
+        ) {
+            android.util.Log.d("MainActivity", "Keyboard device detected: ${device.name}, keyCode=${event.keyCode}, action=${event.action}")
+            
+            // Only send KEY_DOWN events (PWDongle KEY command does press + release)
+            if (event.action == android.view.KeyEvent.ACTION_DOWN) {
+                // Try to pass event to fragment first (for local recording)
+                if (keyboardEventListener?.onKeyboardEvent(event.keyCode, event.action) == true) {
+                    android.util.Log.d("MainActivity", "Event handled by fragment")
+                    return true
+                }
+                
+                // Fallback: send directly to PWDongle
+                sendKeyToPWDongle(event.keyCode)
+                return true
+            }
+        }
+        
+        return super.dispatchKeyEvent(event)
+    }
+    
+    /**
+     * Intercept mouse/trackpad events from USB OTG devices during recording
+     * Called BEFORE the event reaches the view hierarchy
+     * Uses AXIS_RELATIVE_X/Y for true delta movements that don't stop at screen edges
+     */
+    override fun dispatchGenericMotionEvent(event: android.view.MotionEvent?): Boolean {
+        if (event == null) return super.dispatchGenericMotionEvent(event)
+        
+        // Check if this is from an external pointing device (mouse, trackpad)
+        val isMouse = (event.source and android.view.InputDevice.SOURCE_MOUSE) != 0
+        val isTrackball = (event.source and android.view.InputDevice.SOURCE_TRACKBALL) != 0
+        
+        if (isMouse || isTrackball) {
+            // Use RELATIVE axes for delta movements (doesn't stop at screen edges)
+            val dx = event.getAxisValue(android.view.MotionEvent.AXIS_RELATIVE_X).toInt()
+            val dy = event.getAxisValue(android.view.MotionEvent.AXIS_RELATIVE_Y).toInt()
+            
+            // Pass deltas to fragment (intercept before views see it)
+            if (mouseEventListener?.onMouseEvent(dx, dy, event.action) == true) {
+                return true  // Consume - don't pass to views
+            }
+        }
+        
+        return super.dispatchGenericMotionEvent(event)
+    }
+    
+    /**
+     * Also intercept touch/motion at view level to prevent pointer display
+     */
+    override fun onTouchEvent(event: android.view.MotionEvent?): Boolean {
+        if (event == null) return super.onTouchEvent(event)
+        
+        // Consume all mouse events to prevent pointer display
+        if (event.source and android.view.InputDevice.SOURCE_MOUSE != 0) {
+            return true
+        }
+        
+        return super.onTouchEvent(event)
+    }
+    
+    /**
+     * Send a key press to PWDongle via BLE
+     */
+    private fun sendKeyToPWDongle(keyCode: Int) {
+        val keyName = keyCodeToKeyName(keyCode)
+        val bleManager = BLEManager.getInstance(this, {})
+        
+        android.util.Log.d("MainActivity", "sendKeyToPWDongle: keyCode=$keyCode, keyName=$keyName, isConnected=${bleManager.isConnected()}")
+        
+        if (bleManager.isConnected()) {
+            bleManager.sendCommand("KEY:$keyName")
+            android.util.Log.d("MainActivity", "Sent KEY:$keyName to PWDongle")
+        } else {
+            android.util.Log.w("MainActivity", "PWDongle not connected, key not sent")
+        }
+    }
+    
+    /**
+     * Convert Android KeyCode to PWDongle-compatible key name
+     */
+    private fun keyCodeToKeyName(keyCode: Int): String {
+        return when (keyCode) {
+            android.view.KeyEvent.KEYCODE_0 -> "0"
+            android.view.KeyEvent.KEYCODE_1 -> "1"
+            android.view.KeyEvent.KEYCODE_2 -> "2"
+            android.view.KeyEvent.KEYCODE_3 -> "3"
+            android.view.KeyEvent.KEYCODE_4 -> "4"
+            android.view.KeyEvent.KEYCODE_5 -> "5"
+            android.view.KeyEvent.KEYCODE_6 -> "6"
+            android.view.KeyEvent.KEYCODE_7 -> "7"
+            android.view.KeyEvent.KEYCODE_8 -> "8"
+            android.view.KeyEvent.KEYCODE_9 -> "9"
+            android.view.KeyEvent.KEYCODE_A -> "a"
+            android.view.KeyEvent.KEYCODE_B -> "b"
+            android.view.KeyEvent.KEYCODE_C -> "c"
+            android.view.KeyEvent.KEYCODE_D -> "d"
+            android.view.KeyEvent.KEYCODE_E -> "e"
+            android.view.KeyEvent.KEYCODE_F -> "f"
+            android.view.KeyEvent.KEYCODE_G -> "g"
+            android.view.KeyEvent.KEYCODE_H -> "h"
+            android.view.KeyEvent.KEYCODE_I -> "i"
+            android.view.KeyEvent.KEYCODE_J -> "j"
+            android.view.KeyEvent.KEYCODE_K -> "k"
+            android.view.KeyEvent.KEYCODE_L -> "l"
+            android.view.KeyEvent.KEYCODE_M -> "m"
+            android.view.KeyEvent.KEYCODE_N -> "n"
+            android.view.KeyEvent.KEYCODE_O -> "o"
+            android.view.KeyEvent.KEYCODE_P -> "p"
+            android.view.KeyEvent.KEYCODE_Q -> "q"
+            android.view.KeyEvent.KEYCODE_R -> "r"
+            android.view.KeyEvent.KEYCODE_S -> "s"
+            android.view.KeyEvent.KEYCODE_T -> "t"
+            android.view.KeyEvent.KEYCODE_U -> "u"
+            android.view.KeyEvent.KEYCODE_V -> "v"
+            android.view.KeyEvent.KEYCODE_W -> "w"
+            android.view.KeyEvent.KEYCODE_X -> "x"
+            android.view.KeyEvent.KEYCODE_Y -> "y"
+            android.view.KeyEvent.KEYCODE_Z -> "z"
+            android.view.KeyEvent.KEYCODE_ENTER -> "enter"
+            android.view.KeyEvent.KEYCODE_TAB -> "tab"
+            android.view.KeyEvent.KEYCODE_SPACE -> "space"
+            android.view.KeyEvent.KEYCODE_DEL -> "backspace"
+            android.view.KeyEvent.KEYCODE_FORWARD_DEL -> "delete"
+            android.view.KeyEvent.KEYCODE_ESCAPE -> "esc"
+            android.view.KeyEvent.KEYCODE_HOME -> "home"
+            260 -> "end"  // KEYCODE_END = 260
+            android.view.KeyEvent.KEYCODE_PAGE_UP -> "pageup"
+            android.view.KeyEvent.KEYCODE_PAGE_DOWN -> "pagedown"
+            android.view.KeyEvent.KEYCODE_DPAD_UP -> "up"
+            android.view.KeyEvent.KEYCODE_DPAD_DOWN -> "down"
+            android.view.KeyEvent.KEYCODE_DPAD_LEFT -> "left"
+            android.view.KeyEvent.KEYCODE_DPAD_RIGHT -> "right"
+            android.view.KeyEvent.KEYCODE_SHIFT_LEFT -> "shift"
+            android.view.KeyEvent.KEYCODE_SHIFT_RIGHT -> "shift"
+            android.view.KeyEvent.KEYCODE_CTRL_LEFT -> "ctrl"
+            android.view.KeyEvent.KEYCODE_CTRL_RIGHT -> "ctrl"
+            android.view.KeyEvent.KEYCODE_ALT_LEFT -> "alt"
+            android.view.KeyEvent.KEYCODE_ALT_RIGHT -> "alt"
+            android.view.KeyEvent.KEYCODE_COMMA -> "comma"
+            android.view.KeyEvent.KEYCODE_PERIOD -> "period"
+            android.view.KeyEvent.KEYCODE_SEMICOLON -> "semicolon"
+            android.view.KeyEvent.KEYCODE_SLASH -> "slash"
+            android.view.KeyEvent.KEYCODE_APOSTROPHE -> "quote"
+            android.view.KeyEvent.KEYCODE_AT -> "at"
+            android.view.KeyEvent.KEYCODE_EQUALS -> "equal"
+            android.view.KeyEvent.KEYCODE_MINUS -> "minus"
+            else -> "key_$keyCode"
+        }
     }
 }

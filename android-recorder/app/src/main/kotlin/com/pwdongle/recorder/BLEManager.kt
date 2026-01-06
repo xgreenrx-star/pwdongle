@@ -72,6 +72,16 @@ class BLEManager(
     private var currentResponseCallback: ((String) -> Unit)? = null
     private val currentResponseBuffer = StringBuilder()
     private var responseTimeout: Handler? = null
+
+    // Warm cache of last successful PIN and passwords
+    var cachedPin: String? = null
+        private set
+    var cachedPasswords: String? = null
+        private set
+    fun updateCachedPin(pin: String) { cachedPin = pin }
+    fun updateCachedPasswords(raw: String) { cachedPasswords = raw }
+    fun clearCache() { cachedPin = null; cachedPasswords = null }
+    fun hasCachedPasswords(): Boolean = cachedPin != null && cachedPasswords != null
     
     // Scan callback
     private val scanCallback = object : ScanCallback() {
@@ -199,6 +209,9 @@ class BLEManager(
             }
         }
         
+        private var lastReceivedChunk = ""
+        private var lastReceivedTime = 0L
+        
         override fun onCharacteristicChanged(
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic
@@ -206,23 +219,35 @@ class BLEManager(
             if (characteristic.uuid == NUS_TX_CHAR_UUID) {
                 val data = characteristic.value
                 val response = String(data, Charsets.UTF_8)
+                
+                // Deduplicate: Android sometimes calls this twice for the same notification
+                val now = System.currentTimeMillis()
+                if (response == lastReceivedChunk && (now - lastReceivedTime) < 50) {
+                    Log.d(TAG, "Duplicate chunk ignored: $response")
+                    return
+                }
+                lastReceivedChunk = response
+                lastReceivedTime = now
+                
                 Log.d(TAG, "Received: $response")
                 
                 // Route to callback if one is active
                 if (currentResponseCallback != null) {
                     currentResponseBuffer.append(response)
                     
-                    // Reset timeout on each chunk received
+                    // Always use timeout approach to collect all chunks
+                    // Reset the timeout each time we receive data
                     responseTimeout?.removeCallbacksAndMessages(null)
                     responseTimeout = Handler(Looper.getMainLooper()).apply {
                         postDelayed({
-                            // Timeout reached, send accumulated response
-                            val completeResponse = currentResponseBuffer.toString()
-                            currentResponseCallback?.invoke(completeResponse)
+                            // No more data received for 1500ms, assume complete
+                            val finalResponse = currentResponseBuffer.toString()
+                            Log.d(TAG, "Response finalized, invoking callback")
+                            currentResponseCallback?.invoke(finalResponse)
                             currentResponseCallback = null
                             currentResponseBuffer.clear()
                             responseTimeout = null
-                        }, 500) // 500ms timeout after last chunk
+                        }, 1500) // 1500ms idle timeout - resets with each chunk
                     }
                 } else {
                     onStatusChange("Response: $response")
@@ -569,6 +594,47 @@ class BLEManager(
         currentResponseCallback = onResponse
         currentResponseBuffer.clear()
         sendCommand(command)  // Use the existing send method
+    }
+
+    /**
+     * Warm path: if a cached response exists for the given PIN, return it immediately
+     * and optionally continue with a live fetch to refresh callers.
+     */
+    fun warmFetchPasswords(
+        pin: String?,
+        onCache: ((String) -> Unit)?,
+        onLive: ((String) -> Unit)?,
+        onError: ((String) -> Unit)? = null
+    ) {
+        if (pin == null || pin.length != 4) {
+            onError?.invoke("PIN missing")
+            return
+        }
+
+        val cachedPinLocal = cachedPin
+        val cachedPasswordsLocal = cachedPasswords
+
+        if (cachedPinLocal == pin && cachedPasswordsLocal != null) {
+            onCache?.invoke(cachedPasswordsLocal)
+        }
+
+        if (!isConnected || rxCharacteristic == null) {
+            onError?.invoke("Not connected")
+            return
+        }
+
+        sendCommandWithResponse("RETRIEVEPW") { firstResponse ->
+            if (!firstResponse.contains("OK", ignoreCase = true)) {
+                onError?.invoke(firstResponse)
+                return@sendCommandWithResponse
+            }
+
+            handler.postDelayed({
+                sendCommandWithResponse(pin) { authResponse ->
+                    onLive?.invoke(authResponse)
+                }
+            }, 10)
+        }
     }
     
     /**

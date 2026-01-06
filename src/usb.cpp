@@ -195,6 +195,47 @@ void processBLELine(const String& rawLine) {
       return;
     }
     
+    // VIEW:filename - read and send macro file content to app
+    if (line.startsWith("VIEW:") || line.startsWith("view:")) {
+      String filename = line.substring(5);
+      filename.trim();
+      if (filename.length() == 0) {
+        sendBLEResponse("ERROR: Filename required. Usage: VIEW:filename");
+        return;
+      }
+      // Remove .txt extension if present
+      if (filename.endsWith(".txt")) {
+        filename = filename.substring(0, filename.length() - 4);
+      }
+      
+      if (!ensureSDReady()) {
+        sendBLEResponse("ERROR: SD card not available");
+        return;
+      }
+      
+      String fullPath = "/" + filename + ".txt";
+      File file;
+      if (sdUseMMC) {
+        file = SD_MMC.open(fullPath.c_str(), FILE_READ);
+      } else {
+        file = SD.open(fullPath.c_str(), FILE_READ);
+      }
+      
+      if (!file) {
+        sendBLEResponse("ERROR: File not found");
+        return;
+      }
+      
+      sendBLEResponse("OK: File content follows");
+      while (file.available()) {
+        String line = file.readStringUntil('\n');
+        sendBLEResponse(line);
+      }
+      file.close();
+      sendBLEResponse("OK: File transfer complete");
+      return;
+    }
+    
     // SAVE_MACRO: receive macro file from BLE and write to SD card
     if (line.startsWith("SAVE_MACRO:") || line.startsWith("save_macro:")) {
       String filename = line.substring(11);
@@ -262,10 +303,11 @@ void processBLELine(const String& rawLine) {
       if (line.startsWith("MOUSE:") || line.startsWith("mouse:")) {
         String mouseAction = line.substring(6);
         mouseAction.trim();
+        Serial.println("[DEBUG] Received MOUSE: " + mouseAction);
         recordAction("{{MOUSE:" + mouseAction + "}}");
         // Execute in real-time for passthrough
         processMacroText("{{MOUSE:" + mouseAction + "}}");
-        sendBLEResponse("OK: Recorded & executed mouse");
+        // Don't send response - reduces BLE overhead for speed
         return;
       }
       
@@ -810,6 +852,13 @@ void processMacroText(const String& text) {
     #ifdef KEY_MEDIA_VOLUME_MUTE
     else if (key == "mute" || key == "volumemute") { Keyboard.press(KEY_MEDIA_VOLUME_MUTE); delay(50); Keyboard.release(KEY_MEDIA_VOLUME_MUTE); }
     #endif
+    // Handle single-character keys: a-z, 0-9, and other printable ASCII characters
+    else if (key.length() == 1) {
+      char c = key[0];
+      Keyboard.press((uint8_t)c);
+      delay(50);
+      Keyboard.release((uint8_t)c);
+    }
     else if (key.indexOf('+') >= 0) {
       std::vector<String> parts;
       int start = 0;
@@ -951,14 +1000,13 @@ void processMacroText(const String& text) {
             // Calculate delta from current position to origin
             int dx = -mouseX;
             int dy = -mouseY;
-            // Move in chunks to handle large distances
+            // Move in chunks to handle large distances - NO DELAY for speed
             while (dx != 0 || dy != 0) {
               int stepX = (dx > 127) ? 127 : ((dx < -127) ? -127 : dx);
               int stepY = (dy > 127) ? 127 : ((dy < -127) ? -127 : dy);
               Mouse.move(stepX, stepY);
               dx -= stepX;
               dy -= stepY;
-              delay(1);
             }
             mouseX = 0;
             mouseY = 0;
@@ -973,26 +1021,31 @@ void processMacroText(const String& text) {
               int dx = targetX - mouseX;
               int dy = targetY - mouseY;
               // Move in chunks (USB HID mouse reports are limited to -127 to 127)
+              // NO DELAY for speed - let USB handle the timing
               while (dx != 0 || dy != 0) {
                 int stepX = (dx > 127) ? 127 : ((dx < -127) ? -127 : dx);
                 int stepY = (dy > 127) ? 127 : ((dy < -127) ? -127 : dy);
                 Mouse.move(stepX, stepY);
                 dx -= stepX;
                 dy -= stepY;
-                delay(1);
               }
               mouseX = targetX;
               mouseY = targetY;
             }
           } else if (cmd.startsWith("MOVE_REL:") || cmd.startsWith("MOVE ")) {
             // Relative movement: MOVE_REL:dx,dy or MOVE dx dy (legacy)
+            // This is the PREFERRED method for live recording (no edge-stopping)
             String rest = cmd.startsWith("MOVE_REL:") ? cmd.substring(9) : cmd.substring(5);
             int sepIdx = rest.indexOf(',');
             if (sepIdx < 0) sepIdx = rest.indexOf(' ');
             if (sepIdx > 0) {
               int dx = rest.substring(0, sepIdx).toInt();
               int dy = rest.substring(sepIdx+1).toInt();
-              // Move in chunks for large distances
+              Serial.print("[DEBUG] MOVE_REL dx=");
+              Serial.print(dx);
+              Serial.print(" dy=");
+              Serial.println(dy);
+              // Move in chunks for large distances - NO DELAY for speed
               while (dx != 0 || dy != 0) {
                 int stepX = (dx > 127) ? 127 : ((dx < -127) ? -127 : dx);
                 int stepY = (dy > 127) ? 127 : ((dy < -127) ? -127 : dy);
@@ -1001,7 +1054,6 @@ void processMacroText(const String& text) {
                 dy -= stepY;
                 mouseX += stepX;
                 mouseY += stepY;
-                delay(1);
               }
             }
           } else if (cmd.startsWith("DOWN:")) {

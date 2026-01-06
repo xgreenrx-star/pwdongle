@@ -12,7 +12,7 @@ class MacroRecorder {
     
     companion object {
         private const val TAG = "MacroRecorder"
-        private const val DELAY_THRESHOLD_MS = 50 // Minimum delay to record
+        private const val DELAY_THRESHOLD_MS = 200 // Only record delays >200ms (firmware processing adds ~50-100ms per command)
     }
     
     private var isRecording = false

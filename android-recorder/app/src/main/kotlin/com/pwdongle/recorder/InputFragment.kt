@@ -181,7 +181,12 @@ class InputFragment : Fragment() {
         val keyboardView = dialogView.findViewById<KeyboardView>(R.id.keyboardView)
 
         keyboardView.setOnTextInputListener { text ->
-            bleManager?.sendCommand("TYPE:$text")
+            // Special handling for space character to ensure it's transmitted
+            if (text == " ") {
+                bleManager?.sendCommand("KEY:space")
+            } else {
+                bleManager?.sendCommand("TYPE:$text")
+            }
         }
 
         keyboardView.setOnKeyPressListener { keyName ->

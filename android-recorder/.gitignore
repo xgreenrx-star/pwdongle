@@ -1,0 +1,9 @@
+# Ignore Gradle/Android build outputs
+app/build/**
+build/**
+
+# Keep the debug APK for distribution
+!app/build/outputs/
+!app/build/outputs/apk/
+!app/build/outputs/apk/debug/
+!app/build/outputs/apk/debug/app-debug.apk

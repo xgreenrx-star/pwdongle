@@ -1,6 +1,6 @@
 # PWDongle Android Macro Recorder
 
-Android app for recording keyboard and mouse input from USB OTG devices and transmitting to PWDongle via Bluetooth.
+Android app for recording keyboard and mouse input via on‑screen controls or USB OTG devices and transmitting to PWDongle via Bluetooth.
 
 ## Features
 
@@ -9,6 +9,7 @@ Android app for recording keyboard and mouse input from USB OTG devices and tran
 - **Real-time Recording**: Captures keystrokes, mouse movements, clicks with accurate timing
 - **Position Tracking**: Records absolute mouse positions and movements
 - **Macro Generation**: Creates PWDongle-compatible macro files with delays
+ - **On-Screen Controls**: Open keyboard and touchpad directly from the Recorder screen
 
 ## Requirements
 
@@ -64,16 +65,12 @@ dependencies {
 
 ## Usage
 
-1. Connect USB OTG adapter to Android device
-2. Connect USB keyboard and mouse to OTG adapter
-3. Launch PWDongle Recorder app
-4. Grant Bluetooth and USB permissions
-5. Scan and connect to "PWDongle" BLE device
-6. Position mouse at top-left corner of screen
-7. Tap "Start Recording" button
-8. Perform actions on keyboard/mouse
-9. Tap "Stop Recording" button
-10. Enter filename and save macro to PWDongle SD card
+1. Launch PWDongle Recorder app
+2. Grant Bluetooth permissions
+3. Connect to "PWDongle" over BLE
+4. In Recorder screen, enter a filename
+5. Tap "Start Recording" and use on‑screen keyboard/touchpad or USB OTG inputs
+6. Tap "Stop Recording" to finalize the macro on device SD
 
 ## Architecture
 
@@ -102,12 +99,8 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 1. Connect PWDongle to PC via USB
 2. Launch BLE terminal app on Android
 3. Connect to "PWDongle"
-4. Send test commands:
-   - `RECORD:test`
-   - `MOUSE:MOVE:100,200`
-   - `KEY:a`
-   - `STOPRECORD`
-5. Verify macro file created on SD card
+4. Record a short macro (`Start Recording` → type/click → `Stop Recording`)
+5. Verify macro file created on device SD card via device file browser (Boot Menu → Storage/Macro)
 
 ## License
 

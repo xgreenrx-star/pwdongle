@@ -62,6 +62,21 @@ void loadPasswords() {
 void parseAndStoreData(String data) {
   // Streamed CSV parsing: process name,password pairs one at a time
   // This avoids large temporary arrays and reduces stack usage.
+  
+  // First, clear all old password data to prevent stale entries
+  prefs.begin(DEVSTORE_NAMESPACE, false);  // writable
+  for (int i = 0; i < MAX_DEVICES; i++) {
+    String keyDevice = "device_" + String(i);
+    String keyPassword = "password_" + String(i);
+    if (prefs.isKey(keyDevice.c_str())) {
+      prefs.remove(keyDevice.c_str());
+    }
+    if (prefs.isKey(keyPassword.c_str())) {
+      prefs.remove(keyPassword.c_str());
+    }
+  }
+  prefs.end();
+  
   int pairs = 0;
 
   while (data.length() > 0 && pairs < MAX_DEVICES) {
@@ -84,6 +99,11 @@ void parseAndStoreData(String data) {
       data = data.substring(idx + 1);
     }
     password.trim();
+
+    // Skip entries with blank device names or passwords
+    if (devName.length() == 0 || password.length() == 0) {
+      continue;
+    }
 
     // Store the device name and password in NVS
     storeDeviceData(pairs, devName, password);
