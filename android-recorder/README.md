@@ -11,6 +11,12 @@ Android app for recording keyboard and mouse input via on‑screen controls or U
 - **Macro Generation**: Creates PWDongle-compatible macro files with delays
  - **On-Screen Controls**: Open keyboard and touchpad directly from the Recorder screen
 
+## Screenshots
+
+![Recorder (dark mode)](docs/screens/recorder-dark-20260106.jpg)
+![Macro Files (dark mode)](docs/screens/macro-files-dark-20260106.jpg)
+![Passwords (dark mode)](docs/screens/passwords-dark-20260106.jpg)
+
 ## Requirements
 
 - Android 6.0+ (API 23+)
