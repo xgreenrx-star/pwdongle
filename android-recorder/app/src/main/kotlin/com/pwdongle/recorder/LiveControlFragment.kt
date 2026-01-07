@@ -132,9 +132,16 @@ class LiveControlFragment : Fragment() {
     }
     
     private fun sendKeyboardCommand(keyCode: Int, action: Int) {
-        // Use optimized short format: K:keyCode:D/U
-        val actionStr = if (action == 0) "D" else "U"  // D=DOWN, U=UP
-        val command = "K:$keyCode:$actionStr"
+        // Convert Android keyCode to key name (a-z, 0-9, enter, etc.)
+        val keyName = keyCodeToKeyName(keyCode)
+        if (keyName.isEmpty()) {
+            logEvent("WARN: Unknown keyCode $keyCode")
+            return
+        }
+        
+        // Use standard legacy format: KEY:keyName_DOWN/UP
+        val actionStr = if (action == 0) "DOWN" else "UP"
+        val command = "KEY:${keyName}_$actionStr"
         
         try {
             bleManager?.sendCommandLowLatency(command)
@@ -143,15 +150,80 @@ class LiveControlFragment : Fragment() {
         }
     }
     
-    private fun sendMouseCommand(x: Int, y: Int, action: Int) {
-        // Use optimized short format: M:x:y:L/R/M
-        val actionStr = when (action) {
-            0 -> "M"    // M=MOVE
-            1 -> "L"    // L=LEFT_CLICK
-            2 -> "R"    // R=RIGHT_CLICK
-            else -> "M" // Default to MOVE
+    /**
+     * Convert Android KeyCode to PWDongle-compatible key name
+     */
+    private fun keyCodeToKeyName(keyCode: Int): String {
+        return when (keyCode) {
+            android.view.KeyEvent.KEYCODE_0 -> "0"
+            android.view.KeyEvent.KEYCODE_1 -> "1"
+            android.view.KeyEvent.KEYCODE_2 -> "2"
+            android.view.KeyEvent.KEYCODE_3 -> "3"
+            android.view.KeyEvent.KEYCODE_4 -> "4"
+            android.view.KeyEvent.KEYCODE_5 -> "5"
+            android.view.KeyEvent.KEYCODE_6 -> "6"
+            android.view.KeyEvent.KEYCODE_7 -> "7"
+            android.view.KeyEvent.KEYCODE_8 -> "8"
+            android.view.KeyEvent.KEYCODE_9 -> "9"
+            android.view.KeyEvent.KEYCODE_A -> "a"
+            android.view.KeyEvent.KEYCODE_B -> "b"
+            android.view.KeyEvent.KEYCODE_C -> "c"
+            android.view.KeyEvent.KEYCODE_D -> "d"
+            android.view.KeyEvent.KEYCODE_E -> "e"
+            android.view.KeyEvent.KEYCODE_F -> "f"
+            android.view.KeyEvent.KEYCODE_G -> "g"
+            android.view.KeyEvent.KEYCODE_H -> "h"
+            android.view.KeyEvent.KEYCODE_I -> "i"
+            android.view.KeyEvent.KEYCODE_J -> "j"
+            android.view.KeyEvent.KEYCODE_K -> "k"
+            android.view.KeyEvent.KEYCODE_L -> "l"
+            android.view.KeyEvent.KEYCODE_M -> "m"
+            android.view.KeyEvent.KEYCODE_N -> "n"
+            android.view.KeyEvent.KEYCODE_O -> "o"
+            android.view.KeyEvent.KEYCODE_P -> "p"
+            android.view.KeyEvent.KEYCODE_Q -> "q"
+            android.view.KeyEvent.KEYCODE_R -> "r"
+            android.view.KeyEvent.KEYCODE_S -> "s"
+            android.view.KeyEvent.KEYCODE_T -> "t"
+            android.view.KeyEvent.KEYCODE_U -> "u"
+            android.view.KeyEvent.KEYCODE_V -> "v"
+            android.view.KeyEvent.KEYCODE_W -> "w"
+            android.view.KeyEvent.KEYCODE_X -> "x"
+            android.view.KeyEvent.KEYCODE_Y -> "y"
+            android.view.KeyEvent.KEYCODE_Z -> "z"
+            android.view.KeyEvent.KEYCODE_ENTER -> "enter"
+            android.view.KeyEvent.KEYCODE_TAB -> "tab"
+            android.view.KeyEvent.KEYCODE_SPACE -> "space"
+            android.view.KeyEvent.KEYCODE_DEL -> "backspace"
+            android.view.KeyEvent.KEYCODE_FORWARD_DEL -> "delete"
+            android.view.KeyEvent.KEYCODE_ESCAPE -> "esc"
+            android.view.KeyEvent.KEYCODE_HOME -> "home"
+            260 -> "end"  // KEYCODE_END = 260
+            android.view.KeyEvent.KEYCODE_PAGE_UP -> "pageup"
+            android.view.KeyEvent.KEYCODE_PAGE_DOWN -> "pagedown"
+            android.view.KeyEvent.KEYCODE_DPAD_UP -> "up"
+            android.view.KeyEvent.KEYCODE_DPAD_DOWN -> "down"
+            android.view.KeyEvent.KEYCODE_DPAD_LEFT -> "left"
+            android.view.KeyEvent.KEYCODE_DPAD_RIGHT -> "right"
+            android.view.KeyEvent.KEYCODE_SHIFT_LEFT -> "shift"
+            android.view.KeyEvent.KEYCODE_SHIFT_RIGHT -> "shift"
+            android.view.KeyEvent.KEYCODE_CTRL_LEFT -> "ctrl"
+            android.view.KeyEvent.KEYCODE_CTRL_RIGHT -> "ctrl"
+            android.view.KeyEvent.KEYCODE_ALT_LEFT -> "alt"
+            android.view.KeyEvent.KEYCODE_ALT_RIGHT -> "alt"
+            else -> ""  // Unknown key
         }
-        val command = "M:$x:$y:$actionStr"
+    }
+    
+    private fun sendMouseCommand(x: Int, y: Int, action: Int) {
+        // Use standard legacy format: MOUSE:x_y_ACTION
+        val actionStr = when (action) {
+            0 -> "MOVE"      // M=MOVE
+            1 -> "LCLICK"    // L=LEFT_CLICK
+            2 -> "RCLICK"    // R=RIGHT_CLICK
+            else -> "MOVE"   // Default to MOVE
+        }
+        val command = "MOUSE:${x}_${y}_$actionStr"
         
         try {
             bleManager?.sendCommandLowLatency(command)
