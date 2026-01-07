@@ -694,6 +694,29 @@ class BLEManager(
         }
     }
 
+    /**
+     * Low-latency send optimized for live control
+     * Uses write-without-response for minimal delay
+     */
+    fun sendCommandLowLatency(command: String) {
+        if (!isConnected || rxCharacteristic == null) {
+            return
+        }
+        
+        try {
+            val commandWithNewline = command + "\n"
+            val data = commandWithNewline.toByteArray(Charsets.UTF_8)
+            
+            if (data.size <= MTU_SIZE) {
+                rxCharacteristic?.value = data
+                rxCharacteristic?.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+                bluetoothGatt?.writeCharacteristic(rxCharacteristic)
+            }
+        } catch (e: Exception) {
+            Log.d(TAG, "Low-latency send failed: ${e.message}")
+        }
+    }
+
     fun setStatusListener(listener: (String) -> Unit) {
         onStatusChange = listener
     }

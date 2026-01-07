@@ -132,13 +132,11 @@ class LiveControlFragment : Fragment() {
         val actionStr = if (action == 0) "DOWN" else "UP"
         val command = "KEY:${keyCode}_${actionStr}"
         
-        lifecycleScope.launch {
-            try {
-                bleManager?.sendCommand(command)
-                logEvent("→ $command")
-            } catch (e: Exception) {
-                logEvent("ERROR: ${e.message}")
-            }
+        try {
+            // Direct send without coroutine overhead for low latency
+            bleManager?.sendCommandLowLatency(command)
+        } catch (e: Exception) {
+            logEvent("ERROR: ${e.message}")
         }
     }
     
@@ -151,13 +149,11 @@ class LiveControlFragment : Fragment() {
         }
         val command = "MOUSE:${x}_${y}_${actionStr}"
         
-        lifecycleScope.launch {
-            try {
-                bleManager?.sendCommand(command)
-                logEvent("→ $command")
-            } catch (e: Exception) {
-                logEvent("ERROR: ${e.message}")
-            }
+        try {
+            // Direct send without coroutine overhead for low latency
+            bleManager?.sendCommandLowLatency(command)
+        } catch (e: Exception) {
+            logEvent("ERROR: ${e.message}")
         }
     }
     

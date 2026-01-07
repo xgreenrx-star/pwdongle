@@ -44,6 +44,9 @@ public final class FragmentSettingsBinding implements ViewBinding {
   public final Button scanButton;
 
   @NonNull
+  public final TextView statusText;
+
+  @NonNull
   public final RadioButton themeDarkRadio;
 
   @NonNull
@@ -61,9 +64,9 @@ public final class FragmentSettingsBinding implements ViewBinding {
   private FragmentSettingsBinding(@NonNull LinearLayout rootView, @NonNull Switch autoConnectSwitch,
       @NonNull SeekBar delayThresholdSlider, @NonNull TextView delayThresholdText,
       @NonNull ListView devicesList, @NonNull Button liveControlButton, @NonNull Button scanButton,
-      @NonNull RadioButton themeDarkRadio, @NonNull RadioButton themeLightRadio,
-      @NonNull RadioGroup themeRadioGroup, @NonNull RadioButton themeSystemRadio,
-      @NonNull TextView titleText) {
+      @NonNull TextView statusText, @NonNull RadioButton themeDarkRadio,
+      @NonNull RadioButton themeLightRadio, @NonNull RadioGroup themeRadioGroup,
+      @NonNull RadioButton themeSystemRadio, @NonNull TextView titleText) {
     this.rootView = rootView;
     this.autoConnectSwitch = autoConnectSwitch;
     this.delayThresholdSlider = delayThresholdSlider;
@@ -71,6 +74,7 @@ public final class FragmentSettingsBinding implements ViewBinding {
     this.devicesList = devicesList;
     this.liveControlButton = liveControlButton;
     this.scanButton = scanButton;
+    this.statusText = statusText;
     this.themeDarkRadio = themeDarkRadio;
     this.themeLightRadio = themeLightRadio;
     this.themeRadioGroup = themeRadioGroup;
@@ -141,6 +145,12 @@ public final class FragmentSettingsBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.statusText;
+      TextView statusText = ViewBindings.findChildViewById(rootView, id);
+      if (statusText == null) {
+        break missingId;
+      }
+
       id = R.id.themeDarkRadio;
       RadioButton themeDarkRadio = ViewBindings.findChildViewById(rootView, id);
       if (themeDarkRadio == null) {
@@ -173,7 +183,8 @@ public final class FragmentSettingsBinding implements ViewBinding {
 
       return new FragmentSettingsBinding((LinearLayout) rootView, autoConnectSwitch,
           delayThresholdSlider, delayThresholdText, devicesList, liveControlButton, scanButton,
-          themeDarkRadio, themeLightRadio, themeRadioGroup, themeSystemRadio, titleText);
+          statusText, themeDarkRadio, themeLightRadio, themeRadioGroup, themeSystemRadio,
+          titleText);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));
