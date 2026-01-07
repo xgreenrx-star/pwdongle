@@ -38,10 +38,10 @@ public final class FragmentSettingsBinding implements ViewBinding {
   public final ListView devicesList;
 
   @NonNull
-  public final Button scanButton;
+  public final Button liveControlButton;
 
   @NonNull
-  public final TextView statusText;
+  public final Button scanButton;
 
   @NonNull
   public final RadioButton themeDarkRadio;
@@ -60,7 +60,7 @@ public final class FragmentSettingsBinding implements ViewBinding {
 
   private FragmentSettingsBinding(@NonNull LinearLayout rootView, @NonNull Switch autoConnectSwitch,
       @NonNull SeekBar delayThresholdSlider, @NonNull TextView delayThresholdText,
-      @NonNull ListView devicesList, @NonNull Button scanButton, @NonNull TextView statusText,
+      @NonNull ListView devicesList, @NonNull Button liveControlButton, @NonNull Button scanButton,
       @NonNull RadioButton themeDarkRadio, @NonNull RadioButton themeLightRadio,
       @NonNull RadioGroup themeRadioGroup, @NonNull RadioButton themeSystemRadio,
       @NonNull TextView titleText) {
@@ -69,8 +69,8 @@ public final class FragmentSettingsBinding implements ViewBinding {
     this.delayThresholdSlider = delayThresholdSlider;
     this.delayThresholdText = delayThresholdText;
     this.devicesList = devicesList;
+    this.liveControlButton = liveControlButton;
     this.scanButton = scanButton;
-    this.statusText = statusText;
     this.themeDarkRadio = themeDarkRadio;
     this.themeLightRadio = themeLightRadio;
     this.themeRadioGroup = themeRadioGroup;
@@ -129,15 +129,15 @@ public final class FragmentSettingsBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.scanButton;
-      Button scanButton = ViewBindings.findChildViewById(rootView, id);
-      if (scanButton == null) {
+      id = R.id.liveControlButton;
+      Button liveControlButton = ViewBindings.findChildViewById(rootView, id);
+      if (liveControlButton == null) {
         break missingId;
       }
 
-      id = R.id.statusText;
-      TextView statusText = ViewBindings.findChildViewById(rootView, id);
-      if (statusText == null) {
+      id = R.id.scanButton;
+      Button scanButton = ViewBindings.findChildViewById(rootView, id);
+      if (scanButton == null) {
         break missingId;
       }
 
@@ -172,7 +172,7 @@ public final class FragmentSettingsBinding implements ViewBinding {
       }
 
       return new FragmentSettingsBinding((LinearLayout) rootView, autoConnectSwitch,
-          delayThresholdSlider, delayThresholdText, devicesList, scanButton, statusText,
+          delayThresholdSlider, delayThresholdText, devicesList, liveControlButton, scanButton,
           themeDarkRadio, themeLightRadio, themeRadioGroup, themeSystemRadio, titleText);
     }
     String missingId = rootView.getResources().getResourceName(id);

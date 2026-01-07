@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.launch
 
 /**
@@ -15,6 +16,7 @@ import kotlinx.coroutines.launch
 class SettingsFragment : Fragment() {
     
     private lateinit var scanButton: Button
+    private lateinit var liveControlButton: Button
     private lateinit var devicesList: ListView
     private lateinit var statusText: TextView
     private lateinit var delayThresholdSlider: SeekBar
@@ -41,6 +43,7 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         
         scanButton = view.findViewById(R.id.scanButton)
+        liveControlButton = view.findViewById(R.id.liveControlButton)
         devicesList = view.findViewById(R.id.devicesList)
         statusText = view.findViewById(R.id.statusText)
         delayThresholdSlider = view.findViewById(R.id.delayThresholdSlider)
@@ -102,6 +105,16 @@ class SettingsFragment : Fragment() {
             }
         }
         
+        // Live Control button - navigate to live control fragment
+        liveControlButton.setOnClickListener {
+            try {
+                findNavController().navigate(R.id.action_settings_to_live_control)
+            } catch (e: Exception) {
+                android.util.Log.e("SettingsFragment", "Navigation failed", e)
+                statusText.text = "Error: Could not open Live Control"
+            }
+        }
+
         scanButton.setOnClickListener {
             if (bleManager?.isConnected() == true) {
                 statusText.text = "Connected to PWDongle"

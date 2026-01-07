@@ -20,12 +20,12 @@
         "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/color-night/radio_text_color.xml"
     },
     {
-        "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/xml_file_paths.xml.flat",
-        "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/xml/file_paths.xml"
-    },
-    {
         "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/layout_fragment_recorder.xml.flat",
         "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/layout/fragment_recorder.xml"
+    },
+    {
+        "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/xml_file_paths.xml.flat",
+        "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/xml/file_paths.xml"
     },
     {
         "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/drawable_status_background.xml.flat",
@@ -64,12 +64,12 @@
         "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/layout/fragment_file_manager.xml"
     },
     {
-        "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/layout_item_password_entry.xml.flat",
-        "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/layout/item_password_entry.xml"
+        "merged": "com.pwdongle.recorder.app-merged_res-51:/layout_fragment_settings.xml.flat",
+        "source": "com.pwdongle.recorder.app-main-53:/layout/fragment_settings.xml"
     },
     {
-        "merged": "com.pwdongle.recorder.app-merged_res-51:/layout_fragment_live_control.xml.flat",
-        "source": "com.pwdongle.recorder.app-main-53:/layout/fragment_live_control.xml"
+        "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/layout_item_password_entry.xml.flat",
+        "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/layout/item_password_entry.xml"
     },
     {
         "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/layout_activity_main.xml.flat",
@@ -106,6 +106,10 @@
     {
         "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/drawable_ripple_background.xml.flat",
         "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/drawable/ripple_background.xml"
+    },
+    {
+        "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/layout_fragment_live_control.xml.flat",
+        "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/layout/fragment_live_control.xml"
     },
     {
         "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-merged_res-51:/drawable_ic_launcher_foreground.xml.flat",

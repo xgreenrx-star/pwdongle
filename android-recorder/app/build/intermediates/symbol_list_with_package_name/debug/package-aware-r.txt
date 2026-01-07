@@ -3208,6 +3208,7 @@ id action_menu_presenter
 id action_mode_bar
 id action_mode_bar_stub
 id action_mode_close_button
+id action_settings_to_live_control
 id action_text
 id actions
 id activity_chooser_view_content
@@ -3414,6 +3415,7 @@ id line3
 id linear
 id listMode
 id list_item
+id liveControlButton
 id localFilesRadio
 id locale
 id loginCodeInput

@@ -21,6 +21,7 @@ drawable nav_item_color
 drawable ripple_background
 drawable status_background
 id action_exit
+id action_settings_to_live_control
 id addButton
 id autoConnectSwitch
 id backButton
@@ -52,6 +53,7 @@ id inputMethodSpinner
 id keyboardButton
 id keyboardStatus
 id keyboardView
+id liveControlButton
 id localFilesRadio
 id loginCodeInput
 id macroContentView

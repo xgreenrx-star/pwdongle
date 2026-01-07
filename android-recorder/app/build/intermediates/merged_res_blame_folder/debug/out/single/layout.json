@@ -1,11 +1,11 @@
 [
     {
-        "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-mergeDebugResources-50:/layout/item_macro_file.xml",
-        "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/layout/item_macro_file.xml"
+        "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-mergeDebugResources-50:/layout/fragment_live_control.xml",
+        "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/layout/fragment_live_control.xml"
     },
     {
-        "merged": "com.pwdongle.recorder.app-mergeDebugResources-50:/layout/fragment_live_control.xml",
-        "source": "com.pwdongle.recorder.app-main-53:/layout/fragment_live_control.xml"
+        "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-mergeDebugResources-50:/layout/item_macro_file.xml",
+        "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/layout/item_macro_file.xml"
     },
     {
         "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-mergeDebugResources-50:/layout/dialog_touchpad.xml",
@@ -18,6 +18,10 @@
     {
         "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-mergeDebugResources-50:/layout/fragment_input.xml",
         "source": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-main-53:/layout/fragment_input.xml"
+    },
+    {
+        "merged": "com.pwdongle.recorder.app-mergeDebugResources-50:/layout/fragment_settings.xml",
+        "source": "com.pwdongle.recorder.app-main-53:/layout/fragment_settings.xml"
     },
     {
         "merged": "/home/Commodore/.gradle/daemon/8.5/com.pwdongle.recorder.app-mergeDebugResources-50:/layout/fragment_passwords.xml",

@@ -47,4 +47,8 @@
         android:label="Live Control">
     </fragment>
     
+    <action
+        android:id="@+id/action_settings_to_live_control"
+        app:destination="@id/nav_live_control" />
+    
 </navigation>

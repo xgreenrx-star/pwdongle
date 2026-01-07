@@ -111,12 +111,13 @@
         android:textColor="@color/radio_text_color"
         android:layout_marginBottom="16dp" />
     
-    <TextView
-        android:id="@+id/statusText"
+    <Button
+        android:id="@+id/liveControlButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Status: Ready"
-        android:textSize="14sp"
+        android:text="🎮 Live Control (Real-time PC Input)"
+        android:textColor="@color/radio_text_color"
+        android:layout_marginBottom="16dp" />
         android:padding="8dp"
         android:background="@drawable/status_background"
         android:textColor="@color/radio_text_color"

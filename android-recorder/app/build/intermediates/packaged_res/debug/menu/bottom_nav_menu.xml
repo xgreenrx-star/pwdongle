@@ -26,9 +26,4 @@
         android:icon="@android:drawable/ic_menu_save"
         android:title="Passwords" />
     
-    <item
-        android:id="@+id/nav_live_control"
-        android:icon="@android:drawable/ic_menu_send"
-        android:title="Live" />
-    
 </menu>
