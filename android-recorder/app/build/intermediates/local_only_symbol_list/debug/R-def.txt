@@ -6,8 +6,10 @@ color cardBackground
 color errorRed
 color infoBlue
 color launcher_background
+color nav_icon_color
 color primaryColor
 color primaryDarkColor
+color radio_text_color
 color successGreen
 color surfaceColor
 color textHint
@@ -15,6 +17,9 @@ color textPrimary
 color textSecondary
 color warningOrange
 drawable ic_launcher_foreground
+drawable nav_item_color
+drawable ripple_background
+drawable status_background
 id action_exit
 id addButton
 id autoConnectSwitch
@@ -34,6 +39,7 @@ id deviceSpinner
 id devicesList
 id emptyText
 id eventCountText
+id eventLogText
 id exitButton
 id fetchButton
 id fileCheckbox
@@ -58,6 +64,7 @@ id navHostFragment
 id nav_file_manager
 id nav_graph
 id nav_input
+id nav_live_control
 id nav_passwords
 id nav_playback
 id nav_recorder
@@ -79,6 +86,7 @@ id selectAllButton
 id settingsButton
 id shareBtn
 id speedSpinner
+id startButton
 id statusText
 id stopButton
 id tabToggle
@@ -96,6 +104,7 @@ layout dialog_keyboard
 layout dialog_touchpad
 layout fragment_file_manager
 layout fragment_input
+layout fragment_live_control
 layout fragment_passwords
 layout fragment_playback
 layout fragment_recorder

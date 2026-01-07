@@ -32,7 +32,7 @@
         android:text="Status: Ready"
         android:textSize="14sp"
         android:padding="8dp"
-        android:background="#E0E0E0"
+        android:background="@drawable/status_background"
         android:textColor="@color/radio_text_color"
         android:layout_marginBottom="8dp"
         android:maxLines="2"
@@ -55,6 +55,7 @@
         android:layout_height="wrap_content"
         android:text=""
         android:textSize="12sp"
+        android:textColor="@color/radio_text_color"
         android:gravity="center"
         android:layout_marginBottom="16dp"
         android:visibility="gone" />
@@ -93,6 +94,7 @@
             android:layout_weight="1"
             android:text="▶ Play"
             android:textSize="16sp"
+            android:textColor="@color/radio_text_color"
             android:layout_marginEnd="8dp" />
         
         <Button
@@ -102,6 +104,7 @@
             android:layout_weight="1"
             android:text="⏹ Stop"
             android:textSize="16sp"
+            android:textColor="@color/radio_text_color"
             android:layout_marginEnd="8dp" />
         
         <Button
@@ -110,7 +113,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="← Back"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textColor="@color/radio_text_color" />
     </LinearLayout>
     
     <TextView
@@ -135,7 +139,7 @@
             android:text="Loading macro..."
             android:textSize="12sp"
             android:padding="8dp"
-            android:background="#F5F5F5"
+            android:background="@color/surfaceColor"
             android:textColor="@color/radio_text_color"
             android:typeface="monospace" />
     </ScrollView>

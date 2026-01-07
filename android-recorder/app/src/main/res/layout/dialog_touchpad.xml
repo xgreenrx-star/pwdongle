@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         android:text="Drag to move, tap buttons for clicks"
         android:textSize="14sp"
+        android:textColor="@color/radio_text_color"
         android:paddingBottom="8dp" />
 
     <com.pwdongle.recorder.TouchpadView

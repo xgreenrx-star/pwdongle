@@ -41,4 +41,10 @@
         android:label="Passwords">
     </fragment>
     
+    <fragment
+        android:id="@+id/nav_live_control"
+        android:name="com.pwdongle.recorder.LiveControlFragment"
+        android:label="Live Control">
+    </fragment>
+    
 </navigation>

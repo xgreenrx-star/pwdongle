@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="@android:color/white">
+    android:background="@color/backgroundColor">
     
     <TextView
         android:id="@+id/titleText"
@@ -13,6 +13,7 @@
         android:text="Macro Files"
         android:textSize="24sp"
         android:textStyle="bold"
+        android:textColor="@color/radio_text_color"
         android:layout_marginBottom="16dp" />
     
     <RadioGroup
@@ -28,6 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Phone"
+            android:textColor="@color/radio_text_color"
             android:checked="true" />
         
         <RadioButton
@@ -35,7 +37,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Device (SD)" />
+            android:text="Device (SD)"
+            android:textColor="@color/radio_text_color" />
     </RadioGroup>
     
     <TextView
@@ -45,7 +48,8 @@
         android:text="Loading..."
         android:textSize="14sp"
         android:padding="8dp"
-        android:background="#E0E0E0"
+        android:background="@drawable/status_background"
+        android:textColor="@color/radio_text_color"
         android:layout_marginBottom="8dp" />
     
     <Button
@@ -53,6 +57,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Select Multiple"
+        android:textColor="@color/radio_text_color"
         android:layout_marginBottom="8dp" />
     
     <LinearLayout
@@ -69,6 +74,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Select All"
+            android:textColor="@color/radio_text_color"
             android:layout_marginEnd="4dp" />
         
         <Button
@@ -78,6 +84,7 @@
             android:layout_weight="1"
             android:text="Delete (0)"
             android:enabled="false"
+            android:textColor="@color/radio_text_color"
             android:layout_marginStart="2dp"
             android:layout_marginEnd="2dp" />
         
@@ -88,6 +95,7 @@
             android:layout_weight="1"
             android:text="Play (0)"
             android:enabled="false"
+            android:textColor="@color/radio_text_color"
             android:layout_marginStart="4dp" />
     </LinearLayout>
     
@@ -103,6 +111,7 @@
         android:layout_height="match_parent"
         android:text="No macros found"
         android:gravity="center"
+        android:textColor="@color/radio_text_color"
         android:textSize="16sp"
         android:visibility="gone" />
     

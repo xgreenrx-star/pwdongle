@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/backgroundColor">
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
+        
+        <TextView
+            android:id="@+id/titleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Live Control"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/radio_text_color"
+            android:layout_marginBottom="16dp" />
+        
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Status: Not connected"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:background="@drawable/status_background"
+            android:textColor="@color/radio_text_color"
+            android:layout_marginBottom="16dp" />
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Input Method:"
+            android:textSize="14sp"
+            android:textColor="@color/radio_text_color"
+            android:layout_marginBottom="4dp" />
+        
+        <Spinner
+            android:id="@+id/inputMethodSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp" />
+        
+        <Button
+            android:id="@+id/startButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start Live Control"
+            android:textSize="18sp"
+            android:textColor="@color/radio_text_color"
+            android:backgroundTint="@android:color/holo_green_light"
+            android:layout_marginBottom="8dp" />
+        
+        <Button
+            android:id="@+id/stopButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Stop Live Control"
+            android:textSize="18sp"
+            android:textColor="@color/radio_text_color"
+            android:backgroundTint="@android:color/holo_red_light"
+            android:enabled="false"
+            android:layout_marginBottom="16dp" />
+        
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+            
+            <Button
+                android:id="@+id/keyboardButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="⌨️ Keyboard"
+                android:textColor="@color/radio_text_color"
+                android:layout_marginEnd="4dp" />
+            
+            <Button
+                android:id="@+id/touchpadButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🖱️ Touchpad"
+                android:textColor="@color/radio_text_color"
+                android:layout_marginStart="4dp" />
+        </LinearLayout>
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="How it works:"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/radio_text_color"
+            android:layout_marginBottom="8dp" />
+        
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="• Connect to PWDongle first\n• Select input method (USB OTG or on-screen)\n• Tap Start Live Control\n• Your keyboard and mouse input will control the PC in real-time\n• No macro file created\n• Tap Stop to disconnect"
+            android:textSize="12sp"
+            android:textColor="@color/radio_text_color"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="16dp" />
+        
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                
+                <TextView
+                    android:id="@+id/eventLogText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Event log:\n[waiting to start]"
+                    android:textSize="11sp"
+                    android:textColor="@color/radio_text_color"
+                    android:padding="8dp"
+                    android:background="@color/surfaceColor"
+                    android:typeface="monospace" />
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+    
+</FrameLayout>

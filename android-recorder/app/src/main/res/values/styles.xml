@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Use Material DayNight theme to support dark mode automatically -->
+    <!-- Light mode theme -->
     <style name="Theme.PWDongleRecorder" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary colors -->
         <item name="colorPrimary">@color/primaryColor</item>
         <item name="colorPrimaryVariant">@color/primaryDarkColor</item>
         <item name="colorSecondary">@color/accentColor</item>
+        
+        <!-- Text colors for light mode - dark text -->
+        <item name="android:textColorPrimary">#212121</item>
+        <item name="android:textColorSecondary">#757575</item>
+        <item name="android:textColorHint">#bdbdbd</item>
     </style>
 </resources>

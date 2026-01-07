@@ -38,14 +38,15 @@
                     android:layout_height="wrap_content"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    android:text="Macro Name" />
+                    android:text="Macro Name"
+                    android:textColor="@color/radio_text_color" />
                 
                 <TextView
                     android:id="@+id/infoText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="12sp"
-                    android:textColor="#666666"
+                    android:textColor="@color/radio_text_color"
                     android:text="100 B • Jan 02, 12:34" />
             </LinearLayout>
         </LinearLayout>
@@ -63,6 +64,7 @@
             android:layout_weight="1"
             android:text="▶ Play"
             android:textSize="12sp"
+            android:textColor="@color/radio_text_color"
             android:layout_marginEnd="4dp" />
         
         <Button
@@ -72,6 +74,7 @@
             android:layout_weight="1"
             android:text="📤 Share"
             android:textSize="12sp"
+            android:textColor="@color/radio_text_color"
             android:layout_marginEnd="4dp" />
         
         <Button
@@ -80,7 +83,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="🗑 Delete"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            android:textColor="@color/radio_text_color" />
     </LinearLayout>
     
 </LinearLayout>

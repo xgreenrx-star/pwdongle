@@ -2118,6 +2118,7 @@ color mtrl_textinput_disabled_color
 color mtrl_textinput_filled_box_default_background_color
 color mtrl_textinput_focused_box_stroke_color
 color mtrl_textinput_hovered_box_stroke_color
+color nav_icon_color
 color notification_action_color_filter
 color notification_icon_bg_color
 color primaryColor
@@ -2130,6 +2131,7 @@ color primary_text_default_material_dark
 color primary_text_default_material_light
 color primary_text_disabled_material_dark
 color primary_text_disabled_material_light
+color radio_text_color
 color ripple_material_dark
 color ripple_material_light
 color secondary_text_default_material_dark
@@ -3118,6 +3120,7 @@ drawable mtrl_switch_thumb_unchecked_pressed
 drawable mtrl_switch_track
 drawable mtrl_switch_track_decoration
 drawable mtrl_tabs_default_indicator
+drawable nav_item_color
 drawable navigation_empty_icon
 drawable notification_action_background
 drawable notification_bg
@@ -3132,6 +3135,8 @@ drawable notification_template_icon_bg
 drawable notification_template_icon_low_bg
 drawable notification_tile_bg
 drawable notify_panel_notification_icon_bg
+drawable ripple_background
+drawable status_background
 drawable test_level_drawable
 drawable tooltip_frame_dark
 drawable tooltip_frame_light
@@ -3334,6 +3339,7 @@ id endToStart
 id enterAlways
 id enterAlwaysCollapsed
 id eventCountText
+id eventLogText
 id exitButton
 id exitUntilCollapsed
 id expand_activities_button
@@ -3484,6 +3490,7 @@ id nav_file_manager
 id nav_graph
 id nav_host_fragment_container
 id nav_input
+id nav_live_control
 id nav_passwords
 id nav_playback
 id nav_recorder
@@ -3626,6 +3633,7 @@ id src_in
 id src_over
 id standard
 id start
+id startButton
 id startHorizontal
 id startToEnd
 id startVertical
@@ -3853,6 +3861,7 @@ layout dialog_keyboard
 layout dialog_touchpad
 layout fragment_file_manager
 layout fragment_input
+layout fragment_live_control
 layout fragment_passwords
 layout fragment_playback
 layout fragment_recorder

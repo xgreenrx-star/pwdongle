@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="@android:color/white">
+    android:background="@color/backgroundColor">
     
     <TextView
         android:id="@+id/titleText"
@@ -13,6 +13,7 @@
         android:text="Macro Playback"
         android:textSize="24sp"
         android:textStyle="bold"
+        android:textColor="@color/radio_text_color"
         android:layout_marginBottom="16dp" />
     
     <TextView
@@ -21,6 +22,7 @@
         android:layout_height="wrap_content"
         android:text="Loading..."
         android:textSize="18sp"
+        android:textColor="@color/radio_text_color"
         android:layout_marginBottom="8dp" />
     
     <TextView
@@ -30,7 +32,8 @@
         android:text="Status: Ready"
         android:textSize="14sp"
         android:padding="8dp"
-        android:background="#E0E0E0"
+        android:background="@drawable/status_background"
+        android:textColor="@color/radio_text_color"
         android:layout_marginBottom="8dp"
         android:maxLines="2"
         android:ellipsize="end"
@@ -52,6 +55,7 @@
         android:layout_height="wrap_content"
         android:text=""
         android:textSize="12sp"
+        android:textColor="@color/radio_text_color"
         android:gravity="center"
         android:layout_marginBottom="16dp"
         android:visibility="gone" />
@@ -67,6 +71,7 @@
             android:layout_height="wrap_content"
             android:text="Playback Speed:"
             android:textSize="14sp"
+            android:textColor="@color/radio_text_color"
             android:layout_marginEnd="8dp" />
         
         <Spinner
@@ -89,6 +94,7 @@
             android:layout_weight="1"
             android:text="▶ Play"
             android:textSize="16sp"
+            android:textColor="@color/radio_text_color"
             android:layout_marginEnd="8dp" />
         
         <Button
@@ -98,6 +104,7 @@
             android:layout_weight="1"
             android:text="⏹ Stop"
             android:textSize="16sp"
+            android:textColor="@color/radio_text_color"
             android:layout_marginEnd="8dp" />
         
         <Button
@@ -106,7 +113,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="← Back"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textColor="@color/radio_text_color" />
     </LinearLayout>
     
     <TextView
@@ -115,6 +123,7 @@
         android:text="Macro Content:"
         android:textSize="14sp"
         android:textStyle="bold"
+        android:textColor="@color/radio_text_color"
         android:layout_marginBottom="8dp" />
     
     <ScrollView
@@ -130,7 +139,8 @@
             android:text="Loading macro..."
             android:textSize="12sp"
             android:padding="8dp"
-            android:background="#F5F5F5"
+            android:background="@color/surfaceColor"
+            android:textColor="@color/radio_text_color"
             android:typeface="monospace" />
     </ScrollView>
     
