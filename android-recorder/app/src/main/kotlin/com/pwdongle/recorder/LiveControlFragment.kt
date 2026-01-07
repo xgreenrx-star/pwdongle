@@ -34,6 +34,7 @@ class LiveControlFragment : Fragment() {
     private var inputMethodSpinner: Spinner? = null
     
     private var isLiveControlActive = false
+    private var logEventsEnabled = true  // Can be disabled to reduce overhead
     private val eventLog = mutableListOf<String>()
     private var bleManager: BLEManager? = null
     
@@ -87,6 +88,7 @@ class LiveControlFragment : Fragment() {
         }
         
         isLiveControlActive = true
+        logEventsEnabled = false  // Disable logging to reduce latency
         startButton?.isEnabled = false
         stopButton?.isEnabled = true
         inputMethodSpinner?.isEnabled = false
@@ -116,6 +118,7 @@ class LiveControlFragment : Fragment() {
     
     private fun stopLiveControl() {
         isLiveControlActive = false
+        logEventsEnabled = true  // Re-enable logging
         startButton?.isEnabled = true
         stopButton?.isEnabled = false
         inputMethodSpinner?.isEnabled = true
@@ -129,11 +132,11 @@ class LiveControlFragment : Fragment() {
     }
     
     private fun sendKeyboardCommand(keyCode: Int, action: Int) {
-        val actionStr = if (action == 0) "DOWN" else "UP"
-        val command = "KEY:${keyCode}_${actionStr}"
+        // Optimized format: shorter command string to reduce BLE transmission time
+        val actionStr = if (action == 0) "D" else "U"  // D=DOWN, U=UP
+        val command = "K:$keyCode:$actionStr"  // Shorter than "KEY:keyCode_ACTION"
         
         try {
-            // Direct send without coroutine overhead for low latency
             bleManager?.sendCommandLowLatency(command)
         } catch (e: Exception) {
             logEvent("ERROR: ${e.message}")
@@ -141,16 +144,16 @@ class LiveControlFragment : Fragment() {
     }
     
     private fun sendMouseCommand(x: Int, y: Int, action: Int) {
+        // Optimized format: shorter command string to reduce BLE transmission time
         val actionStr = when (action) {
-            0 -> "MOVE"
-            1 -> "LCLICK"
-            2 -> "RCLICK"
-            else -> "ACTION_$action"
+            0 -> "M"    // M=MOVE
+            1 -> "L"    // L=LEFT_CLICK
+            2 -> "R"    // R=RIGHT_CLICK
+            else -> "A" // A=ACTION
         }
-        val command = "MOUSE:${x}_${y}_${actionStr}"
+        val command = "M:$x:$y:$actionStr"  // Shorter than "MOUSE:x_y_ACTION"
         
         try {
-            // Direct send without coroutine overhead for low latency
             bleManager?.sendCommandLowLatency(command)
         } catch (e: Exception) {
             logEvent("ERROR: ${e.message}")
@@ -170,6 +173,8 @@ class LiveControlFragment : Fragment() {
     }
     
     private fun logEvent(message: String) {
+        if (!logEventsEnabled) return  // Skip logging if disabled for performance
+        
         val timestamp = SimpleDateFormat("HH:mm:ss", Locale.US).format(Date())
         eventLog.add("[$timestamp] $message")
         if (eventLog.size > 50) eventLog.removeAt(0)

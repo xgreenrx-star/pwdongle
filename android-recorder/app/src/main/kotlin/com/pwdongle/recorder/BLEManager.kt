@@ -37,7 +37,8 @@ class BLEManager(
         private val NUS_RX_CHAR_UUID = UUID.fromString("6E400002-B5A3-F393-E0A9-E50E24DCCA9E") // Write
         private val NUS_TX_CHAR_UUID = UUID.fromString("6E400003-B5A3-F393-E0A9-E50E24DCCA9E") // Notify
         
-        private const val MTU_SIZE = 20 // BLE MTU for chunking
+        private const val MTU_SIZE = 20 // Default BLE MTU
+        private const val MAX_MTU_REQUEST = 247 // Max BLE MTU size to request
 
         @Volatile private var shared: BLEManager? = null
 
@@ -61,6 +62,8 @@ class BLEManager(
     private var bluetoothGatt: BluetoothGatt? = null
     private var rxCharacteristic: BluetoothGattCharacteristic? = null
     private var txCharacteristic: BluetoothGattCharacteristic? = null
+    
+    private var negotiatedMTU = MTU_SIZE  // Track actual MTU after negotiation
     
     private val handler = Handler(Looper.getMainLooper())
     private val foundDevices = mutableMapOf<String, BluetoothDevice>()
@@ -176,6 +179,16 @@ class BLEManager(
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "Services discovered successfully")
                 
+                // Request larger MTU for lower latency (reduces fragmentation)
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        val mtuRequested = gatt.requestMtu(247)  // Max BLE MTU
+                        Log.d(TAG, "MTU request initiated: $mtuRequested")
+                    }
+                } catch (e: Exception) {
+                    Log.d(TAG, "MTU request failed (non-critical): ${e.message}")
+                }
+                
                 // List all services for debugging
                 gatt.services.forEach { service ->
                     Log.d(TAG, "Service found: ${service.uuid}")
@@ -278,6 +291,16 @@ class BLEManager(
                 Log.d(TAG, "Characteristic write successful")
             } else {
                 Log.e(TAG, "Characteristic write failed: $status")
+            }
+        }
+
+        override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                negotiatedMTU = mtu
+                Log.d(TAG, "MTU changed to: $mtu")
+                onStatusChange("Connected (MTU: $mtu)")
+            } else {
+                Log.d(TAG, "MTU change failed: $status (using default 20)")
             }
         }
     }
