@@ -356,12 +356,73 @@ void processBLELine(const String& rawLine) {
     }
     
     // Non-recording mode: execute KEY, MOUSE, TYPE, GAMEPAD commands in real-time
+    // Short format keyboard: K:keyCode:D/U (e.g., "K:41:D" for 'A' down)
+    if (line.startsWith("K:") && line.indexOf(':') != line.lastIndexOf(':')) {
+      int colon1 = line.indexOf(':');
+      int colon2 = line.indexOf(':', colon1 + 1);
+      if (colon1 > 0 && colon2 > colon1) {
+        String keyCodeStr = line.substring(colon1 + 1, colon2);
+        String actionStr = line.substring(colon2 + 1);
+        actionStr.trim();
+        
+        int keyCode = keyCodeStr.toInt();
+        if (keyCode > 0) {
+          // D = DOWN, U = UP, map to actual key names for processMacroText
+          String keyName = "";
+          if (keyCode >= 0 && keyCode <= 26) {
+            keyName = String((char)('a' + keyCode - 4));  // Map key codes to letters
+          } else {
+            keyName = String(keyCode);  // Fallback to numeric
+          }
+          
+          processMacroText("{{KEY:" + keyName + "}}");
+          sendBLEResponse("OK: Key sent");
+          return;
+        }
+      }
+    }
+    
     if (line.startsWith("KEY:") || line.startsWith("key:")) {
       String keyName = line.substring(4);
       keyName.trim();
       processMacroText("{{KEY:" + keyName + "}}");
       sendBLEResponse("OK: Key sent");
       return;
+    }
+    
+    // Short format mouse: M:x:y:L/R/M (e.g., "M:100:200:L" for left click at 100,200)
+    if (line.startsWith("M:")) {
+      int colon1 = line.indexOf(':');
+      int colon2 = line.indexOf(':', colon1 + 1);
+      int colon3 = line.indexOf(':', colon2 + 1);
+      
+      if (colon1 > 0 && colon2 > colon1 && colon3 > colon2) {
+        String xStr = line.substring(colon1 + 1, colon2);
+        String yStr = line.substring(colon2 + 1, colon3);
+        String actionStr = line.substring(colon3 + 1);
+        actionStr.trim();
+        
+        int x = xStr.toInt();
+        int y = yStr.toInt();
+        
+        String mouseCmd = "";
+        if (actionStr.equals("L")) {
+          mouseCmd = "{{MOUSE:" + xStr + "_" + yStr + "_LCLICK}}";
+        } else if (actionStr.equals("R")) {
+          mouseCmd = "{{MOUSE:" + xStr + "_" + yStr + "_RCLICK}}";
+        } else if (actionStr.equals("M")) {
+          mouseCmd = "{{MOUSE:" + xStr + "_" + yStr + "_MOVE}}";
+        } else if (actionStr.startsWith("W")) {
+          // Scroll: W:+/- (not yet supported in standard format)
+          mouseCmd = "{{MOUSE:" + xStr + "_" + yStr + "_MOVE}}";
+        }
+        
+        if (mouseCmd.length() > 0) {
+          processMacroText(mouseCmd);
+          sendBLEResponse("OK: Mouse sent");
+          return;
+        }
+      }
     }
     
     if (line.startsWith("MOUSE:") || line.startsWith("mouse:")) {

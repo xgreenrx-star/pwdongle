@@ -730,10 +730,16 @@ class BLEManager(
             val commandWithNewline = command + "\n"
             val data = commandWithNewline.toByteArray(Charsets.UTF_8)
             
-            if (data.size <= MTU_SIZE) {
+            // Use negotiated MTU instead of default
+            if (data.size <= negotiatedMTU) {
                 rxCharacteristic?.value = data
                 rxCharacteristic?.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
                 bluetoothGatt?.writeCharacteristic(rxCharacteristic)
+                Log.d(TAG, "Low-latency send (no-resp): ${data.size}B - $command")
+            } else {
+                // If command exceeds MTU, fall back to standard send
+                Log.w(TAG, "Command exceeds MTU ($negotiatedMTU), using standard send")
+                sendCommand(command)
             }
         } catch (e: Exception) {
             Log.d(TAG, "Low-latency send failed: ${e.message}")

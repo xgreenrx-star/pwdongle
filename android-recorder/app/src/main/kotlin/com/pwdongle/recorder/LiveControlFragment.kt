@@ -132,9 +132,9 @@ class LiveControlFragment : Fragment() {
     }
     
     private fun sendKeyboardCommand(keyCode: Int, action: Int) {
-        // Standard format expected by PWDongle firmware
-        val actionStr = if (action == 0) "DOWN" else "UP"
-        val command = "KEY:${keyCode}_${actionStr}"
+        // Use optimized short format: K:keyCode:D/U
+        val actionStr = if (action == 0) "D" else "U"  // D=DOWN, U=UP
+        val command = "K:$keyCode:$actionStr"
         
         try {
             bleManager?.sendCommandLowLatency(command)
@@ -144,14 +144,14 @@ class LiveControlFragment : Fragment() {
     }
     
     private fun sendMouseCommand(x: Int, y: Int, action: Int) {
-        // Standard format expected by PWDongle firmware
+        // Use optimized short format: M:x:y:L/R/M
         val actionStr = when (action) {
-            0 -> "MOVE"
-            1 -> "LCLICK"
-            2 -> "RCLICK"
-            else -> "ACTION_$action"
+            0 -> "M"    // M=MOVE
+            1 -> "L"    // L=LEFT_CLICK
+            2 -> "R"    // R=RIGHT_CLICK
+            else -> "M" // Default to MOVE
         }
-        val command = "MOUSE:${x}_${y}_${actionStr}"
+        val command = "M:$x:$y:$actionStr"
         
         try {
             bleManager?.sendCommandLowLatency(command)
