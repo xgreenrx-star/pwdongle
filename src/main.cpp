@@ -42,12 +42,10 @@ int fileMenuSelection = 0;
 
 void setup() {
   tft.init();
-  tft.setRotation(0); // Portrait
+  tft.setRotation(0); // Portrait mode
   tft.fillScreen(TFT_BLACK);
-  delay(500);
-  tft.fillScreen(TFT_BLUE);
-  delay(500);
-  tft.fillScreen(TFT_BLACK);
+  tft.println("Starting...");
+  delay(1000);
   
   showStartupMessage("Starting...");
   //delay(500);

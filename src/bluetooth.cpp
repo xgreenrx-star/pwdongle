@@ -260,7 +260,6 @@ void sendBLEResponse(const String& msg) {
       pTxCharacteristic->setValue(chunk.c_str());
       pTxCharacteristic->notify();
       pos += len;
-      delay(20);  // Give BLE stack time to transmit
     }
   }
 }
@@ -278,7 +277,6 @@ void sendBLECSV(const String& name, const String& password) {
       pTxCharacteristic->setValue(chunk.c_str());
       pTxCharacteristic->notify();
       pos += len;
-      delay(20);
     }
   }
 }

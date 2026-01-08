@@ -1,7 +1,8 @@
-# PWDongle v0.5.0 Release Notes
+# PWDongle v0.5.1 Release Notes
 
 ## Highlights
 
+- **Live Control Fix**: Fixed Live Control keyboard typing from Android app with OTG keyboard. Added support for `KEY:keyname_DOWN`/`KEY:keyname_UP` format by stripping suffixes. Removed 20ms BLE response delay for minimal latency real-time control.
 - Macro Recording (Device): Start with `RECORD:<filename>`, stop with `STOPRECORD`. Automatic `{{DELAY:ms}}` timing captured (>50ms) and saved to SD in PWDongle macro format. Recording UI screens added for status and completion.
 - Android Recorder (App): Added on-screen Keyboard and Touchpad buttons on the Recorder screen for quick access. Space key reliability fixed (maps text space to `KEY:space`). PIN entry is numeric-only; password entries disallow commas while allowing other special characters.
 - Script Auto-Detection: Advanced Scripting, DuckyScript, and PWDongle Macro formats auto-detected for file playback from SD.

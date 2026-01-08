@@ -359,6 +359,13 @@ void processBLELine(const String& rawLine) {
     if (line.startsWith("KEY:") || line.startsWith("key:")) {
       String keyAction = line.substring(4);
       keyAction.trim();
+      
+      // Strip _DOWN/_UP suffixes for LiveControl format (KEY:a_DOWN -> KEY:a)
+      if (keyAction.endsWith("_DOWN") || keyAction.endsWith("_UP")) {
+        int suffixPos = keyAction.lastIndexOf('_');
+        keyAction = keyAction.substring(0, suffixPos);
+      }
+      
       processMacroText("{{KEY:" + keyAction + "}}");
       sendBLEResponse("OK: Key sent");
       return;
@@ -592,10 +599,11 @@ void startUSBMode(int mode) {
     USB.manufacturerName("Narcean Technologies");
     USB.serialNumber("SN-0000001");
     USB.productName("PWDongle v0.5 HID");
+    USB.begin();  // Start USB first
+    delay(100);   // Give USB time to initialize
     Keyboard.begin();
     Mouse.begin();
     Gamepad.begin();
-    USB.begin();
     currentUSBMode = MODE_HID;
 
   } else if (mode == MODE_CDC) {
