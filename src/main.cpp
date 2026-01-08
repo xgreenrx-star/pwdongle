@@ -288,11 +288,15 @@ void loop() {
   
   // BLE mode takes priority - no HID input processing
   if (currentBLEMode == 1) {
-    while (isBLEDataAvailable()) {
+    // Process pending BLE commands with backpressure to prevent starvation
+    int processedCount = 0;
+    const int MAX_PER_LOOP = 10;  // Limit to 10 commands per iteration
+    while (isBLEDataAvailable() && processedCount < MAX_PER_LOOP) {
       String line = readBLEData();
       processBLELine(line);
+      processedCount++;
     }
-    delay(10);
+    // No delay - let USB and BLE coexist
     return;  // Don't process HID input in BLE mode
   }
 

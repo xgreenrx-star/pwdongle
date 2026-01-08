@@ -26,6 +26,7 @@ class MacroRecorder {
         data class MouseMove(val x: Int, val y: Int, val timestamp: Long) : RecordedEvent()
         data class MouseButton(val button: String, val isDown: Boolean, val timestamp: Long) : RecordedEvent()
         data class MouseScroll(val amount: Int, val timestamp: Long) : RecordedEvent()
+        data class MouseHScroll(val amount: Int, val timestamp: Long) : RecordedEvent()
         data class Delay(val ms: Long) : RecordedEvent()
     }
     
@@ -95,6 +96,15 @@ class MacroRecorder {
         
         lastEventTime = now
     }
+
+    fun recordMouseHScroll(amount: Int) {
+        if (!isRecording) return
+        val now = System.currentTimeMillis()
+        addDelayIfNeeded(now)
+        events.add(RecordedEvent.MouseHScroll(amount, now))
+        Log.d(TAG, "Recorded hscroll: $amount")
+        lastEventTime = now
+    }
     
     private fun addDelayIfNeeded(now: Long) {
         val delay = now - lastEventTime
@@ -135,6 +145,9 @@ class MacroRecorder {
                 }
                 is RecordedEvent.MouseScroll -> {
                     macro.add("{{MOUSE:SCROLL:${event.amount}}}")
+                }
+                is RecordedEvent.MouseHScroll -> {
+                    macro.add("{{MOUSE:HSCROLL:${event.amount}}}")
                 }
             }
         }

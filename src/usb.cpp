@@ -92,8 +92,9 @@ void processBLELine(const String& rawLine) {
   String line = rawLine;
   line.trim();
   
-  Serial.print("BLE CMD: ");
-  Serial.println(line);
+  // Disable debug logging for Live Control performance
+  // Serial.print("BLE CMD: ");
+  // Serial.println(line);
   
   if (line.length() == 0) return;
 
@@ -303,11 +304,32 @@ void processBLELine(const String& rawLine) {
       if (line.startsWith("MOUSE:") || line.startsWith("mouse:")) {
         String mouseAction = line.substring(6);
         mouseAction.trim();
-        Serial.println("[DEBUG] Received MOUSE: " + mouseAction);
+        // Record in original format for user editing
         recordAction("{{MOUSE:" + mouseAction + "}}");
-        // Execute in real-time for passthrough
-        processMacroText("{{MOUSE:" + mouseAction + "}}");
-        // Don't send response - reduces BLE overhead for speed
+        
+        // Execute in real-time - convert format if needed
+        int firstUnderscore = mouseAction.indexOf('_');
+        int secondUnderscore = mouseAction.indexOf('_', firstUnderscore + 1);
+        
+        String executionAction = mouseAction;
+        if (firstUnderscore > 0 && secondUnderscore > firstUnderscore) {
+          String dxStr = mouseAction.substring(0, firstUnderscore);
+          String dyStr = mouseAction.substring(firstUnderscore + 1, secondUnderscore);
+          String action = mouseAction.substring(secondUnderscore + 1);
+          
+          int dx = dxStr.toInt();
+          int dy = dyStr.toInt();
+          
+          if (action.equalsIgnoreCase("MOVE_REL")) {
+            executionAction = String("MOVE_REL:") + dx + "," + dy;
+          } else if (action.equalsIgnoreCase("LCLICK")) {
+            executionAction = "CLICK:left";
+          } else if (action.equalsIgnoreCase("RCLICK")) {
+            executionAction = "CLICK:right";
+          }
+        }
+        
+        processMacroText("{{MOUSE:" + executionAction + "}}");
         return;
       }
       
@@ -357,26 +379,78 @@ void processBLELine(const String& rawLine) {
     
     // Non-recording mode: execute KEY, MOUSE, TYPE, GAMEPAD commands in real-time
     if (line.startsWith("KEY:") || line.startsWith("key:")) {
-      String keyAction = line.substring(4);
-      keyAction.trim();
+      // Fast path: avoid trim() and directly extract key from position 4
+      int start = 4;
+      int end = line.length();
+      
+      // Skip leading whitespace manually if needed
+      while (start < end && (line[start] == ' ' || line[start] == '\t')) start++;
+      
+      String keyAction = line.substring(start);
       
       // Strip _DOWN/_UP suffixes for LiveControl format (KEY:a_DOWN -> KEY:a)
-      if (keyAction.endsWith("_DOWN") || keyAction.endsWith("_UP")) {
-        int suffixPos = keyAction.lastIndexOf('_');
-        keyAction = keyAction.substring(0, suffixPos);
+      if (keyAction.endsWith("_DOWN")) {
+        keyAction = keyAction.substring(0, keyAction.length() - 5);
+      } else if (keyAction.endsWith("_UP")) {
+        keyAction = keyAction.substring(0, keyAction.length() - 3);
       }
       
       processMacroText("{{KEY:" + keyAction + "}}");
-      sendBLEResponse("OK: Key sent");
+      // Skip BLE response for KEY commands to reduce latency
       return;
     }
     
-    // Short format mouse: M:x:y:L/R/M (e.g., "M:100:200:L" for left click at 100,200)
+    // Live Control mouse format: MOUSE:dx_dy_ACTION (e.g., "MOUSE:10_5_MOVE_REL", "MOUSE:200_150_LCLICK")
     if (line.startsWith("MOUSE:") || line.startsWith("mouse:")) {
       String mouseAction = line.substring(6);
-      mouseAction.trim();
-      processMacroText("{{MOUSE:" + mouseAction + "}}");
-      sendBLEResponse("OK: Mouse action sent");
+      
+      // Parse dx_dy_ACTION format from LiveControl app
+      int firstUnderscore = mouseAction.indexOf('_');
+      int secondUnderscore = mouseAction.indexOf('_', firstUnderscore + 1);
+      
+      Serial.print("DEBUG MOUSE: raw=");
+      Serial.println(mouseAction);
+      
+      if (firstUnderscore > 0 && secondUnderscore > firstUnderscore) {
+        // Valid format: dx_dy_ACTION
+        String dxStr = mouseAction.substring(0, firstUnderscore);
+        String dyStr = mouseAction.substring(firstUnderscore + 1, secondUnderscore);
+        String action = mouseAction.substring(secondUnderscore + 1);
+        
+        Serial.print("DEBUG: dx=");
+        Serial.print(dxStr);
+        Serial.print(" dy=");
+        Serial.print(dyStr);
+        Serial.print(" action=");
+        Serial.println(action);
+        
+        int dx = dxStr.toInt();
+        int dy = dyStr.toInt();
+        
+        // Convert LiveControl action names to processMacroText format
+        String convertedAction;
+        if (action.equalsIgnoreCase("MOVE_REL")) {
+          // Relative movement - use the delta values directly
+          convertedAction = String("MOVE_REL:") + dx + "," + dy;
+        } else if (action.equalsIgnoreCase("LCLICK")) {
+          convertedAction = "CLICK:left";
+        } else if (action.equalsIgnoreCase("RCLICK")) {
+          convertedAction = "CLICK:right";
+        } else {
+          convertedAction = action;
+        }
+        
+        Serial.print("DEBUG: converted=");
+        Serial.println(convertedAction);
+        
+        processMacroText("{{MOUSE:" + convertedAction + "}}");
+      } else {
+        // Fallback for other formats
+        Serial.println("DEBUG: Using fallback format");
+        processMacroText("{{MOUSE:" + mouseAction + "}}");
+      }
+      
+      // Skip BLE response for mouse commands to reduce latency
       return;
     }
     
@@ -762,110 +836,113 @@ static bool mscStartStop(uint8_t power_condition, bool start, bool load_eject) {
 // Process macro text: parses {{TOKEN}} syntax and types via USB HID
 // Used by both BLE commands and SD file typing
 void processMacroText(const String& text) {
-  startUSBMode(MODE_HID);
+  // Only initialize USB HID if not already active (avoid reinitialization overhead)
+  if (currentUSBMode != MODE_HID) {
+    startUSBMode(MODE_HID);
+  }
 
   int speedMs = 3;
   bool inToken = false;
   bool sawFirstBrace = false;
   String token;
 
-  // sendKeyByName lambda - identical to typeTextFileFromSD version
+  // sendKeyByName lambda - optimized for Live Control with reduced delay (20ms vs 50ms)
   auto sendKeyByName = [](String keyName) {
     String key = keyName; key.toLowerCase();
-    if (key == "enter" || key == "return") { Keyboard.press(KEY_RETURN); delay(50); Keyboard.release(KEY_RETURN); }
-    else if (key == "backspace") { Keyboard.press(KEY_BACKSPACE); delay(50); Keyboard.release(KEY_BACKSPACE); }
-    else if (key == "delete") { Keyboard.press(KEY_DELETE); delay(50); Keyboard.release(KEY_DELETE); }
-    else if (key == "tab") { Keyboard.press(KEY_TAB); delay(50); Keyboard.release(KEY_TAB); }
-    else if (key == "space") { Keyboard.press(' '); delay(50); Keyboard.release(' '); }
-    else if (key == "escape" || key == "esc") { Keyboard.press(KEY_ESC); delay(50); Keyboard.release(KEY_ESC); }
-    else if (key == "up") { Keyboard.press(KEY_UP_ARROW); delay(50); Keyboard.release(KEY_UP_ARROW); }
-    else if (key == "down") { Keyboard.press(KEY_DOWN_ARROW); delay(50); Keyboard.release(KEY_DOWN_ARROW); }
-    else if (key == "left") { Keyboard.press(KEY_LEFT_ARROW); delay(50); Keyboard.release(KEY_LEFT_ARROW); }
-    else if (key == "right") { Keyboard.press(KEY_RIGHT_ARROW); delay(50); Keyboard.release(KEY_RIGHT_ARROW); }
-    else if (key == "home") { Keyboard.press(KEY_HOME); delay(50); Keyboard.release(KEY_HOME); }
-    else if (key == "end") { Keyboard.press(KEY_END); delay(50); Keyboard.release(KEY_END); }
-    else if (key == "pageup") { Keyboard.press(KEY_PAGE_UP); delay(50); Keyboard.release(KEY_PAGE_UP); }
-    else if (key == "pagedown") { Keyboard.press(KEY_PAGE_DOWN); delay(50); Keyboard.release(KEY_PAGE_DOWN); }
-    else if (key == "f1") { Keyboard.press(KEY_F1); delay(50); Keyboard.release(KEY_F1); }
-    else if (key == "f2") { Keyboard.press(KEY_F2); delay(50); Keyboard.release(KEY_F2); }
-    else if (key == "f3") { Keyboard.press(KEY_F3); delay(50); Keyboard.release(KEY_F3); }
-    else if (key == "f4") { Keyboard.press(KEY_F4); delay(50); Keyboard.release(KEY_F4); }
-    else if (key == "f5") { Keyboard.press(KEY_F5); delay(50); Keyboard.release(KEY_F5); }
-    else if (key == "f6") { Keyboard.press(KEY_F6); delay(50); Keyboard.release(KEY_F6); }
-    else if (key == "f7") { Keyboard.press(KEY_F7); delay(50); Keyboard.release(KEY_F7); }
-    else if (key == "f8") { Keyboard.press(KEY_F8); delay(50); Keyboard.release(KEY_F8); }
-    else if (key == "f9") { Keyboard.press(KEY_F9); delay(50); Keyboard.release(KEY_F9); }
-    else if (key == "f10") { Keyboard.press(KEY_F10); delay(50); Keyboard.release(KEY_F10); }
-    else if (key == "f11") { Keyboard.press(KEY_F11); delay(50); Keyboard.release(KEY_F11); }
-    else if (key == "f12") { Keyboard.press(KEY_F12); delay(50); Keyboard.release(KEY_F12); }
+    if (key == "enter" || key == "return") { Keyboard.press(KEY_RETURN); delay(10); Keyboard.release(KEY_RETURN); }
+    else if (key == "backspace") { Keyboard.press(KEY_BACKSPACE); delay(10); Keyboard.release(KEY_BACKSPACE); }
+    else if (key == "delete") { Keyboard.press(KEY_DELETE); delay(10); Keyboard.release(KEY_DELETE); }
+    else if (key == "tab") { Keyboard.press(KEY_TAB); delay(10); Keyboard.release(KEY_TAB); }
+    else if (key == "space") { Keyboard.press(' '); delay(10); Keyboard.release(' '); }
+    else if (key == "escape" || key == "esc") { Keyboard.press(KEY_ESC); delay(10); Keyboard.release(KEY_ESC); }
+    else if (key == "up") { Keyboard.press(KEY_UP_ARROW); delay(10); Keyboard.release(KEY_UP_ARROW); }
+    else if (key == "down") { Keyboard.press(KEY_DOWN_ARROW); delay(10); Keyboard.release(KEY_DOWN_ARROW); }
+    else if (key == "left") { Keyboard.press(KEY_LEFT_ARROW); delay(10); Keyboard.release(KEY_LEFT_ARROW); }
+    else if (key == "right") { Keyboard.press(KEY_RIGHT_ARROW); delay(10); Keyboard.release(KEY_RIGHT_ARROW); }
+    else if (key == "home") { Keyboard.press(KEY_HOME); delay(10); Keyboard.release(KEY_HOME); }
+    else if (key == "end") { Keyboard.press(KEY_END); delay(10); Keyboard.release(KEY_END); }
+    else if (key == "pageup") { Keyboard.press(KEY_PAGE_UP); delay(10); Keyboard.release(KEY_PAGE_UP); }
+    else if (key == "pagedown") { Keyboard.press(KEY_PAGE_DOWN); delay(10); Keyboard.release(KEY_PAGE_DOWN); }
+    else if (key == "f1") { Keyboard.press(KEY_F1); delay(10); Keyboard.release(KEY_F1); }
+    else if (key == "f2") { Keyboard.press(KEY_F2); delay(10); Keyboard.release(KEY_F2); }
+    else if (key == "f3") { Keyboard.press(KEY_F3); delay(10); Keyboard.release(KEY_F3); }
+    else if (key == "f4") { Keyboard.press(KEY_F4); delay(10); Keyboard.release(KEY_F4); }
+    else if (key == "f5") { Keyboard.press(KEY_F5); delay(10); Keyboard.release(KEY_F5); }
+    else if (key == "f6") { Keyboard.press(KEY_F6); delay(10); Keyboard.release(KEY_F6); }
+    else if (key == "f7") { Keyboard.press(KEY_F7); delay(10); Keyboard.release(KEY_F7); }
+    else if (key == "f8") { Keyboard.press(KEY_F8); delay(10); Keyboard.release(KEY_F8); }
+    else if (key == "f9") { Keyboard.press(KEY_F9); delay(10); Keyboard.release(KEY_F9); }
+    else if (key == "f10") { Keyboard.press(KEY_F10); delay(10); Keyboard.release(KEY_F10); }
+    else if (key == "f11") { Keyboard.press(KEY_F11); delay(10); Keyboard.release(KEY_F11); }
+    else if (key == "f12") { Keyboard.press(KEY_F12); delay(10); Keyboard.release(KEY_F12); }
     #ifdef KEY_CAPS_LOCK
-    else if (key == "capslock" || key == "caps") { Keyboard.press(KEY_CAPS_LOCK); delay(50); Keyboard.release(KEY_CAPS_LOCK); }
+    else if (key == "capslock" || key == "caps") { Keyboard.press(KEY_CAPS_LOCK); delay(10); Keyboard.release(KEY_CAPS_LOCK); }
     #endif
     #ifdef KEY_NUM_LOCK
-    else if (key == "numlock" || key == "num") { Keyboard.press(KEY_NUM_LOCK); delay(50); Keyboard.release(KEY_NUM_LOCK); }
+    else if (key == "numlock" || key == "num") { Keyboard.press(KEY_NUM_LOCK); delay(10); Keyboard.release(KEY_NUM_LOCK); }
     #endif
     #ifdef KEY_SCROLL_LOCK
-    else if (key == "scrolllock" || key == "scroll") { Keyboard.press(KEY_SCROLL_LOCK); delay(50); Keyboard.release(KEY_SCROLL_LOCK); }
+    else if (key == "scrolllock" || key == "scroll") { Keyboard.press(KEY_SCROLL_LOCK); delay(10); Keyboard.release(KEY_SCROLL_LOCK); }
     #endif
     #ifdef KEY_PRINT_SCREEN
-    else if (key == "printscreen" || key == "print") { Keyboard.press(KEY_PRINT_SCREEN); delay(50); Keyboard.release(KEY_PRINT_SCREEN); }
+    else if (key == "printscreen" || key == "print") { Keyboard.press(KEY_PRINT_SCREEN); delay(10); Keyboard.release(KEY_PRINT_SCREEN); }
     #endif
     #ifdef KEY_PAUSE
-    else if (key == "pause" || key == "break") { Keyboard.press(KEY_PAUSE); delay(50); Keyboard.release(KEY_PAUSE); }
+    else if (key == "pause" || key == "break") { Keyboard.press(KEY_PAUSE); delay(10); Keyboard.release(KEY_PAUSE); }
     #endif
-    else if (key == "insert" || key == "ins") { Keyboard.press(KEY_INSERT); delay(50); Keyboard.release(KEY_INSERT); }
-    else if (key == "win" || key == "windows") { Keyboard.press(KEY_LEFT_GUI); delay(50); Keyboard.release(KEY_LEFT_GUI); }
-    else if (key == "rwin" || key == "rwindows") { Keyboard.press(KEY_RIGHT_GUI); delay(50); Keyboard.release(KEY_RIGHT_GUI); }
+    else if (key == "insert" || key == "ins") { Keyboard.press(KEY_INSERT); delay(10); Keyboard.release(KEY_INSERT); }
+    else if (key == "win" || key == "windows") { Keyboard.press(KEY_LEFT_GUI); delay(10); Keyboard.release(KEY_LEFT_GUI); }
+    else if (key == "rwin" || key == "rwindows") { Keyboard.press(KEY_RIGHT_GUI); delay(10); Keyboard.release(KEY_RIGHT_GUI); }
     #ifdef KEY_MENU
-    else if (key == "menu" || key == "app") { Keyboard.press(KEY_MENU); delay(50); Keyboard.release(KEY_MENU); }
+    else if (key == "menu" || key == "app") { Keyboard.press(KEY_MENU); delay(10); Keyboard.release(KEY_MENU); }
     #endif
     #ifdef KEY_KP_0
-    else if (key == "kp0" || key == "numpad0") { Keyboard.press(KEY_KP_0); delay(50); Keyboard.release(KEY_KP_0); }
-    else if (key == "kp1" || key == "numpad1") { Keyboard.press(KEY_KP_1); delay(50); Keyboard.release(KEY_KP_1); }
-    else if (key == "kp2" || key == "numpad2") { Keyboard.press(KEY_KP_2); delay(50); Keyboard.release(KEY_KP_2); }
-    else if (key == "kp3" || key == "numpad3") { Keyboard.press(KEY_KP_3); delay(50); Keyboard.release(KEY_KP_3); }
-    else if (key == "kp4" || key == "numpad4") { Keyboard.press(KEY_KP_4); delay(50); Keyboard.release(KEY_KP_4); }
-    else if (key == "kp5" || key == "numpad5") { Keyboard.press(KEY_KP_5); delay(50); Keyboard.release(KEY_KP_5); }
-    else if (key == "kp6" || key == "numpad6") { Keyboard.press(KEY_KP_6); delay(50); Keyboard.release(KEY_KP_6); }
-    else if (key == "kp7" || key == "numpad7") { Keyboard.press(KEY_KP_7); delay(50); Keyboard.release(KEY_KP_7); }
-    else if (key == "kp8" || key == "numpad8") { Keyboard.press(KEY_KP_8); delay(50); Keyboard.release(KEY_KP_8); }
-    else if (key == "kp9" || key == "numpad9") { Keyboard.press(KEY_KP_9); delay(50); Keyboard.release(KEY_KP_9); }
-    else if (key == "kp_add" || key == "numpad_add") { Keyboard.press(KEY_KP_ADD); delay(50); Keyboard.release(KEY_KP_ADD); }
-    else if (key == "kp_subtract" || key == "numpad_subtract") { Keyboard.press(KEY_KP_SUBTRACT); delay(50); Keyboard.release(KEY_KP_SUBTRACT); }
-    else if (key == "kp_multiply" || key == "numpad_multiply") { Keyboard.press(KEY_KP_MULTIPLY); delay(50); Keyboard.release(KEY_KP_MULTIPLY); }
-    else if (key == "kp_divide" || key == "numpad_divide") { Keyboard.press(KEY_KP_DIVIDE); delay(50); Keyboard.release(KEY_KP_DIVIDE); }
-    else if (key == "kp_decimal" || key == "numpad_decimal" || key == "kp_dot") { Keyboard.press(KEY_KP_DECIMAL); delay(50); Keyboard.release(KEY_KP_DECIMAL); }
-    else if (key == "kp_enter" || key == "numpad_enter") { Keyboard.press(KEY_KP_ENTER); delay(50); Keyboard.release(KEY_KP_ENTER); }
+    else if (key == "kp0" || key == "numpad0") { Keyboard.press(KEY_KP_0); delay(10); Keyboard.release(KEY_KP_0); }
+    else if (key == "kp1" || key == "numpad1") { Keyboard.press(KEY_KP_1); delay(10); Keyboard.release(KEY_KP_1); }
+    else if (key == "kp2" || key == "numpad2") { Keyboard.press(KEY_KP_2); delay(10); Keyboard.release(KEY_KP_2); }
+    else if (key == "kp3" || key == "numpad3") { Keyboard.press(KEY_KP_3); delay(10); Keyboard.release(KEY_KP_3); }
+    else if (key == "kp4" || key == "numpad4") { Keyboard.press(KEY_KP_4); delay(10); Keyboard.release(KEY_KP_4); }
+    else if (key == "kp5" || key == "numpad5") { Keyboard.press(KEY_KP_5); delay(10); Keyboard.release(KEY_KP_5); }
+    else if (key == "kp6" || key == "numpad6") { Keyboard.press(KEY_KP_6); delay(10); Keyboard.release(KEY_KP_6); }
+    else if (key == "kp7" || key == "numpad7") { Keyboard.press(KEY_KP_7); delay(10); Keyboard.release(KEY_KP_7); }
+    else if (key == "kp8" || key == "numpad8") { Keyboard.press(KEY_KP_8); delay(10); Keyboard.release(KEY_KP_8); }
+    else if (key == "kp9" || key == "numpad9") { Keyboard.press(KEY_KP_9); delay(10); Keyboard.release(KEY_KP_9); }
+    else if (key == "kp_add" || key == "numpad_add") { Keyboard.press(KEY_KP_ADD); delay(10); Keyboard.release(KEY_KP_ADD); }
+    else if (key == "kp_subtract" || key == "numpad_subtract") { Keyboard.press(KEY_KP_SUBTRACT); delay(10); Keyboard.release(KEY_KP_SUBTRACT); }
+    else if (key == "kp_multiply" || key == "numpad_multiply") { Keyboard.press(KEY_KP_MULTIPLY); delay(10); Keyboard.release(KEY_KP_MULTIPLY); }
+    else if (key == "kp_divide" || key == "numpad_divide") { Keyboard.press(KEY_KP_DIVIDE); delay(10); Keyboard.release(KEY_KP_DIVIDE); }
+    else if (key == "kp_decimal" || key == "numpad_decimal" || key == "kp_dot") { Keyboard.press(KEY_KP_DECIMAL); delay(10); Keyboard.release(KEY_KP_DECIMAL); }
+    else if (key == "kp_enter" || key == "numpad_enter") { Keyboard.press(KEY_KP_ENTER); delay(10); Keyboard.release(KEY_KP_ENTER); }
     #endif
-    else if (key == "rctrl" || key == "rcontrol") { Keyboard.press(KEY_RIGHT_CTRL); delay(50); Keyboard.release(KEY_RIGHT_CTRL); }
-    else if (key == "ralt" || key == "raltgr") { Keyboard.press(KEY_RIGHT_ALT); delay(50); Keyboard.release(KEY_RIGHT_ALT); }
-    else if (key == "rshift") { Keyboard.press(KEY_RIGHT_SHIFT); delay(50); Keyboard.release(KEY_RIGHT_SHIFT); }
+    else if (key == "rctrl" || key == "rcontrol") { Keyboard.press(KEY_RIGHT_CTRL); delay(10); Keyboard.release(KEY_RIGHT_CTRL); }
+    else if (key == "ralt" || key == "raltgr") { Keyboard.press(KEY_RIGHT_ALT); delay(10); Keyboard.release(KEY_RIGHT_ALT); }
+    else if (key == "rshift") { Keyboard.press(KEY_RIGHT_SHIFT); delay(10); Keyboard.release(KEY_RIGHT_SHIFT); }
     #ifdef KEY_MEDIA_PLAY_PAUSE
-    else if (key == "play" || key == "playpause") { Keyboard.press(KEY_MEDIA_PLAY_PAUSE); delay(50); Keyboard.release(KEY_MEDIA_PLAY_PAUSE); }
+    else if (key == "play" || key == "playpause") { Keyboard.press(KEY_MEDIA_PLAY_PAUSE); delay(10); Keyboard.release(KEY_MEDIA_PLAY_PAUSE); }
     #endif
     #ifdef KEY_MEDIA_STOP
-    else if (key == "stop") { Keyboard.press(KEY_MEDIA_STOP); delay(50); Keyboard.release(KEY_MEDIA_STOP); }
+    else if (key == "stop") { Keyboard.press(KEY_MEDIA_STOP); delay(10); Keyboard.release(KEY_MEDIA_STOP); }
     #endif
     #ifdef KEY_MEDIA_NEXT_TRACK
-    else if (key == "next" || key == "nexttrack") { Keyboard.press(KEY_MEDIA_NEXT_TRACK); delay(50); Keyboard.release(KEY_MEDIA_NEXT_TRACK); }
+    else if (key == "next" || key == "nexttrack") { Keyboard.press(KEY_MEDIA_NEXT_TRACK); delay(10); Keyboard.release(KEY_MEDIA_NEXT_TRACK); }
     #endif
     #ifdef KEY_MEDIA_PREV_TRACK
-    else if (key == "prev" || key == "prevtrack") { Keyboard.press(KEY_MEDIA_PREV_TRACK); delay(50); Keyboard.release(KEY_MEDIA_PREV_TRACK); }
+    else if (key == "prev" || key == "prevtrack") { Keyboard.press(KEY_MEDIA_PREV_TRACK); delay(10); Keyboard.release(KEY_MEDIA_PREV_TRACK); }
     #endif
     #ifdef KEY_MEDIA_VOLUME_UP
-    else if (key == "volup" || key == "volumeup") { Keyboard.press(KEY_MEDIA_VOLUME_UP); delay(50); Keyboard.release(KEY_MEDIA_VOLUME_UP); }
+    else if (key == "volup" || key == "volumeup") { Keyboard.press(KEY_MEDIA_VOLUME_UP); delay(10); Keyboard.release(KEY_MEDIA_VOLUME_UP); }
     #endif
     #ifdef KEY_MEDIA_VOLUME_DOWN
-    else if (key == "voldown" || key == "volumedown") { Keyboard.press(KEY_MEDIA_VOLUME_DOWN); delay(50); Keyboard.release(KEY_MEDIA_VOLUME_DOWN); }
+    else if (key == "voldown" || key == "volumedown") { Keyboard.press(KEY_MEDIA_VOLUME_DOWN); delay(10); Keyboard.release(KEY_MEDIA_VOLUME_DOWN); }
     #endif
     #ifdef KEY_MEDIA_VOLUME_MUTE
-    else if (key == "mute" || key == "volumemute") { Keyboard.press(KEY_MEDIA_VOLUME_MUTE); delay(50); Keyboard.release(KEY_MEDIA_VOLUME_MUTE); }
+    else if (key == "mute" || key == "volumemute") { Keyboard.press(KEY_MEDIA_VOLUME_MUTE); delay(10); Keyboard.release(KEY_MEDIA_VOLUME_MUTE); }
     #endif
     // Handle single-character keys: a-z, 0-9, and other printable ASCII characters
     else if (key.length() == 1) {
       char c = key[0];
       Keyboard.press((uint8_t)c);
-      delay(50);
+      delay(10);
       Keyboard.release((uint8_t)c);
     }
     else if (key.indexOf('+') >= 0) {
@@ -924,7 +1001,7 @@ void processMacroText(const String& text) {
           }
         }
       }
-      delay(50);
+      delay(10);
       if (pressed) {
         if (last.length() == 1) Keyboard.release((uint8_t)last[0]);
         else {
@@ -1084,6 +1161,17 @@ void processMacroText(const String& text) {
             int n = cmd.substring(7).toInt();
             if (n > 0) { for (int j = 0; j < n; ++j) { Mouse.move(0, 0, 1); delay(10); } }
             else if (n < 0) { for (int j = 0; j < -n; ++j) { Mouse.move(0, 0, -1); delay(10); } }
+          } else if (cmd.startsWith("HSCROLL:") || cmd.startsWith("HSCROLL ")) {
+            // Simulate horizontal scroll using Shift + vertical wheel (common OS mapping)
+            int n = cmd.substring(8).toInt();
+            int steps = (n > 0) ? n : -n;
+            int dir = (n > 0) ? 1 : -1; // + = right, - = left
+            for (int j = 0; j < steps; ++j) {
+              Keyboard.press(KEY_LEFT_SHIFT);
+              Mouse.move(0, 0, dir);
+              delay(10);
+              Keyboard.release(KEY_LEFT_SHIFT);
+            }
           }
         } else if (body.startsWith("GAMEPAD:")) {
           String cmd = body.substring(8); cmd.trim();
@@ -1589,6 +1677,16 @@ bool typeTextFileFromSD(const String& baseName) {
               int n = cmd.substring(7).toInt();
               if (n > 0) { for (int j = 0; j < n; ++j) { Mouse.move(0, 0, 1); delay(10); } }
               else if (n < 0) { for (int j = 0; j < -n; ++j) { Mouse.move(0, 0, -1); delay(10); } }
+            } else if (cmd.startsWith("HSCROLL:") || cmd.startsWith("HSCROLL ")) {
+              int n = cmd.substring(8).toInt();
+              int steps = (n > 0) ? n : -n;
+              int dir = (n > 0) ? 1 : -1; // + = right, - = left
+              for (int j = 0; j < steps; ++j) {
+                Keyboard.press(KEY_LEFT_SHIFT);
+                Mouse.move(0, 0, dir);
+                delay(10);
+                Keyboard.release(KEY_LEFT_SHIFT);
+              }
             }
           } else if (body.startsWith("GAMEPAD:")) {
             String cmd = body.substring(8); cmd.trim();

@@ -25,6 +25,7 @@ static BLECharacteristic *pTxCharacteristic = nullptr;
 static BLECharacteristic *pRxCharacteristic = nullptr;
 static bool deviceConnected = false;
 static String rxBuffer = "";
+static const size_t MAX_RXBUFFER_SIZE = 4096;  // Prevent unbounded buffer growth
 int currentBLEMode = 0;  // 0 = off, 1 = active
 int dualModeActive = 0;  // 0 = BLE commands only, 1 = BLE + USB HID dual mode
 
@@ -44,6 +45,15 @@ class RxCallbacks: public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *pCharacteristic) {
     std::string rxValue = pCharacteristic->getValue();
     if (rxValue.length() > 0) {
+      // Guard against buffer overflow
+      if (rxBuffer.length() + rxValue.length() > MAX_RXBUFFER_SIZE) {
+        int lastNewline = rxBuffer.lastIndexOf('\n');
+        if (lastNewline >= 0) {
+          rxBuffer = rxBuffer.substring(lastNewline + 1);
+        } else {
+          rxBuffer = "";  // Clear if no newline
+        }
+      }
       for (size_t i = 0; i < rxValue.length(); i++) {
         rxBuffer += (char)rxValue[i];
       }

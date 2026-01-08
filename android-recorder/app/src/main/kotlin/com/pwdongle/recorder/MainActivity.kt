@@ -18,6 +18,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.runBlocking
+import kotlin.math.roundToInt
 
 /**
  * Global interface for keyboard event handling
@@ -30,7 +31,9 @@ interface KeyboardEventListener {
  * Global interface for mouse event handling
  */
 interface MouseEventListener {
-    fun onMouseEvent(x: Int, y: Int, action: Int): Boolean
+    fun onMouseMove(dx: Int, dy: Int): Boolean
+    fun onMouseButton(button: String, isDown: Boolean): Boolean
+    fun onMouseScroll(horizontal: Int, vertical: Int): Boolean
 }
 
 /**
@@ -43,6 +46,9 @@ class MainActivity : AppCompatActivity() {
     private val originalTitles = mutableMapOf<Int, String>()
     private var keyboardEventListener: KeyboardEventListener? = null
     private var mouseEventListener: MouseEventListener? = null
+    // Track last absolute mouse position to compute deltas if RELATIVE axes are unavailable
+    private var lastAbsX: Float? = null
+    private var lastAbsY: Float? = null
     
     companion object {
         private const val REQUEST_PERMISSIONS = 1001
@@ -269,13 +275,53 @@ class MainActivity : AppCompatActivity() {
         val isTrackball = (event.source and android.view.InputDevice.SOURCE_TRACKBALL) != 0
         
         if (isMouse || isTrackball) {
-            // Use RELATIVE axes for delta movements (doesn't stop at screen edges)
-            val dx = event.getAxisValue(android.view.MotionEvent.AXIS_RELATIVE_X).toInt()
-            val dy = event.getAxisValue(android.view.MotionEvent.AXIS_RELATIVE_Y).toInt()
-            
-            // Pass deltas to fragment (intercept before views see it)
-            if (mouseEventListener?.onMouseEvent(dx, dy, event.action) == true) {
-                return true  // Consume - don't pass to views
+            // Handle scroll events first
+            if (event.action == android.view.MotionEvent.ACTION_SCROLL) {
+                val v = event.getAxisValue(android.view.MotionEvent.AXIS_VSCROLL).roundToInt()
+                val h = event.getAxisValue(android.view.MotionEvent.AXIS_HSCROLL).roundToInt()
+                if ((v != 0 || h != 0) && mouseEventListener?.onMouseScroll(h, v) == true) {
+                    return true
+                }
+            }
+
+            // Handle button press/release
+            if (event.action == android.view.MotionEvent.ACTION_BUTTON_PRESS ||
+                event.action == android.view.MotionEvent.ACTION_BUTTON_RELEASE) {
+                val isDown = event.action == android.view.MotionEvent.ACTION_BUTTON_PRESS
+                val state = event.buttonState
+                // Map primary/secondary/middle
+                val handled = when {
+                    state and android.view.MotionEvent.BUTTON_PRIMARY != 0 -> mouseEventListener?.onMouseButton("left", isDown) == true
+                    state and android.view.MotionEvent.BUTTON_SECONDARY != 0 -> mouseEventListener?.onMouseButton("right", isDown) == true
+                    state and android.view.MotionEvent.BUTTON_TERTIARY != 0 -> mouseEventListener?.onMouseButton("middle", isDown) == true
+                    else -> false
+                }
+                if (handled) return true
+            }
+
+            // Prefer RELATIVE axes for true deltas; some devices report only ABSOLUTE axes
+            var dx = event.getAxisValue(android.view.MotionEvent.AXIS_RELATIVE_X).roundToInt()
+            var dy = event.getAxisValue(android.view.MotionEvent.AXIS_RELATIVE_Y).roundToInt()
+
+            // Fallback: compute deltas from absolute AXIS_X/Y when RELATIVE axes are zero
+            if (dx == 0 && dy == 0) {
+                val ax = event.getAxisValue(android.view.MotionEvent.AXIS_X)
+                val ay = event.getAxisValue(android.view.MotionEvent.AXIS_Y)
+                val prevX = lastAbsX
+                val prevY = lastAbsY
+                lastAbsX = ax
+                lastAbsY = ay
+                if (prevX != null && prevY != null) {
+                    dx = (ax - prevX).roundToInt()
+                    dy = (ay - prevY).roundToInt()
+                }
+            }
+
+            // Only forward meaningful movement
+            if (dx != 0 || dy != 0) {
+                if (mouseEventListener?.onMouseMove(dx, dy) == true) {
+                    return true  // Consume - don't pass to views
+                }
             }
         }
         

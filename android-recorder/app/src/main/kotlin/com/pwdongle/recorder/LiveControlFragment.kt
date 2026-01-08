@@ -107,9 +107,23 @@ class LiveControlFragment : Fragment() {
         })
         
         (activity as? MainActivity)?.setMouseEventListener(object : MouseEventListener {
-            override fun onMouseEvent(x: Int, y: Int, action: Int): Boolean {
+            override fun onMouseMove(dx: Int, dy: Int): Boolean {
                 if (isLiveControlActive) {
-                    sendMouseCommand(x, y, action)
+                    sendMouseMove(dx, dy)
+                }
+                return false
+            }
+
+            override fun onMouseButton(button: String, isDown: Boolean): Boolean {
+                if (isLiveControlActive) {
+                    sendMouseButton(button, isDown)
+                }
+                return false
+            }
+
+            override fun onMouseScroll(horizontal: Int, vertical: Int): Boolean {
+                if (isLiveControlActive) {
+                    sendMouseScroll(horizontal, vertical)
                 }
                 return false
             }
@@ -215,18 +229,33 @@ class LiveControlFragment : Fragment() {
         }
     }
     
-    private fun sendMouseCommand(x: Int, y: Int, action: Int) {
-        // Use standard legacy format: MOUSE:x_y_ACTION
-        val actionStr = when (action) {
-            0 -> "MOVE"      // M=MOVE
-            1 -> "LCLICK"    // L=LEFT_CLICK
-            2 -> "RCLICK"    // R=RIGHT_CLICK
-            else -> "MOVE"   // Default to MOVE
+    private fun sendMouseMove(dx: Int, dy: Int) {
+        val command = "MOUSE:${dx}_${dy}_MOVE_REL"
+        try { bleManager?.sendCommandLowLatency(command) } catch (e: Exception) { logEvent("ERROR: ${e.message}") }
+    }
+
+    private fun sendMouseButton(button: String, isDown: Boolean) {
+        val btn = when (button.lowercase(Locale.US)) {
+            "left" -> "left"
+            "right" -> "right"
+            "middle" -> "middle"
+            else -> return
         }
-        val command = "MOUSE:${x}_${y}_$actionStr"
-        
+        val action = if (isDown) "DOWN" else "UP"
+        val command = "MOUSE:0_0_${action}:$btn"
+        try { bleManager?.sendCommandLowLatency(command) } catch (e: Exception) { logEvent("ERROR: ${e.message}") }
+    }
+
+    private fun sendMouseScroll(horizontal: Int, vertical: Int) {
         try {
-            bleManager?.sendCommandLowLatency(command)
+            if (vertical != 0) {
+                val vcmd = "MOUSE:0_0_SCROLL:${vertical}"
+                bleManager?.sendCommandLowLatency(vcmd)
+            }
+            if (horizontal != 0) {
+                val hcmd = "MOUSE:0_0_HSCROLL:${horizontal}"
+                bleManager?.sendCommandLowLatency(hcmd)
+            }
         } catch (e: Exception) {
             logEvent("ERROR: ${e.message}")
         }

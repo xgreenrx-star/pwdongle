@@ -533,33 +533,49 @@ class RecorderFragment : Fragment(), KeyboardEventListener, MouseEventListener {
         return true  // Consume the event
     }
     
-    /**
-     * Implement MouseEventListener - called by MainActivity when USB mouse event occurs
-     * Receives DELTA movements directly from AXIS_RELATIVE_X/Y
-     * No edge-stopping issues since deltas are independent of screen position
-     */
-    override fun onMouseEvent(dx: Int, dy: Int, action: Int): Boolean {
+    // Mouse move deltas from OTG device
+    override fun onMouseMove(dx: Int, dy: Int): Boolean {
         if (!isRecording) return false
-        
-        // Skip zero-movement events
         if (dx == 0 && dy == 0) return true
-        
-        // Record locally (convert deltas to absolute for macro format)
-        // Note: mouseTracker uses dummy absolute positions since we only care about deltas
         macroRecorder.recordMouseMove(dx, dy)
         mouseTracker.updatePosition(dx, dy)
-        
-        // Throttle BLE sends to reduce lag (only send every 8ms = ~120 FPS)
         val now = System.currentTimeMillis()
         if (now - lastMouseSendTime >= mouseSendThrottleMs) {
             lastMouseSendTime = now
-            // Send delta movements to prevent edge-stopping
             val command = "MOUSE:MOVE_REL:$dx,$dy"
             android.util.Log.d("RecorderFragment", "Sending: $command")
             bleManager?.sendCommand(command)
         }
-        
-        return true  // Consume event
+        return true
+    }
+
+    // Mouse button down/up
+    override fun onMouseButton(button: String, isDown: Boolean): Boolean {
+        if (!isRecording) return false
+        macroRecorder.recordMouseButton(button, isDown)
+        val action = if (isDown) "DOWN" else "UP"
+        val command = "MOUSE:${action}:${button}"
+        android.util.Log.d("RecorderFragment", "Sending: $command")
+        bleManager?.sendCommand(command)
+        return true
+    }
+
+    // Mouse scroll (vertical + horizontal)
+    override fun onMouseScroll(horizontal: Int, vertical: Int): Boolean {
+        if (!isRecording) return false
+        if (vertical != 0) {
+            macroRecorder.recordMouseScroll(vertical)
+            val command = "MOUSE:SCROLL:${vertical}"
+            android.util.Log.d("RecorderFragment", "Sending: $command")
+            bleManager?.sendCommand(command)
+        }
+        if (horizontal != 0) {
+            macroRecorder.recordMouseHScroll(horizontal)
+            val hcmd = "MOUSE:HSCROLL:${horizontal}"
+            android.util.Log.d("RecorderFragment", "Sending: $hcmd")
+            bleManager?.sendCommand(hcmd)
+        }
+        return true
     }
     
     private fun showOnScreenKeyboard() {

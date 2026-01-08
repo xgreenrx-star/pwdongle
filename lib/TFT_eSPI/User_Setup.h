@@ -28,6 +28,7 @@
 
 #define SMOOTH_FONT
 
-#define SPI_FREQUENCY 8000000
+#define SPI_FREQUENCY 40000000
+#define SPI_READ_FREQUENCY 16000000
 
-#define USE_HSPI_PORT
+// #define USE_HSPI_PORT  // Comment out - not needed for ESP32-S3
